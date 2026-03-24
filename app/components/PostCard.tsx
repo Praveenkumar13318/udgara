@@ -165,7 +165,7 @@ export default function PostCard({ post }: any) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ postId: post.postId })
         });
-
+<div>TEST 123</div>
         router.push(`/post/${post.postId}`);
       }}
       style={{
