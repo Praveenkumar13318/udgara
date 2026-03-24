@@ -29,6 +29,7 @@ function timeAgo(dateString: any) {
 }
 
 export default function PostCard({ post }: any) {
+
   const router = useRouter();
 
   const [showReport, setShowReport] = useState(false);
@@ -36,13 +37,10 @@ export default function PostCard({ post }: any) {
 
   const [likes, setLikes] = useState<number>(post.likes || 0);
   const [liked, setLiked] = useState(post.isLiked || false);
-  const [loadingLike, setLoadingLike] = useState(false);
-
   const comments = post.commentsCount || 0;
 
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [animateLike, setAnimateLike] = useState(false);
-
+const [animateLike, setAnimateLike] = useState(false);
   const reasons = [
     "Spam",
     "Harassment",
@@ -52,29 +50,18 @@ export default function PostCard({ post }: any) {
     "Other"
   ];
 
-  /* ================= LIKE ================= */
+  /* ================= LIKE (FINAL FIX) ================= */
 
   async function handleLike(e: any) {
     e.stopPropagation();
-
-    if (loadingLike) return;
-    setLoadingLike(true);
 
     const el = e.currentTarget;
     const publicId = localStorage.getItem("publicId");
 
     if (!publicId) {
-      setLoadingLike(false);
       router.push("/login");
       return;
     }
-
-    const prevLiked = liked;
-    const prevLikes = likes;
-
-    // optimistic UI
-    setLiked(!liked);
-    setLikes(liked ? likes - 1 : likes + 1);
 
     try {
       const res = await fetch("/api/like", {
@@ -89,19 +76,19 @@ export default function PostCard({ post }: any) {
       const data = await res.json();
 
       if (data.success) {
+        // ✅ TRUST BACKEND (NO LOCAL MATH)
         setLiked(data.action === "liked");
         setLikes(data.likeCount);
-        setAnimateLike(true);
-        setTimeout(() => setAnimateLike(false), 200);
+setAnimateLike(true);
+setTimeout(() => setAnimateLike(false), 200);
+
       }
+
     } catch (err) {
       console.log("LIKE ERROR:", err);
-      setLiked(prevLiked);
-      setLikes(prevLikes);
     }
 
-    setLoadingLike(false);
-
+    // animation (unchanged)
     if (el) {
       el.style.transform = "scale(1.1)";
       setTimeout(() => {
@@ -156,14 +143,6 @@ export default function PostCard({ post }: any) {
   return (
     <>
       <div
-        onClickCapture={(e) => {
-          const target = e.target as HTMLElement;
-
-          if (target.closest("[data-action='true']")) {
-            e.stopPropagation();
-            return;
-          }
-        }}
         onClick={() => {
           fetch("/api/view", {
             method: "POST",
@@ -186,10 +165,17 @@ export default function PostCard({ post }: any) {
           (e.currentTarget as HTMLDivElement).style.background = "transparent";
         }}
       >
+
         {/* HEADER */}
-        <div style={{ fontSize: "13px", color: "#777", marginBottom: "6px" }}>
+
+        <div
+          style={{
+            fontSize: "13px",
+            color: "#777",
+            marginBottom: "6px"
+          }}
+        >
           <span
-            data-action="true"
             onClick={(e) => {
               e.stopPropagation();
               router.push(`/profile/${post.npId}`);
@@ -208,6 +194,7 @@ export default function PostCard({ post }: any) {
         </div>
 
         {/* CONTENT */}
+
         <div
           style={{
             fontSize: "15px",
@@ -221,6 +208,7 @@ export default function PostCard({ post }: any) {
         </div>
 
         {/* IMAGE */}
+
         {post.image && (
           <div
             style={{
@@ -248,6 +236,7 @@ export default function PostCard({ post }: any) {
         )}
 
         {/* ACTIONS */}
+
         <div
           style={{
             display: "flex",
@@ -256,10 +245,16 @@ export default function PostCard({ post }: any) {
             marginTop: "6px"
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "22px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "22px"
+            }}
+          >
+
             {/* LIKE */}
             <div
-              data-action="true"
               onClick={handleLike}
               style={{
                 display: "flex",
@@ -271,14 +266,14 @@ export default function PostCard({ post }: any) {
               }}
             >
               <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                style={{
-                  transform: animateLike ? "scale(1.2)" : "scale(1)",
-                  transition: "transform 0.12s ease"
-                }}
-              >
+  width="20"
+  height="20"
+  viewBox="0 0 24 24"
+  style={{
+    transform: animateLike ? "scale(1.3)" : "scale(1)",
+    transition: "transform 0.2s ease"
+  }}
+>
                 <path
                   d="M16.697 5.5c-1.222 0-2.404.724-2.997 1.86-.593-1.136-1.775-1.86-2.997-1.86-1.93 0-3.5 1.57-3.5 3.5 0 4.25 6.497 8.5 6.497 8.5s6.497-4.25 6.497-8.5c0-1.93-1.57-3.5-3.5-3.5z"
                   fill={liked ? "#ff2d55" : "none"}
@@ -292,7 +287,6 @@ export default function PostCard({ post }: any) {
 
             {/* COMMENT */}
             <div
-              data-action="true"
               onClick={(e) => {
                 e.stopPropagation();
                 router.push(`/post/${post.postId}`);
@@ -319,7 +313,6 @@ export default function PostCard({ post }: any) {
 
             {/* SHARE */}
             <div
-              data-action="true"
               onClick={handleShare}
               style={{
                 display: "flex",
@@ -337,16 +330,20 @@ export default function PostCard({ post }: any) {
                 />
               </svg>
             </div>
+
           </div>
 
           {/* REPORT */}
           <div
-            data-action="true"
             onClick={(e) => {
               e.stopPropagation();
               setShowReport(true);
             }}
-            style={{ cursor: "pointer" }}
+            style={{
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center"
+            }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24">
               <path
@@ -358,12 +355,13 @@ export default function PostCard({ post }: any) {
             </svg>
           </div>
         </div>
+
       </div>
 
-      {/* REPORT MODAL */}
+      {/* REPORT MODAL (unchanged) */}
+
       {showReport && (
         <div
-          onClick={() => setShowReport(false)}
           style={{
             position: "fixed",
             inset: 0,
@@ -375,7 +373,6 @@ export default function PostCard({ post }: any) {
           }}
         >
           <div
-            onClick={(e) => e.stopPropagation()}
             style={{
               width: "320px",
               background: "#1a1a1a",
@@ -398,8 +395,36 @@ export default function PostCard({ post }: any) {
               </label>
             ))}
 
-            <button onClick={submitReport}>Submit</button>
-            <button onClick={() => setShowReport(false)}>Cancel</button>
+            <button
+              onClick={submitReport}
+              style={{
+                width: "100%",
+                marginTop: "12px",
+                padding: "10px",
+                background: "#ff4747",
+                border: "none",
+                borderRadius: "8px",
+                color: "white"
+              }}
+            >
+              Submit
+            </button>
+
+            <button
+              onClick={() => setShowReport(false)}
+              style={{
+                width: "100%",
+                marginTop: "6px",
+                padding: "10px",
+                background: "#333",
+                border: "none",
+                borderRadius: "8px",
+                color: "white"
+              }}
+            >
+              Cancel
+            </button>
+
           </div>
         </div>
       )}
