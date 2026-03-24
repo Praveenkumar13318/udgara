@@ -144,12 +144,14 @@ setTimeout(() => setAnimateLike(false), 200);
     <>
       <div
         onClick={(e) => {
-  const target = e.target as HTMLElement;
-
+ const target = e.currentTarget as HTMLElement;
   // 🚨 BLOCK BUTTON CLICKS
-  if (target.closest("[data-action='true']")) {
-    return;
-  }
+  const clickedElement = e.target as HTMLElement;
+
+if (clickedElement.closest("[data-action='true']")) {
+  e.stopPropagation();
+  return;
+}
 
   fetch("/api/view", {
     method: "POST",
