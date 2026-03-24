@@ -64,6 +64,7 @@ export default function PostCard({ post }: any) {
     const publicId = localStorage.getItem("publicId");
 
     if (!publicId) {
+      setLoadingLike(false);
       router.push("/login");
       return;
     }
@@ -152,266 +153,256 @@ export default function PostCard({ post }: any) {
 
   /* ================= UI ================= */
 
- return (
-  <>
-    <div
-      onClick={(e) => {
-        const target = e.target as HTMLElement;
-
-        if (target.closest("[data-action]")) return;
-
-        fetch("/api/view", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ postId: post.postId })
-        });
-
-        router.push(`/post/${post.postId}`);
-      }}
-      style={{
-        padding: "14px 0",
-        borderBottom: "1px solid #1f1f1f",
-        cursor: "pointer",
-        transition: "background 0.2s"
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLDivElement).style.background = "#121212";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.background = "transparent";
-      }}
-    >
-      {/* HEADER */}
-      <div style={{ fontSize: "13px", color: "#777", marginBottom: "6px" }}>
-        <span
-          data-action
-          onClick={(e) => {
-            e.stopPropagation();
-            router.push(`/profile/${post.npId}`);
-          }}
-          style={{
-            color: "#ffffff",
-            fontWeight: 600,
-            cursor: "pointer"
-          }}
-        >
-          {post.npId?.toUpperCase()}
-        </span>
-
-        {" • "}
-        {timeAgo(post.createdAt)}
-      </div>
-
-      {/* CONTENT */}
+  return (
+    <>
       <div
+        onClickCapture={(e) => {
+          const target = e.target as HTMLElement;
+
+          if (target.closest("[data-action='true']")) {
+            e.stopPropagation();
+            return;
+          }
+        }}
+        onClick={() => {
+          fetch("/api/view", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ postId: post.postId })
+          });
+
+          router.push(`/post/${post.postId}`);
+        }}
         style={{
-          fontSize: "15px",
-          lineHeight: "1.6",
-          color: "#eaeaea",
-          marginBottom: "10px",
-          wordBreak: "break-word"
+          padding: "14px 0",
+          borderBottom: "1px solid #1f1f1f",
+          cursor: "pointer",
+          transition: "background 0.2s"
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLDivElement).style.background = "#121212";
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLDivElement).style.background = "transparent";
         }}
       >
-        {post.content}
-      </div>
+        {/* HEADER */}
+        <div style={{ fontSize: "13px", color: "#777", marginBottom: "6px" }}>
+          <span
+            data-action="true"
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/profile/${post.npId}`);
+            }}
+            style={{
+              color: "#ffffff",
+              fontWeight: 600,
+              cursor: "pointer"
+            }}
+          >
+            {post.npId?.toUpperCase()}
+          </span>
 
-      {/* IMAGE */}
-      {post.image && (
+          {" • "}
+          {timeAgo(post.createdAt)}
+        </div>
+
+        {/* CONTENT */}
         <div
           style={{
-            width: "100%",
-            borderRadius: "12px",
-            overflow: "hidden",
+            fontSize: "15px",
+            lineHeight: "1.6",
+            color: "#eaeaea",
             marginBottom: "10px",
-            background: imageLoaded ? "transparent" : "#1f1f1f"
+            wordBreak: "break-word"
           }}
         >
-          {!imageLoaded && (
-            <div style={{ height: "200px", background: "#222" }} />
-          )}
+          {post.content}
+        </div>
 
-          <img
-            src={post.image}
-            onLoad={() => setImageLoaded(true)}
+        {/* IMAGE */}
+        {post.image && (
+          <div
             style={{
               width: "100%",
-              display: imageLoaded ? "block" : "none",
-              objectFit: "cover"
+              borderRadius: "12px",
+              overflow: "hidden",
+              marginBottom: "10px",
+              background: imageLoaded ? "transparent" : "#1f1f1f"
             }}
-          />
-        </div>
-      )}
+          >
+            {!imageLoaded && (
+              <div style={{ height: "200px", background: "#222" }} />
+            )}
 
-      {/* ACTIONS */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginTop: "6px"
-        }}
-      >
+            <img
+              src={post.image}
+              onLoad={() => setImageLoaded(true)}
+              style={{
+                width: "100%",
+                display: imageLoaded ? "block" : "none",
+                objectFit: "cover"
+              }}
+            />
+          </div>
+        )}
+
+        {/* ACTIONS */}
         <div
           style={{
             display: "flex",
+            justifyContent: "space-between",
             alignItems: "center",
-            gap: "22px"
+            marginTop: "6px"
           }}
         >
-          {/* LIKE */}
-          <div
-            data-action
-            onClick={(e) => {
-              e.stopPropagation();
-              handleLike(e);
-            }}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              cursor: "pointer",
-              color: liked ? "#ff2d55" : "#888",
-              minWidth: "50px"
-            }}
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
+          <div style={{ display: "flex", alignItems: "center", gap: "22px" }}>
+            {/* LIKE */}
+            <div
+              data-action="true"
+              onClick={handleLike}
               style={{
-                transform: animateLike ? "scale(1.2)" : "scale(1)",
-                transition: "transform 0.12s ease"
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                cursor: "pointer",
+                color: liked ? "#ff2d55" : "#888",
+                minWidth: "50px"
               }}
             >
-              <path
-                d="M16.697 5.5c-1.222 0-2.404.724-2.997 1.86-.593-1.136-1.775-1.86-2.997-1.86-1.93 0-3.5 1.57-3.5 3.5 0 4.25 6.497 8.5 6.497 8.5s6.497-4.25 6.497-8.5c0-1.93-1.57-3.5-3.5-3.5z"
-                fill={liked ? "#ff2d55" : "none"}
-                stroke={liked ? "#ff2d55" : "#888"}
-                strokeWidth="1.6"
-              />
-            </svg>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                style={{
+                  transform: animateLike ? "scale(1.2)" : "scale(1)",
+                  transition: "transform 0.12s ease"
+                }}
+              >
+                <path
+                  d="M16.697 5.5c-1.222 0-2.404.724-2.997 1.86-.593-1.136-1.775-1.86-2.997-1.86-1.93 0-3.5 1.57-3.5 3.5 0 4.25 6.497 8.5 6.497 8.5s6.497-4.25 6.497-8.5c0-1.93-1.57-3.5-3.5-3.5z"
+                  fill={liked ? "#ff2d55" : "none"}
+                  stroke={liked ? "#ff2d55" : "#888"}
+                  strokeWidth="1.6"
+                />
+              </svg>
 
-            <span style={{ fontSize: "13px" }}>{likes}</span>
+              <span style={{ fontSize: "13px" }}>{likes}</span>
+            </div>
+
+            {/* COMMENT */}
+            <div
+              data-action="true"
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/post/${post.postId}`);
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                cursor: "pointer",
+                minWidth: "50px"
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24">
+                <path
+                  d="M4 4h16v12H8l-4 4V4z"
+                  fill="none"
+                  stroke="#888"
+                  strokeWidth="1.6"
+                />
+              </svg>
+
+              <span style={{ fontSize: "13px" }}>{comments}</span>
+            </div>
+
+            {/* SHARE */}
+            <div
+              data-action="true"
+              onClick={handleShare}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+                minWidth: "40px"
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24">
+                <path
+                  d="M12 3v12M12 3l4 4M12 3l-4 4M5 15v4h14v-4"
+                  fill="none"
+                  stroke="#888"
+                  strokeWidth="1.6"
+                />
+              </svg>
+            </div>
           </div>
 
-          {/* COMMENT */}
+          {/* REPORT */}
           <div
-            data-action
+            data-action="true"
             onClick={(e) => {
               e.stopPropagation();
-              router.push(`/post/${post.postId}`);
+              setShowReport(true);
             }}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              cursor: "pointer",
-              minWidth: "50px"
-            }}
+            style={{ cursor: "pointer" }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24">
               <path
-                d="M4 4h16v12H8l-4 4V4z"
+                d="M5 3v18M5 3h12l-2 4 2 4H5"
                 fill="none"
-                stroke="#888"
-                strokeWidth="1.6"
-              />
-            </svg>
-
-            <span style={{ fontSize: "13px" }}>{comments}</span>
-          </div>
-
-          {/* SHARE */}
-          <div
-            data-action
-            onClick={(e) => {
-              e.stopPropagation();
-              handleShare(e);
-            }}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              cursor: "pointer",
-              minWidth: "40px"
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24">
-              <path
-                d="M12 3v12M12 3l4 4M12 3l-4 4M5 15v4h14v-4"
-                fill="none"
-                stroke="#888"
+                stroke="#ff4d4d"
                 strokeWidth="1.6"
               />
             </svg>
           </div>
         </div>
+      </div>
 
-        {/* REPORT */}
+      {/* REPORT MODAL */}
+      {showReport && (
         <div
-          data-action
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowReport(true);
-          }}
+          onClick={() => setShowReport(false)}
           style={{
-            cursor: "pointer",
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.75)",
             display: "flex",
-            alignItems: "center"
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000
           }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24">
-            <path
-              d="M5 3v18M5 3h12l-2 4 2 4H5"
-              fill="none"
-              stroke="#ff4d4d"
-              strokeWidth="1.6"
-            />
-          </svg>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "320px",
+              background: "#1a1a1a",
+              borderRadius: "12px",
+              padding: "18px",
+              border: "1px solid #2a2a2a"
+            }}
+          >
+            <h3 style={{ marginBottom: "14px" }}>Report Post</h3>
+
+            {reasons.map((r) => (
+              <label key={r} style={{ display: "block", marginBottom: "6px" }}>
+                <input
+                  type="radio"
+                  name="reason"
+                  value={r}
+                  onChange={() => setSelectedReason(r)}
+                />{" "}
+                {r}
+              </label>
+            ))}
+
+            <button onClick={submitReport}>Submit</button>
+            <button onClick={() => setShowReport(false)}>Cancel</button>
+          </div>
         </div>
-      </div>
-    </div>
-
-    {/* REPORT MODAL */}
-    {showReport && (
-      <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          background: "rgba(0,0,0,0.75)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: 1000
-        }}
-      >
-        <div
-          style={{
-            width: "320px",
-            background: "#1a1a1a",
-            borderRadius: "12px",
-            padding: "18px",
-            border: "1px solid #2a2a2a"
-          }}
-        >
-          <h3 style={{ marginBottom: "14px" }}>Report Post</h3>
-
-          {reasons.map((r) => (
-            <label key={r} style={{ display: "block", marginBottom: "6px" }}>
-              <input
-                type="radio"
-                name="reason"
-                value={r}
-                onChange={() => setSelectedReason(r)}
-              />{" "}
-              {r}
-            </label>
-          ))}
-
-          <button onClick={submitReport}>Submit</button>
-          <button onClick={() => setShowReport(false)}>Cancel</button>
-        </div>
-      </div>
-    )}
-  </>
-);
+      )}
+    </>
+  );
 }
