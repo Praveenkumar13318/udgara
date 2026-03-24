@@ -143,15 +143,22 @@ setTimeout(() => setAnimateLike(false), 200);
   return (
     <>
       <div
-        onClick={() => {
-          fetch("/api/view", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ postId: post.postId })
-          });
+        onClick={(e) => {
+  const target = e.target as HTMLElement;
 
-          router.push(`/post/${post.postId}`);
-        }}
+  // 🚨 BLOCK BUTTON CLICKS
+  if (target.closest("[data-action='true']")) {
+    return;
+  }
+
+  fetch("/api/view", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ postId: post.postId })
+  });
+
+  router.push(`/post/${post.postId}`);
+}}
         style={{
           padding: "14px 0",
           borderBottom: "1px solid #1f1f1f",
@@ -176,7 +183,7 @@ setTimeout(() => setAnimateLike(false), 200);
           }}
         >
           <span
-            onClick={(e) => {
+            data-action="true" onClick={(e) => {
               e.stopPropagation();
               router.push(`/profile/${post.npId}`);
             }}
@@ -255,7 +262,7 @@ setTimeout(() => setAnimateLike(false), 200);
 
             {/* LIKE */}
             <div
-              onClick={handleLike}
+             data-action="true" onClick={handleLike}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -287,7 +294,7 @@ setTimeout(() => setAnimateLike(false), 200);
 
             {/* COMMENT */}
             <div
-              onClick={(e) => {
+             data-action="true" onClick={(e) => {
                 e.stopPropagation();
                 router.push(`/post/${post.postId}`);
               }}
@@ -313,7 +320,7 @@ setTimeout(() => setAnimateLike(false), 200);
 
             {/* SHARE */}
             <div
-              onClick={handleShare}
+             data-action="true" onClick={handleShare}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -335,7 +342,7 @@ setTimeout(() => setAnimateLike(false), 200);
 
           {/* REPORT */}
           <div
-            onClick={(e) => {
+           data-action="true" onClick={(e) => {
               e.stopPropagation();
               setShowReport(true);
             }}
