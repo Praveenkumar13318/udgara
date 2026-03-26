@@ -40,7 +40,6 @@ export default function PostCard({ post }: any) {
   const comments = post.commentsCount || 0;
 
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [animateLike, setAnimateLike] = useState(false);
 
   const reasons = [
     "Spam",
@@ -56,7 +55,6 @@ export default function PostCard({ post }: any) {
   async function handleLike(e: any) {
     e.stopPropagation();
 
-    const el = e.currentTarget;
     const publicId = localStorage.getItem("publicId");
 
     if (!publicId) {
@@ -79,20 +77,10 @@ export default function PostCard({ post }: any) {
       if (data.success) {
         setLiked(data.action === "liked");
         setLikes(data.likeCount);
-
-        setAnimateLike(true);
-        setTimeout(() => setAnimateLike(false), 200);
       }
 
     } catch (err) {
       console.log("LIKE ERROR:", err);
-    }
-
-    if (el) {
-      el.style.transform = "scale(1.1)";
-      setTimeout(() => {
-        el.style.transform = "scale(1)";
-      }, 120);
     }
   }
 
@@ -143,19 +131,14 @@ export default function PostCard({ post }: any) {
     <>
       <div
         style={{
-          padding: "14px 0",
-          borderBottom: "1px solid #1f1f1f"
+          padding: "14px 16px",
+          borderBottom: "1px solid #1f1f1f",
+          WebkitTapHighlightColor: "transparent"
         }}
       >
 
         {/* HEADER */}
-        <div
-          style={{
-            fontSize: "13px",
-            color: "#777",
-            marginBottom: "6px"
-          }}
-        >
+        <div style={{ fontSize: "13px", color: "#777", marginBottom: "6px" }}>
           <span
             onClick={(e) => {
               e.stopPropagation();
@@ -176,21 +159,11 @@ export default function PostCard({ post }: any) {
 
         {/* CONTENT */}
         <div
-          onClick={() => {
-            fetch("/api/view", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ postId: post.postId })
-            });
-
-            router.push(`/post/${post.postId}`);
-          }}
+          onClick={() => router.push(`/post/${post.postId}`)}
           style={{
             fontSize: "15px",
-            lineHeight: "1.6",
             color: "#eaeaea",
             marginBottom: "10px",
-            wordBreak: "break-word",
             cursor: "pointer"
           }}
         >
@@ -202,24 +175,16 @@ export default function PostCard({ post }: any) {
           <div
             onClick={() => router.push(`/post/${post.postId}`)}
             style={{
-              width: "100%",
               borderRadius: "12px",
               overflow: "hidden",
               marginBottom: "10px",
-              background: imageLoaded ? "transparent" : "#1f1f1f",
               cursor: "pointer"
             }}
           >
-            {!imageLoaded && (
-              <div style={{ height: "200px", background: "#222" }} />
-            )}
-
             <img
               src={post.image}
-              onLoad={() => setImageLoaded(true)}
               style={{
                 width: "100%",
-                display: imageLoaded ? "block" : "none",
                 objectFit: "cover"
               }}
             />
@@ -232,13 +197,13 @@ export default function PostCard({ post }: any) {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            marginTop: "6px"
+            marginTop: "8px"
           }}
         >
-          <div style={{ display: "flex", gap: "22px" }}>
+          <div style={{ display: "flex", gap: "24px", alignItems: "center" }}>
 
             {/* LIKE */}
-            <div onClick={handleLike} style={{ cursor: "pointer" }}>
+            <div onClick={handleLike} style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
               <svg width="20" height="20" viewBox="0 0 24 24">
                 <path
                   d="M16.697 5.5c-1.222 0-2.404.724-2.997 1.86-.593-1.136-1.775-1.86-2.997-1.86-1.93 0-3.5 1.57-3.5 3.5 0 4.25 6.497 8.5 6.497 8.5s6.497-4.25 6.497-8.5c0-1.93-1.57-3.5-3.5-3.5z"
@@ -247,24 +212,22 @@ export default function PostCard({ post }: any) {
                   strokeWidth="1.6"
                 />
               </svg>
-              <span>{likes}</span>
+              <span style={{ fontSize: "13px" }}>{likes}</span>
             </div>
 
             {/* COMMENT */}
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-                router.push(`/post/${post.postId}`);
-              }}
-            >
+            <div onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/post/${post.postId}`);
+            }} style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
               <svg width="20" height="20" viewBox="0 0 24 24">
                 <path d="M4 4h16v12H8l-4 4V4z" fill="none" stroke="#888" strokeWidth="1.6"/>
               </svg>
-              <span>{comments}</span>
+              <span style={{ fontSize: "13px" }}>{comments}</span>
             </div>
 
             {/* SHARE */}
-            <div onClick={handleShare}>
+            <div onClick={handleShare} style={{ cursor: "pointer" }}>
               <svg width="20" height="20" viewBox="0 0 24 24">
                 <path d="M12 3v12M12 3l4 4M12 3l-4 4M5 15v4h14v-4" fill="none" stroke="#888" strokeWidth="1.6"/>
               </svg>
@@ -276,7 +239,7 @@ export default function PostCard({ post }: any) {
           <div onClick={(e) => {
             e.stopPropagation();
             setShowReport(true);
-          }}>
+          }} style={{ cursor: "pointer" }}>
             <svg width="20" height="20" viewBox="0 0 24 24">
               <path d="M5 3v18M5 3h12l-2 4 2 4H5" fill="none" stroke="#ff4d4d" strokeWidth="1.6"/>
             </svg>
@@ -296,11 +259,16 @@ export default function PostCard({ post }: any) {
           alignItems: "center",
           zIndex: 1000
         }}>
-          <div style={{ width: "320px", background: "#1a1a1a", padding: "18px" }}>
+          <div style={{
+            width: "320px",
+            background: "#1a1a1a",
+            borderRadius: "12px",
+            padding: "18px"
+          }}>
             <h3>Report Post</h3>
 
             {reasons.map((r) => (
-              <label key={r}>
+              <label key={r} style={{ display: "block", marginBottom: "6px" }}>
                 <input type="radio" onChange={() => setSelectedReason(r)} /> {r}
               </label>
             ))}
