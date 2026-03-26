@@ -29,7 +29,6 @@ function timeAgo(dateString: any) {
 }
 
 export default function PostCard({ post }: any) {
-
   const router = useRouter();
 
   const [showReport, setShowReport] = useState(false);
@@ -40,7 +39,8 @@ export default function PostCard({ post }: any) {
   const comments = post.commentsCount || 0;
 
   const [imageLoaded, setImageLoaded] = useState(false);
-const [animateLike, setAnimateLike] = useState(false);
+  const [animateLike, setAnimateLike] = useState(false);
+
   const reasons = [
     "Spam",
     "Harassment",
@@ -50,12 +50,11 @@ const [animateLike, setAnimateLike] = useState(false);
     "Other"
   ];
 
-  /* ================= LIKE (FINAL FIX) ================= */
+  /* ================= LIKE ================= */
 
   async function handleLike(e: any) {
     e.stopPropagation();
 
-    const el = e.currentTarget;
     const publicId = localStorage.getItem("publicId");
 
     if (!publicId) {
@@ -76,24 +75,14 @@ const [animateLike, setAnimateLike] = useState(false);
       const data = await res.json();
 
       if (data.success) {
-        // ✅ TRUST BACKEND (NO LOCAL MATH)
         setLiked(data.action === "liked");
         setLikes(data.likeCount);
-setAnimateLike(true);
-setTimeout(() => setAnimateLike(false), 200);
 
+        setAnimateLike(true);
+        setTimeout(() => setAnimateLike(false), 150);
       }
-
     } catch (err) {
       console.log("LIKE ERROR:", err);
-    }
-
-    // animation (unchanged)
-    if (el) {
-      el.style.transform = "scale(1.1)";
-      setTimeout(() => {
-        el.style.transform = "scale(1)";
-      }, 120);
     }
   }
 
@@ -138,29 +127,29 @@ setTimeout(() => setAnimateLike(false), 200);
     setSelectedReason("");
   }
 
+  /* ================= CARD CLICK ================= */
+
+  function handleCardClick(e: any) {
+    const clickedElement = e.target as HTMLElement;
+
+    // 🚨 BLOCK ACTION BUTTONS
+    if (clickedElement.closest("[data-action='true']")) return;
+
+    fetch("/api/view", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ postId: post.postId })
+    });
+
+    router.push(`/post/${post.postId}`);
+  }
+
   /* ================= UI ================= */
 
   return (
     <>
       <div
-        onClick={(e) => {
- const target = e.currentTarget as HTMLElement;
-  // 🚨 BLOCK BUTTON CLICKS
-  const clickedElement = e.target as HTMLElement;
-
-if (clickedElement.closest("[data-action='true']")) {
-  e.stopPropagation();
-  return;
-}
-
-  fetch("/api/view", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ postId: post.postId })
-  });
-
-  router.push(`/post/${post.postId}`);
-}}
+        onClick={handleCardClick}
         style={{
           padding: "14px 0",
           borderBottom: "1px solid #1f1f1f",
@@ -168,24 +157,18 @@ if (clickedElement.closest("[data-action='true']")) {
           transition: "background 0.2s"
         }}
         onMouseEnter={(e) => {
-          (e.currentTarget as HTMLDivElement).style.background = "#121212";
+          e.currentTarget.style.background = "#121212";
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget as HTMLDivElement).style.background = "transparent";
+          e.currentTarget.style.background = "transparent";
         }}
       >
 
         {/* HEADER */}
-
-        <div
-          style={{
-            fontSize: "13px",
-            color: "#777",
-            marginBottom: "6px"
-          }}
-        >
+        <div style={{ fontSize: "13px", color: "#777", marginBottom: "6px" }}>
           <span
-            data-action="true" onClick={(e) => {
+            data-action="true"
+            onClick={(e) => {
               e.stopPropagation();
               router.push(`/profile/${post.npId}`);
             }}
@@ -197,13 +180,11 @@ if (clickedElement.closest("[data-action='true']")) {
           >
             {post.npId?.toUpperCase()}
           </span>
-
           {" • "}
           {timeAgo(post.createdAt)}
         </div>
 
         {/* CONTENT */}
-
         <div
           style={{
             fontSize: "15px",
@@ -217,7 +198,6 @@ if (clickedElement.closest("[data-action='true']")) {
         </div>
 
         {/* IMAGE */}
-
         {post.image && (
           <div
             style={{
@@ -245,7 +225,6 @@ if (clickedElement.closest("[data-action='true']")) {
         )}
 
         {/* ACTIONS */}
-
         <div
           style={{
             display: "flex",
@@ -254,121 +233,60 @@ if (clickedElement.closest("[data-action='true']")) {
             marginTop: "6px"
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "22px"
-            }}
-          >
+          <div style={{ display: "flex", gap: "22px" }}>
 
             {/* LIKE */}
             <div
-             data-action="true" onClick={handleLike}
+              data-action="true"
+              onClick={handleLike}
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: "6px",
                 cursor: "pointer",
-                color: liked ? "#ff2d55" : "#888",
-                minWidth: "50px"
+                color: liked ? "#ff2d55" : "#888"
               }}
             >
-              <svg
-  width="20"
-  height="20"
-  viewBox="0 0 24 24"
-  style={{
-    transform: animateLike ? "scale(1.3)" : "scale(1)",
-    transition: "transform 0.2s ease"
-  }}
->
-                <path
-                  d="M16.697 5.5c-1.222 0-2.404.724-2.997 1.86-.593-1.136-1.775-1.86-2.997-1.86-1.93 0-3.5 1.57-3.5 3.5 0 4.25 6.497 8.5 6.497 8.5s6.497-4.25 6.497-8.5c0-1.93-1.57-3.5-3.5-3.5z"
-                  fill={liked ? "#ff2d55" : "none"}
-                  stroke={liked ? "#ff2d55" : "#888"}
-                  strokeWidth="1.6"
-                />
-              </svg>
-
-              <span style={{ fontSize: "13px" }}>{likes}</span>
+              ❤️ {likes}
             </div>
 
             {/* COMMENT */}
             <div
-             data-action="true" onClick={(e) => {
+              data-action="true"
+              onClick={(e) => {
                 e.stopPropagation();
                 router.push(`/post/${post.postId}`);
               }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                cursor: "pointer",
-                minWidth: "50px"
-              }}
+              style={{ cursor: "pointer" }}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24">
-                <path
-                  d="M4 4h16v12H8l-4 4V4z"
-                  fill="none"
-                  stroke="#888"
-                  strokeWidth="1.6"
-                />
-              </svg>
-
-              <span style={{ fontSize: "13px" }}>{comments}</span>
+              💬 {comments}
             </div>
 
             {/* SHARE */}
             <div
-             data-action="true" onClick={handleShare}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                cursor: "pointer",
-                minWidth: "40px"
-              }}
+              data-action="true"
+              onClick={handleShare}
+              style={{ cursor: "pointer" }}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24">
-                <path
-                  d="M12 3v12M12 3l4 4M12 3l-4 4M5 15v4h14v-4"
-                  fill="none"
-                  stroke="#888"
-                  strokeWidth="1.6"
-                />
-              </svg>
+              🔗
             </div>
-
           </div>
 
           {/* REPORT */}
           <div
-           data-action="true" onClick={(e) => {
+            data-action="true"
+            onClick={(e) => {
               e.stopPropagation();
               setShowReport(true);
             }}
-            style={{
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center"
-            }}
+            style={{ cursor: "pointer" }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24">
-              <path
-                d="M5 3v18M5 3h12l-2 4 2 4H5"
-                fill="none"
-                stroke="#ff4d4d"
-                strokeWidth="1.6"
-              />
-            </svg>
+            🚩
           </div>
         </div>
-
       </div>
 
-      {/* REPORT MODAL (unchanged) */}
-
+      {/* REPORT MODAL */}
       {showReport && (
         <div
           style={{
@@ -390,13 +308,12 @@ if (clickedElement.closest("[data-action='true']")) {
               border: "1px solid #2a2a2a"
             }}
           >
-            <h3 style={{ marginBottom: "14px" }}>Report Post</h3>
+            <h3>Report Post</h3>
 
             {reasons.map((r) => (
-              <label key={r} style={{ display: "block", marginBottom: "6px" }}>
+              <label key={r} style={{ display: "block" }}>
                 <input
                   type="radio"
-                  name="reason"
                   value={r}
                   onChange={() => setSelectedReason(r)}
                 />{" "}
@@ -404,36 +321,8 @@ if (clickedElement.closest("[data-action='true']")) {
               </label>
             ))}
 
-            <button
-              onClick={submitReport}
-              style={{
-                width: "100%",
-                marginTop: "12px",
-                padding: "10px",
-                background: "#ff4747",
-                border: "none",
-                borderRadius: "8px",
-                color: "white"
-              }}
-            >
-              Submit
-            </button>
-
-            <button
-              onClick={() => setShowReport(false)}
-              style={{
-                width: "100%",
-                marginTop: "6px",
-                padding: "10px",
-                background: "#333",
-                border: "none",
-                borderRadius: "8px",
-                color: "white"
-              }}
-            >
-              Cancel
-            </button>
-
+            <button onClick={submitReport}>Submit</button>
+            <button onClick={() => setShowReport(false)}>Cancel</button>
           </div>
         </div>
       )}
