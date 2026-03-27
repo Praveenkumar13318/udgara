@@ -6,19 +6,23 @@ import { useRouter } from "next/navigation";
 export default function AdminPage() {
 
   const [posts,setPosts] = useState<any[]>([]);
+  const [isAdmin,setIsAdmin] = useState(false);
+  const [checked,setChecked] = useState(false);
+
   const router = useRouter();
 
   useEffect(()=>{
 
-    // 🔐 ADMIN CHECK
     const id = localStorage.getItem("publicId");
 
-    if(id !== "NP000001"){
+    if(id === "NP000001"){
+      setIsAdmin(true);
+      loadPosts();
+    }else{
       router.push("/");
-      return;
     }
 
-    loadPosts();
+    setChecked(true);
 
   },[]);
 
@@ -45,13 +49,19 @@ export default function AdminPage() {
       },
       body:JSON.stringify({
         postId,
-        publicId // 🔥 IMPORTANT (security)
+        publicId
       })
     });
 
     loadPosts();
 
   }
+
+  // 🔒 STOP RENDER UNTIL CHECK
+  if(!checked) return null;
+
+  // 🔒 BLOCK NON ADMIN
+  if(!isAdmin) return null;
 
   return(
 

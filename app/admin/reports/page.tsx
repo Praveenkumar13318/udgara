@@ -8,6 +8,7 @@ export default function ReportsAdmin() {
   const [reports,setReports] = useState<any[]>([]);
   const [isAdmin,setIsAdmin] = useState(false);
   const [checked,setChecked] = useState(false);
+  const [loading,setLoading] = useState(true);
 
   const router = useRouter();
 
@@ -19,7 +20,7 @@ export default function ReportsAdmin() {
       setIsAdmin(true);
       loadReports();
     }else{
-      router.push("/");
+      router.replace("/"); // 🔥 better than push (no back navigation)
     }
 
     setChecked(true);
@@ -28,12 +29,24 @@ export default function ReportsAdmin() {
 
   async function loadReports(){
 
-    const publicId = localStorage.getItem("publicId");
+    try{
+      const publicId = localStorage.getItem("publicId");
 
-    const res = await fetch(`/api/admin/reports?publicId=${publicId}`);
-    const data = await res.json();
+      const res = await fetch(`/api/admin/reports?publicId=${publicId}`);
 
-    setReports(data);
+      if(!res.ok){
+        console.error("Failed to load reports");
+        return;
+      }
+
+      const data = await res.json();
+      setReports(data);
+
+    }catch(error){
+      console.error("Error loading reports", error);
+    }finally{
+      setLoading(false);
+    }
 
   }
 
@@ -42,28 +55,42 @@ export default function ReportsAdmin() {
     const confirmDelete = confirm("Delete this post?");
     if(!confirmDelete) return;
 
-    const publicId = localStorage.getItem("publicId");
+    try{
+      const publicId = localStorage.getItem("publicId");
 
-    await fetch("/api/admin/delete-post",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify({
-        postId,
-        publicId
-      })
-    });
+      await fetch("/api/admin/delete-post",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          postId,
+          publicId
+        })
+      });
 
-    loadReports();
+      loadReports();
+
+    }catch(error){
+      console.error("Delete failed", error);
+    }
 
   }
 
-  // 🔒 block UI until check
+  // 🔒 WAIT FOR CHECK
   if(!checked) return null;
 
-  // 🔒 block non-admin
+  // 🔒 BLOCK NON-ADMIN
   if(!isAdmin) return null;
+
+  // ⏳ LOADING STATE
+  if(loading){
+    return (
+      <div style={{padding:"40px",textAlign:"center"}}>
+        Loading reports...
+      </div>
+    );
+  }
 
   return(
 
@@ -78,6 +105,12 @@ export default function ReportsAdmin() {
       <h1 style={{marginBottom:"30px"}}>
         Reported Posts
       </h1>
+
+      {reports.length === 0 && (
+        <div style={{opacity:0.6}}>
+          No reported posts
+        </div>
+      )}
 
       {reports.map((r)=>{
 
