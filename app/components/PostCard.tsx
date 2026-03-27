@@ -95,9 +95,14 @@ export default function PostCard({ post }: any) {
 
   /* ================= REPORT ================= */
   async function submitReport() {
-    if (!selectedReason) return alert("Select reason");
+  if (!selectedReason) {
+    alert("Select reason");
+    return;
+  }
 
-    await fetch("/api/report", {
+  try {
+
+    const res = await fetch("/api/report", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -106,9 +111,24 @@ export default function PostCard({ post }: any) {
       })
     });
 
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.error("Report failed:", data);
+      alert("Failed to report post");
+      return;
+    }
+
+    console.log("Report success:", data);
+
     setShowReport(false);
     setSelectedReason("");
+
+  } catch (error) {
+    console.error("Report error:", error);
+    alert("Network error while reporting");
   }
+}
 
   return (
     <>
