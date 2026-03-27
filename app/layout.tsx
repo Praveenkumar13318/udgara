@@ -62,8 +62,14 @@ export default function RootLayout({
             justifyContent: "space-between",
             alignItems: "center",
             padding: "12px 16px",
-            borderBottom: "1px solid #2a2a2a",
-            background: "#111",
+
+            /* 🔥 PREMIUM HEADER */
+            background: "rgba(17,17,17,0.75)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            boxShadow: "0 2px 20px rgba(0,0,0,0.6)",
+            borderBottom: "1px solid rgba(255,255,255,0.04)",
+
             position: "sticky",
             top: 0,
             zIndex: 100
@@ -81,9 +87,17 @@ export default function RootLayout({
                 position: "absolute",
                 left: "50%",
                 transform: "translateX(-50%)",
-                fontSize: "14px",
+                fontSize: "13px",
                 color: "#aaa",
                 letterSpacing: "1px",
+
+                /* 🔥 BADGE STYLE */
+                padding: "4px 10px",
+                borderRadius: "999px",
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.06)",
+                backdropFilter: "blur(6px)",
+
                 userSelect: "none",
                 WebkitUserSelect: "none",
                 WebkitTouchCallout: "none"
