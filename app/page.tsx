@@ -33,10 +33,20 @@ export default function Home() {
   /* ================= LOAD ================= */
 
   useEffect(() => {
-    loadPosts(null);
+
+    const publicId = localStorage.getItem("publicId");
+
+    // ✅ FIX: avoid null fetch
+    if (!publicId) return;
+
+    loadPosts(null, publicId);
+
   }, []);
 
-  async function loadPosts(customCursor: number | null = cursor) {
+  async function loadPosts(
+    customCursor: number | null = cursor,
+    overridePublicId?: string
+  ) {
 
     if (loadingRef.current) return;
     loadingRef.current = true;
@@ -45,11 +55,18 @@ export default function Home() {
 
     try {
 
-      const publicId = localStorage.getItem("publicId"); // ✅ ADDED
+      const publicId =
+        overridePublicId || localStorage.getItem("publicId");
+
+      // ✅ FIX: ensure valid id
+      if (!publicId) {
+        console.log("Missing publicId, skipping fetch");
+        return;
+      }
 
       const url = customCursor
-        ? `/api/posts?cursor=${customCursor}&publicId=${publicId}` // ✅ UPDATED
-        : `/api/posts?publicId=${publicId}`; // ✅ UPDATED
+        ? `/api/posts?cursor=${customCursor}&publicId=${publicId}`
+        : `/api/posts?publicId=${publicId}`;
 
       const res = await fetch(url);
       const data = await res.json();
@@ -106,6 +123,9 @@ export default function Home() {
     try {
 
       const publicId = localStorage.getItem("publicId");
+
+      // ✅ FIX
+      if (!publicId) return;
 
       const res = await fetch(`/api/posts?publicId=${publicId}`);
       const data = await res.json();
