@@ -69,7 +69,35 @@ span {
   touch-action: manipulation;
 }
 
-/* Disable selection flash (optional but clean) */
+/* 🔥 CRITICAL FIX: Prevent Android text selection popup */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* 🔥 Prevent long press Google popup */
+button,
+.no-select {
+  -webkit-touch-callout: none;
+}
+
+/* Optional: only allow selection where needed (inputs) */
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Disable selection flash */
 ::selection {
   background: transparent;
+}
+
+/* ================= MICRO INTERACTION (PREMIUM FEEL) ================= */
+button {
+  transition: transform 0.1s ease;
+}
+
+button:active {
+  transform: scale(0.96);
 }

@@ -42,10 +42,11 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-  <head>
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#111111" />
-  </head>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#111111" />
+      </head>
+
       <body
         style={{
           margin: 0,
@@ -75,13 +76,17 @@ export default function RootLayout({
 
           {publicId && (
             <div
+              className="no-select"
               style={{
                 position: "absolute",
                 left: "50%",
                 transform: "translateX(-50%)",
                 fontSize: "14px",
                 color: "#aaa",
-                letterSpacing: "1px"
+                letterSpacing: "1px",
+                userSelect: "none",
+                WebkitUserSelect: "none",
+                WebkitTouchCallout: "none"
               }}
             >
               {publicId.toUpperCase()}
@@ -90,13 +95,15 @@ export default function RootLayout({
 
           <div
             onClick={() => setMenuOpen(!menuOpen)}
+            className="no-select"
             style={{
               width: 26,
               height: 18,
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
-              cursor: "pointer"
+              cursor: "pointer",
+              userSelect: "none"
             }}
           >
             <span style={{
@@ -132,6 +139,7 @@ export default function RootLayout({
         {menuOpen && (
           <div
             onClick={() => setMenuOpen(false)}
+            className="no-select"
             style={{
               position: "fixed",
               top: 0,
@@ -243,6 +251,7 @@ export default function RootLayout({
                 onClick={logout}
                 onMouseDown={pressIn}
                 onMouseUp={pressOut}
+                className="no-select"
                 style={{
                   marginTop: 20,
                   color: "#ff4d4d",

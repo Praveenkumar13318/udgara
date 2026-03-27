@@ -49,6 +49,7 @@ export default function PostCard({ post }: any) {
   /* ================= LIKE (INSTANT) ================= */
   async function handleLike(e: any) {
     e.stopPropagation();
+    e.preventDefault();
 
     const publicId = localStorage.getItem("publicId");
     if (!publicId) {
@@ -58,7 +59,6 @@ export default function PostCard({ post }: any) {
 
     const newLiked = !liked;
 
-    // ⚡ instant UI
     setLiked(newLiked);
     setLikes((prev: number) => newLiked ? prev + 1 : prev - 1);
 
@@ -79,6 +79,7 @@ export default function PostCard({ post }: any) {
   /* ================= SHARE ================= */
   async function handleShare(e: any) {
     e.stopPropagation();
+    e.preventDefault();
 
     const url = window.location.origin + "/post/" + post.postId;
 
@@ -109,29 +110,29 @@ export default function PostCard({ post }: any) {
     setSelectedReason("");
   }
 
-  /* ================= UI ================= */
   return (
     <>
       <div
         style={{
           padding: "14px 16px",
-          borderBottom: "1px solid #1f1f1f",
-          WebkitTapHighlightColor: "transparent"
+          borderBottom: "1px solid #1f1f1f"
         }}
       >
 
         {/* HEADER */}
         <div style={{ fontSize: "13px", color: "#777", marginBottom: "6px" }}>
           <span
+            className="no-select"
             onClick={(e) => {
               e.stopPropagation();
+              e.preventDefault();
               router.push(`/profile/${post.npId}`);
             }}
             style={{
               color: "#fff",
               fontWeight: 600,
               cursor: "pointer",
-              WebkitTapHighlightColor: "transparent"
+              userSelect: "none"
             }}
           >
             {post.npId?.toUpperCase()}
@@ -144,6 +145,7 @@ export default function PostCard({ post }: any) {
         {/* CONTENT */}
         <div
           onClick={() => router.push(`/post/${post.postId}`)}
+          className="no-select"
           style={{
             color: "#eaeaea",
             marginBottom: "10px",
@@ -157,6 +159,7 @@ export default function PostCard({ post }: any) {
         {post.image && (
           <div
             onClick={() => router.push(`/post/${post.postId}`)}
+            className="no-select"
             style={{
               borderRadius: "12px",
               overflow: "hidden",
@@ -187,11 +190,13 @@ export default function PostCard({ post }: any) {
             {/* LIKE */}
             <div
               onClick={handleLike}
+              className="no-select"
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: "6px",
-                cursor: "pointer"
+                cursor: "pointer",
+                userSelect: "none"
               }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24">
@@ -202,20 +207,27 @@ export default function PostCard({ post }: any) {
                   strokeWidth="1.6"
                 />
               </svg>
-              <span style={{ fontSize: "13px" }}>{likes}</span>
+
+              {/* 🔥 FIXED LIKE COUNT */}
+              <span style={{ fontSize: "13px", userSelect: "none" }}>
+                {likes}
+              </span>
             </div>
 
             {/* COMMENT */}
             <div
               onClick={(e) => {
                 e.stopPropagation();
+                e.preventDefault();
                 router.push(`/post/${post.postId}`);
               }}
+              className="no-select"
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: "6px",
-                cursor: "pointer"
+                cursor: "pointer",
+                userSelect: "none"
               }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24">
@@ -226,11 +238,13 @@ export default function PostCard({ post }: any) {
                   strokeWidth="1.6"
                 />
               </svg>
-              <span style={{ fontSize: "13px" }}>{comments}</span>
+              <span style={{ fontSize: "13px", userSelect: "none" }}>
+                {comments}
+              </span>
             </div>
 
             {/* SHARE */}
-            <div onClick={handleShare} style={{ cursor: "pointer" }}>
+            <div onClick={handleShare} className="no-select" style={{ cursor: "pointer" }}>
               <svg width="20" height="20" viewBox="0 0 24 24">
                 <path
                   d="M12 3v12M12 3l4 4M12 3l-4 4M5 15v4h14v-4"
@@ -247,8 +261,10 @@ export default function PostCard({ post }: any) {
           <div
             onClick={(e) => {
               e.stopPropagation();
+              e.preventDefault();
               setShowReport(true);
             }}
+            className="no-select"
             style={{ cursor: "pointer" }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24">
