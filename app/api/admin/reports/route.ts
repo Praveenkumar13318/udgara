@@ -1,9 +1,21 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "../../../lib/mongodb";
 
-export async function GET() {
+export async function GET(req: Request) {
 
   try {
+
+    // 🔥 GET ADMIN ID FROM QUERY
+    const { searchParams } = new URL(req.url);
+    const publicId = searchParams.get("publicId");
+
+    // 🔐 ADMIN CHECK
+    if (publicId !== "NP000001") {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 403 }
+      );
+    }
 
     const db: any = await connectDB();
 

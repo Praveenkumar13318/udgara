@@ -5,7 +5,15 @@ export async function POST(request: Request){
 
   try{
 
-    const { postId } = await request.json();
+    const { postId, publicId } = await request.json();
+
+    // 🔐 ADMIN CHECK
+    if(publicId !== "NP000001"){
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 403 }
+      );
+    }
 
     const db:any = await connectDB();
 

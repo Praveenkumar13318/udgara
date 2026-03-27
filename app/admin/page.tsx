@@ -1,13 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function AdminPage() {
 
   const [posts,setPosts] = useState<any[]>([]);
+  const router = useRouter();
 
   useEffect(()=>{
+
+    // 🔐 ADMIN CHECK
+    const id = localStorage.getItem("publicId");
+
+    if(id !== "NP000001"){
+      router.push("/");
+      return;
+    }
+
     loadPosts();
+
   },[]);
 
   async function loadPosts(){
@@ -22,8 +34,9 @@ export default function AdminPage() {
   async function deletePost(postId:string){
 
     const confirmDelete = confirm("Delete this post?");
-
     if(!confirmDelete) return;
+
+    const publicId = localStorage.getItem("publicId");
 
     await fetch("/api/admin/delete-post",{
       method:"POST",
@@ -31,7 +44,8 @@ export default function AdminPage() {
         "Content-Type":"application/json"
       },
       body:JSON.stringify({
-        postId
+        postId,
+        publicId // 🔥 IMPORTANT (security)
       })
     });
 
@@ -89,6 +103,7 @@ export default function AdminPage() {
           </div>
 
           <button
+            className="tap"
             onClick={()=>deletePost(post.postId)}
             style={{
               marginTop:"10px",
