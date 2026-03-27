@@ -20,7 +20,7 @@ export default function ReportsAdmin() {
       setIsAdmin(true);
       loadReports();
     }else{
-      router.replace("/"); // 🔥 better than push (no back navigation)
+      router.replace("/");
     }
 
     setChecked(true);
@@ -30,15 +30,13 @@ export default function ReportsAdmin() {
   async function loadReports(){
 
     try{
-      const publicId = localStorage.getItem("publicId");
-
       const token = localStorage.getItem("token");
 
-const res = await fetch("/api/admin/reports", {
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
-});
+      const res = await fetch("/api/admin/reports", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
 
       if(!res.ok){
         console.error("Failed to load reports");
@@ -62,28 +60,18 @@ const res = await fetch("/api/admin/reports", {
     if(!confirmDelete) return;
 
     try{
-      const publicId = localStorage.getItem("publicId");
+      const token = localStorage.getItem("token");
 
-      async function deletePost(postId:string){
-
-  const confirmDelete = confirm("Delete this post?");
-  if(!confirmDelete) return;
-
-  const token = localStorage.getItem("token");
-
-  await fetch("/api/admin/delete-post",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "Authorization": `Bearer ${token}`
-    },
-    body:JSON.stringify({
-      postId
-    })
-  });
-
-  loadReports();
-}
+      await fetch("/api/admin/delete-post",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body:JSON.stringify({
+          postId
+        })
+      });
 
       loadReports();
 
