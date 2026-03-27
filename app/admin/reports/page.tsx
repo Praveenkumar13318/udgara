@@ -32,7 +32,13 @@ export default function ReportsAdmin() {
     try{
       const publicId = localStorage.getItem("publicId");
 
-      const res = await fetch(`/api/admin/reports?publicId=${publicId}`);
+      const token = localStorage.getItem("token");
+
+const res = await fetch("/api/admin/reports", {
+  headers: {
+    Authorization: `Bearer ${token}`
+  }
+});
 
       if(!res.ok){
         console.error("Failed to load reports");
@@ -58,16 +64,26 @@ export default function ReportsAdmin() {
     try{
       const publicId = localStorage.getItem("publicId");
 
-      await fetch("/api/admin/delete-post",{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-          postId,
-          publicId
-        })
-      });
+      async function deletePost(postId:string){
+
+  const confirmDelete = confirm("Delete this post?");
+  if(!confirmDelete) return;
+
+  const token = localStorage.getItem("token");
+
+  await fetch("/api/admin/delete-post",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body:JSON.stringify({
+      postId
+    })
+  });
+
+  loadReports();
+}
 
       loadReports();
 

@@ -45,7 +45,20 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (data.success) {
-        localStorage.setItem("publicId", data.publicId.toUpperCase());
+
+        // 🔥 CRITICAL FIX: clear old session
+        localStorage.clear();
+
+        // 🔐 store fresh user identity
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+        }
+
+        if (data.publicId) {
+          localStorage.setItem("publicId", data.publicId.toUpperCase());
+        }
+
+        // 🚀 redirect
         window.location.href = "/";
       } else {
         setMessage(data.error || "Verification failed");
