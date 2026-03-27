@@ -36,45 +36,28 @@ export default function LoginPage() {
     try {
       setMessage("Verifying...");
 
-      // ✅ STEP 1: VERIFY OTP
-      const otpRes = await fetch("/api/auth/verify-otp", {
+      // 🔥 ONLY OTP VERIFY (NO LOGIN API)
+      const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp })
       });
 
-      const otpData = await otpRes.json();
+      const data = await res.json();
 
-      if (!otpData.success) {
-        setMessage(otpData.error || "Verification failed");
+      if (!data.success) {
+        setMessage(data.error || "Verification failed");
         return;
       }
 
-      // ✅ STEP 2: LOGIN TO GET TOKEN
-      const loginRes = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          password: otp // using OTP as password
-        })
-      });
-
-      const loginData = await loginRes.json();
-
-      if (!loginData.success) {
-        setMessage(loginData.error || "Login failed");
-        return;
-      }
-
-      // 🔥 CLEAR OLD DATA
+      // 🔥 CLEAN SESSION
       localStorage.clear();
 
-      // 🔥 SAVE TOKEN (THIS FIXES YOUR ISSUE)
-      localStorage.setItem("token", loginData.token);
-      localStorage.setItem("publicId", loginData.publicId.toUpperCase());
+      // 🔐 STORE TOKEN + USER ID
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("publicId", data.publicId.toUpperCase());
 
-      console.log("LOGIN SUCCESS:", loginData);
+      console.log("LOGIN SUCCESS:", data);
 
       // 🚀 REDIRECT
       window.location.href = "/";
@@ -134,8 +117,7 @@ export default function LoginPage() {
               style={{
                 marginTop: 18,
                 fontSize: 12,
-                color: "#666",
-                lineHeight: "1.5"
+                color: "#666"
               }}
             >
               By continuing, you agree to our{" "}
