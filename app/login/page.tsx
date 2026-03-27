@@ -44,25 +44,29 @@ export default function LoginPage() {
 
       const data = await res.json();
 
-      if (data.success) {
-
-        // 🔥 CRITICAL FIX: clear old session
-        localStorage.clear();
-
-        // 🔐 store fresh user identity
-        if (data.token) {
-          localStorage.setItem("token", data.token);
-        }
-
-        if (data.publicId) {
-          localStorage.setItem("publicId", data.publicId.toUpperCase());
-        }
-
-        // 🚀 redirect
-        window.location.href = "/";
-      } else {
+      if (!data.success) {
         setMessage(data.error || "Verification failed");
+        return;
       }
+
+      // 🔥 RESET SESSION
+      localStorage.clear();
+
+      // 🔐 STRICT VALIDATION
+      if (!data.token || !data.publicId) {
+        setMessage("Login failed: missing credentials");
+        return;
+      }
+
+      // 🔐 STORE SECURELY
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("publicId", data.publicId.toUpperCase());
+
+      // 🔥 ENSURE STORAGE BEFORE REDIRECT
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 100);
+
     } catch {
       setMessage("Network error");
     }
@@ -90,7 +94,6 @@ export default function LoginPage() {
         }}
       >
 
-        {/* LANDING */}
         {step === "landing" && (
           <>
             <h1 style={{ fontSize: 26, marginBottom: 20 }}>
@@ -113,24 +116,15 @@ export default function LoginPage() {
               Create Account
             </button>
 
-            <p
-              style={{
-                marginTop: 18,
-                fontSize: 12,
-                color: "#666",
-                lineHeight: "1.5"
-              }}
-            >
+            <p style={{ marginTop: 18, fontSize: 12, color: "#666" }}>
               By continuing, you agree to our{" "}
               <Link href="/terms" style={{ color: "#1e90ff" }}>
                 Terms & Conditions
               </Link>
-              .
             </p>
           </>
         )}
 
-        {/* EMAIL */}
         {step === "email" && (
           <>
             <h2 style={{ marginBottom: 20 }}>Enter your email</h2>
@@ -169,7 +163,6 @@ export default function LoginPage() {
           </>
         )}
 
-        {/* OTP */}
         {step === "otp" && (
           <>
             <h2 style={{ marginBottom: 20 }}>Enter OTP</h2>
@@ -213,6 +206,7 @@ export default function LoginPage() {
             {message}
           </p>
         )}
+
       </div>
     </div>
   );

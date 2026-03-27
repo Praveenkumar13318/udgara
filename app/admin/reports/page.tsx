@@ -30,7 +30,15 @@ export default function ReportsAdmin() {
   async function loadReports(){
 
     try{
+
       const token = localStorage.getItem("token");
+
+      // 🔐 TOKEN CHECK
+      if(!token){
+        alert("Session expired. Please login again.");
+        router.replace("/login");
+        return;
+      }
 
       const res = await fetch("/api/admin/reports", {
         headers: {
@@ -38,16 +46,25 @@ export default function ReportsAdmin() {
         }
       });
 
-      if(!res.ok){
-        console.error("Failed to load reports");
+      // 🔐 HANDLE AUTH ERRORS
+      if(res.status === 401){
+        alert("Session expired. Please login again.");
+        router.replace("/login");
+        return;
+      }
+
+      if(res.status === 403){
+        alert("You are not authorized as admin.");
+        router.replace("/");
         return;
       }
 
       const data = await res.json();
-      setReports(data);
+
+      setReports(Array.isArray(data) ? data : []);
 
     }catch(error){
-      console.error("Error loading reports", error);
+      console.error("Error loading reports:", error);
     }finally{
       setLoading(false);
     }
@@ -60,9 +77,16 @@ export default function ReportsAdmin() {
     if(!confirmDelete) return;
 
     try{
+
       const token = localStorage.getItem("token");
 
-      await fetch("/api/admin/delete-post",{
+      if(!token){
+        alert("Session expired. Please login again.");
+        router.replace("/login");
+        return;
+      }
+
+      const res = await fetch("/api/admin/delete-post",{
         method:"POST",
         headers:{
           "Content-Type":"application/json",
@@ -73,10 +97,16 @@ export default function ReportsAdmin() {
         })
       });
 
+      if(!res.ok){
+        alert("Failed to delete post");
+        return;
+      }
+
+      // 🔄 reload reports
       loadReports();
 
     }catch(error){
-      console.error("Delete failed", error);
+      console.error("Delete failed:", error);
     }
 
   }
@@ -120,7 +150,7 @@ export default function ReportsAdmin() {
 
         const reasonCounts:any = {};
 
-        r.reasons.forEach((reason:string)=>{
+        r.reasons?.forEach((reason:string)=>{
           reasonCounts[reason] = (reasonCounts[reason] || 0) + 1;
         });
 
