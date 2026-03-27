@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "../../../lib/mongodb";
+import jwt from "jsonwebtoken";
 
 export async function POST(request: Request) {
-
   try {
-
     const { email, otp } = await request.json();
 
     const db: any = await connectDB();
@@ -30,7 +29,6 @@ export async function POST(request: Request) {
 
     // create new user if not exists
     if (!user) {
-
       const count = await db.collection("users").countDocuments();
 
       const npId = "NP" + String(count + 1).padStart(6, "0");
@@ -47,23 +45,30 @@ export async function POST(request: Request) {
         _id: result.insertedId,
         ...newUser
       };
-
     }
+
+    // 🔥 GENERATE TOKEN (CRITICAL FIX)
+    const token = jwt.sign(
+      {
+        userId: user._id,
+        publicId: user.npId
+      },
+      process.env.JWT_SECRET as string,
+      { expiresIn: "7d" }
+    );
 
     return NextResponse.json({
       success: true,
-      publicId: user.npId   // IMPORTANT
+      token,                 // ✅ ADD THIS
+      publicId: user.npId
     });
 
   } catch (error) {
-
     console.error(error);
 
     return NextResponse.json(
       { error: "Server error" },
       { status: 500 }
     );
-
   }
-
 }
