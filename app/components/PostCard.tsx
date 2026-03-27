@@ -63,14 +63,23 @@ export default function PostCard({ post }: any) {
     setLikes((prev: number) => newLiked ? prev + 1 : prev - 1);
 
     try {
-      await fetch("/api/like", {
+      const res = await fetch("/api/like", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          postId: post._id,
+          postId: post.postId, // ✅ FIXED ONLY THIS
           publicId
         })
       });
+
+      const data = await res.json();
+
+      // ✅ SYNC WITH BACKEND (NO UI BREAK)
+      if (data.success) {
+        setLiked(data.action === "liked");
+        setLikes(data.likeCount);
+      }
+
     } catch (err) {
       console.log("LIKE ERROR:", err);
     }
@@ -95,40 +104,40 @@ export default function PostCard({ post }: any) {
 
   /* ================= REPORT ================= */
   async function submitReport() {
-  if (!selectedReason) {
-    alert("Select reason");
-    return;
-  }
-
-  try {
-
-    const res = await fetch("/api/report", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        postId: post.postId,
-        reason: selectedReason
-      })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      console.error("Report failed:", data);
-      alert("Failed to report post");
+    if (!selectedReason) {
+      alert("Select reason");
       return;
     }
 
-    console.log("Report success:", data);
+    try {
 
-    setShowReport(false);
-    setSelectedReason("");
+      const res = await fetch("/api/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          postId: post.postId,
+          reason: selectedReason
+        })
+      });
 
-  } catch (error) {
-    console.error("Report error:", error);
-    alert("Network error while reporting");
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error("Report failed:", data);
+        alert("Failed to report post");
+        return;
+      }
+
+      console.log("Report success:", data);
+
+      setShowReport(false);
+      setSelectedReason("");
+
+    } catch (error) {
+      console.error("Report error:", error);
+      alert("Network error while reporting");
+    }
   }
-}
 
   return (
     <>
