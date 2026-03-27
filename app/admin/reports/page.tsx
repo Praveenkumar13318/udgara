@@ -1,18 +1,36 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ReportsAdmin() {
 
   const [reports,setReports] = useState<any[]>([]);
+  const [isAdmin,setIsAdmin] = useState(false);
+  const [checked,setChecked] = useState(false);
+
+  const router = useRouter();
 
   useEffect(()=>{
-    loadReports();
+
+    const id = localStorage.getItem("publicId");
+
+    if(id === "NP000001"){
+      setIsAdmin(true);
+      loadReports();
+    }else{
+      router.push("/");
+    }
+
+    setChecked(true);
+
   },[]);
 
   async function loadReports(){
 
-    const res = await fetch("/api/admin/reports");
+    const publicId = localStorage.getItem("publicId");
+
+    const res = await fetch(`/api/admin/reports?publicId=${publicId}`);
     const data = await res.json();
 
     setReports(data);
@@ -21,17 +39,31 @@ export default function ReportsAdmin() {
 
   async function deletePost(postId:string){
 
+    const confirmDelete = confirm("Delete this post?");
+    if(!confirmDelete) return;
+
+    const publicId = localStorage.getItem("publicId");
+
     await fetch("/api/admin/delete-post",{
       method:"POST",
       headers:{
         "Content-Type":"application/json"
       },
-      body:JSON.stringify({ postId })
+      body:JSON.stringify({
+        postId,
+        publicId
+      })
     });
 
     loadReports();
 
   }
+
+  // 🔒 block UI until check
+  if(!checked) return null;
+
+  // 🔒 block non-admin
+  if(!isAdmin) return null;
 
   return(
 
@@ -84,14 +116,15 @@ export default function ReportsAdmin() {
             </div>
 
             <button
+              className="tap"
               onClick={()=>deletePost(r._id)}
               style={{
                 background:"#ff4d4d",
                 border:"none",
                 padding:"8px 14px",
                 borderRadius:"6px",
-                cursor:"pointer",
-                color:"white"
+                color:"white",
+                cursor:"pointer"
               }}
             >
               Delete Post
