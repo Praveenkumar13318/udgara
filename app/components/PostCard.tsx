@@ -67,7 +67,7 @@ export default function PostCard({ post }: any) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          postId: post.postId,
+          postId: post._id,
           publicId
         })
       });
