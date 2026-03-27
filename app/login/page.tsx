@@ -36,39 +36,51 @@ export default function LoginPage() {
     try {
       setMessage("Verifying...");
 
-      const res = await fetch("/api/auth/verify-otp", {
+      // ✅ STEP 1: VERIFY OTP
+      const otpRes = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp })
       });
 
-      const data = await res.json();
+      const otpData = await otpRes.json();
 
-      // ❌ STOP IF FAILED
-      if (!data.success) {
-        setMessage(data.error || "Verification failed");
+      if (!otpData.success) {
+        setMessage(otpData.error || "Verification failed");
         return;
       }
 
-      // 🔥 RESET SESSION
+      // ✅ STEP 2: LOGIN TO GET TOKEN
+      const loginRes = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          password: otp // using OTP as password
+        })
+      });
+
+      const loginData = await loginRes.json();
+
+      if (!loginData.success) {
+        setMessage(loginData.error || "Login failed");
+        return;
+      }
+
+      // 🔥 CLEAR OLD DATA
       localStorage.clear();
 
-      // ✅ STORE SAFELY (NO BREAK EVEN IF MISSING)
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-      }
+      // 🔥 SAVE TOKEN (THIS FIXES YOUR ISSUE)
+      localStorage.setItem("token", loginData.token);
+      localStorage.setItem("publicId", loginData.publicId.toUpperCase());
 
-      if (data.publicId) {
-        localStorage.setItem("publicId", data.publicId.toUpperCase());
-      }
-
-      // 🔍 DEBUG (IMPORTANT FOR YOU)
-      console.log("LOGIN RESPONSE:", data);
+      console.log("LOGIN SUCCESS:", loginData);
 
       // 🚀 REDIRECT
       window.location.href = "/";
 
-    } catch {
+    } catch (error) {
+      console.error(error);
       setMessage("Network error");
     }
   }
