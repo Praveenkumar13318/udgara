@@ -46,7 +46,7 @@ export default function PostCard({ post }: any) {
     "Other"
   ];
 
-  /* ================= LIKE (INSTANT) ================= */
+  /* ================= LIKE ================= */
   async function handleLike(e: any) {
     e.stopPropagation();
     e.preventDefault();
@@ -122,7 +122,7 @@ export default function PostCard({ post }: any) {
         {/* HEADER */}
         <div style={{ fontSize: "13px", color: "#777", marginBottom: "6px" }}>
           <span
-            className="no-select"
+            className="tap no-select"
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
@@ -131,7 +131,6 @@ export default function PostCard({ post }: any) {
             style={{
               color: "#fff",
               fontWeight: 600,
-              cursor: "pointer",
               userSelect: "none"
             }}
           >
@@ -145,11 +144,10 @@ export default function PostCard({ post }: any) {
         {/* CONTENT */}
         <div
           onClick={() => router.push(`/post/${post.postId}`)}
-          className="no-select"
+          className="tap no-select"
           style={{
             color: "#eaeaea",
-            marginBottom: "10px",
-            cursor: "pointer"
+            marginBottom: "10px"
           }}
         >
           {post.content}
@@ -159,12 +157,11 @@ export default function PostCard({ post }: any) {
         {post.image && (
           <div
             onClick={() => router.push(`/post/${post.postId}`)}
-            className="no-select"
+            className="tap no-select"
             style={{
               borderRadius: "12px",
               overflow: "hidden",
-              marginBottom: "10px",
-              cursor: "pointer"
+              marginBottom: "10px"
             }}
           >
             <img
@@ -190,13 +187,11 @@ export default function PostCard({ post }: any) {
             {/* LIKE */}
             <div
               onClick={handleLike}
-              className="no-select"
+              className="tap no-select"
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "6px",
-                cursor: "pointer",
-                userSelect: "none"
+                gap: "6px"
               }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24">
@@ -208,7 +203,6 @@ export default function PostCard({ post }: any) {
                 />
               </svg>
 
-              {/* 🔥 FIXED LIKE COUNT */}
               <span style={{ fontSize: "13px", userSelect: "none" }}>
                 {likes}
               </span>
@@ -221,13 +215,11 @@ export default function PostCard({ post }: any) {
                 e.preventDefault();
                 router.push(`/post/${post.postId}`);
               }}
-              className="no-select"
+              className="tap no-select"
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "6px",
-                cursor: "pointer",
-                userSelect: "none"
+                gap: "6px"
               }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24">
@@ -244,7 +236,10 @@ export default function PostCard({ post }: any) {
             </div>
 
             {/* SHARE */}
-            <div onClick={handleShare} className="no-select" style={{ cursor: "pointer" }}>
+            <div
+              onClick={handleShare}
+              className="tap no-select"
+            >
               <svg width="20" height="20" viewBox="0 0 24 24">
                 <path
                   d="M12 3v12M12 3l4 4M12 3l-4 4M5 15v4h14v-4"
@@ -264,8 +259,7 @@ export default function PostCard({ post }: any) {
               e.preventDefault();
               setShowReport(true);
             }}
-            className="no-select"
-            style={{ cursor: "pointer" }}
+            className="tap no-select"
           >
             <svg width="20" height="20" viewBox="0 0 24 24">
               <path
@@ -312,8 +306,8 @@ export default function PostCard({ post }: any) {
               </label>
             ))}
 
-            <button onClick={submitReport}>Submit</button>
-            <button onClick={() => setShowReport(false)}>Cancel</button>
+            <button className="tap" onClick={submitReport}>Submit</button>
+            <button className="tap" onClick={() => setShowReport(false)}>Cancel</button>
           </div>
         </div>
       )}
