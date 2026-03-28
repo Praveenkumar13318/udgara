@@ -35,14 +35,27 @@ export default function Home() {
 
   /* ================= RESTORE SCROLL BEFORE PAINT ================= */
 
-  useLayoutEffect(() => {
-    const savedScroll = sessionStorage.getItem("feedScroll");
+  const restoredRef = useRef(false);
 
-    if (savedScroll) {
-      window.scrollTo(0, Number(savedScroll));
-    }
-  }, []);
+useEffect(() => {
+  if (restoredRef.current) return;
 
+  const savedScroll = sessionStorage.getItem("feedScroll");
+
+  if (!savedScroll) return;
+
+  if (posts.length === 0) return;
+
+  restoredRef.current = true;
+
+  requestAnimationFrame(() => {
+    window.scrollTo({
+      top: Number(savedScroll),
+      behavior: "instant" as ScrollBehavior
+    });
+  });
+
+}, [posts]);
   /* ================= INITIAL LOAD ================= */
 
   useEffect(() => {
