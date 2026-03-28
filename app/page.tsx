@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback, useLayoutEffect } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import PostCard from "./components/PostCard";
 
 type Post = {
@@ -14,7 +14,7 @@ type Post = {
   createdAtMs?: number;
 };
 
-// ✅ Disable browser scroll restore (VERY IMPORTANT)
+// ✅ disable browser scroll restore
 if (typeof window !== "undefined") {
   window.history.scrollRestoration = "manual";
 }
@@ -32,31 +32,9 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
 
   const loadingRef = useRef(false);
-
-  /* ================= RESTORE SCROLL BEFORE PAINT ================= */
-
   const restoredRef = useRef(false);
 
-useEffect(() => {
-  if (restoredRef.current) return;
-
-  const savedScroll = sessionStorage.getItem("feedScroll");
-
-  if (!savedScroll) return;
-
-  if (posts.length === 0) return;
-
-  restoredRef.current = true;
-
-  requestAnimationFrame(() => {
-    window.scrollTo({
-      top: Number(savedScroll),
-      behavior: "instant" as ScrollBehavior
-    });
-  });
-
-}, [posts]);
-  /* ================= INITIAL LOAD ================= */
+  /* ================= LOAD POSTS ================= */
 
   useEffect(() => {
     const publicId = localStorage.getItem("publicId");
@@ -64,20 +42,16 @@ useEffect(() => {
     loadPosts(null, publicId);
   }, []);
 
-  /* ================= LOAD POSTS ================= */
-
   async function loadPosts(
     customCursor: number | null = cursor,
     overridePublicId?: string
   ) {
-
     if (loadingRef.current) return;
     loadingRef.current = true;
 
     setLoading(true);
 
     try {
-
       const publicId =
         overridePublicId || localStorage.getItem("publicId");
 
@@ -98,8 +72,8 @@ useEffect(() => {
       } else {
         setPosts(prev => {
           const map = new Map<string, Post>();
-          prev.forEach((p) => p?.postId && map.set(p.postId, p));
-          newPosts.forEach((p) => p?.postId && map.set(p.postId, p));
+          prev.forEach(p => p?.postId && map.set(p.postId, p));
+          newPosts.forEach(p => p?.postId && map.set(p.postId, p));
           return Array.from(map.values());
         });
       }
@@ -115,6 +89,31 @@ useEffect(() => {
     loadingRef.current = false;
   }
 
+  /* ================= RESTORE POSITION (PRO LEVEL) ================= */
+
+  useEffect(() => {
+    if (restoredRef.current) return;
+
+    const lastPostId = sessionStorage.getItem("lastPostId");
+
+    if (!lastPostId) return;
+    if (posts.length === 0) return;
+
+    const el = document.getElementById(`post-${lastPostId}`);
+
+    if (el) {
+      restoredRef.current = true;
+
+      requestAnimationFrame(() => {
+        el.scrollIntoView({
+          behavior: "instant",
+          block: "center"
+        });
+      });
+    }
+
+  }, [posts]);
+
   /* ================= SEARCH ================= */
 
   useEffect(() => {
@@ -124,26 +123,19 @@ useEffect(() => {
   }, [posts]);
 
   useEffect(() => {
-
     const delay = setTimeout(async () => {
-
       if (!search.trim()) return;
 
       try {
         const res = await fetch(`/api/search?q=${search}`);
         const data = await res.json();
-
-        const safeData: Post[] = Array.isArray(data) ? data : [];
-        setFilteredPosts(safeData);
-
+        setFilteredPosts(Array.isArray(data) ? data : []);
       } catch (err) {
         console.log("Search error", err);
       }
-
     }, 400);
 
     return () => clearTimeout(delay);
-
   }, [search]);
 
   /* ================= REFRESH ================= */
@@ -177,7 +169,7 @@ useEffect(() => {
 
     const scrollY = window.scrollY;
 
-    // ✅ SAVE SCROLL (continuous)
+    // fallback save (backup)
     sessionStorage.setItem("feedScroll", scrollY.toString());
 
     setShowNewBtn(scrollY > 300);
@@ -201,7 +193,6 @@ useEffect(() => {
   /* ================= UI ================= */
 
   return (
-
     <div
       style={{
         width: "100%",
@@ -218,7 +209,7 @@ useEffect(() => {
           position: "sticky",
           top: "56px",
           zIndex: 90,
-          padding: "6px 6px",
+          padding: "6px",
           background: "rgba(11,11,12,0.85)",
           backdropFilter: "blur(10px)"
         }}
@@ -267,7 +258,9 @@ useEffect(() => {
 
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         {filteredPosts.map((post) => (
-          <PostCard key={post.postId} post={post} />
+          <div id={`post-${post.postId}`} key={post.postId}>
+            <PostCard post={post} />
+          </div>
         ))}
       </div>
 
@@ -275,17 +268,7 @@ useEffect(() => {
 
       {loading && (
         <div style={{ textAlign: "center", padding: "18px" }}>
-          <div
-            style={{
-              width: "26px",
-              height: "26px",
-              border: "3px solid #333",
-              borderTop: "3px solid #1e90ff",
-              borderRadius: "50%",
-              margin: "0 auto",
-              animation: "spin 0.8s linear infinite"
-            }}
-          />
+          Loading...
         </div>
       )}
 
@@ -305,22 +288,11 @@ useEffect(() => {
           color: "white",
           fontSize: "14px",
           fontWeight: 600,
-          cursor: "pointer",
-          boxShadow: "0 10px 26px rgba(0,0,0,0.5)",
-          zIndex: 1000
+          cursor: "pointer"
         }}
       >
         Create Post
       </button>
-
-      <style>
-        {`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}
-      </style>
 
     </div>
   );
