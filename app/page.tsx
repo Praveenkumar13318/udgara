@@ -28,6 +28,9 @@ export default function Home() {
 
   const loadingRef = useRef(false);
 
+  // ✅ ADDED
+  const [activePostId, setActivePostId] = useState<string | null>(null);
+
   useEffect(() => {
     const publicId = localStorage.getItem("publicId");
     if (!publicId) return;
@@ -155,6 +158,17 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
+  // ✅ ADDED LISTENER
+  useEffect(() => {
+    const handler = (e: any) => {
+      setActivePostId(e.detail);
+    };
+
+    window.addEventListener("openPost", handler);
+
+    return () => window.removeEventListener("openPost", handler);
+  }, []);
+
   return (
 
     <div
@@ -162,7 +176,7 @@ export default function Home() {
         width: "100%",
         maxWidth: "680px",
         margin: "0 auto",
-        padding: "6px 12px 110px" // 🔥 gap fixed
+        padding: "6px 12px 110px"
       }}
     >
 
@@ -281,6 +295,46 @@ export default function Home() {
       >
         Create Post
       </button>
+
+      {/* ✅ ADDED OVERLAY WITH FIXED BACK */}
+
+      {activePostId && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "#000",
+            zIndex: 2000,
+            overflowY: "auto"
+          }}
+        >
+          <button
+            onClick={() => {
+              setActivePostId(null);
+
+              const savedScroll = sessionStorage.getItem("feedScroll");
+
+              if (savedScroll) {
+                requestAnimationFrame(() => {
+                  window.scrollTo(0, Number(savedScroll));
+                });
+              }
+            }}
+            style={{
+              position: "fixed",
+              top: 20,
+              left: 20,
+              zIndex: 2100
+            }}
+          >
+            Back
+          </button>
+
+          <div style={{ padding: "80px 20px", color: "#fff" }}>
+            Post ID: {activePostId}
+          </div>
+        </div>
+      )}
 
       <style>
         {`

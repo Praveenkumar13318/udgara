@@ -180,11 +180,12 @@ export default function PostCard({ post }: any) {
 
         {/* CONTENT */}
         <div
-          onClick={() =>
+          onClick={() => {
+            sessionStorage.setItem("feedScroll", window.scrollY.toString());
             window.dispatchEvent(
               new CustomEvent("openPost", { detail: post.postId })
-            )
-          }
+            );
+          }}
           className="tap no-select"
           style={{
             color: "#eaeaea",
@@ -199,11 +200,12 @@ export default function PostCard({ post }: any) {
         {/* IMAGE */}
         {post.image && (
           <div
-            onClick={() =>
+            onClick={() => {
+              sessionStorage.setItem("feedScroll", window.scrollY.toString());
               window.dispatchEvent(
                 new CustomEvent("openPost", { detail: post.postId })
-              )
-            }
+              );
+            }}
             className="tap no-select"
             style={{
               borderRadius: "14px",
@@ -261,6 +263,7 @@ export default function PostCard({ post }: any) {
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
+                sessionStorage.setItem("feedScroll", window.scrollY.toString());
                 window.dispatchEvent(
                   new CustomEvent("openPost", { detail: post.postId })
                 );
@@ -287,7 +290,10 @@ export default function PostCard({ post }: any) {
             </div>
 
             {/* SHARE */}
-            <div onClick={handleShare} className="tap no-select">
+            <div
+              onClick={handleShare}
+              className="tap no-select"
+            >
               <svg width="20" height="20" viewBox="0 0 24 24">
                 <path
                   d="M12 3v12M12 3l4 4M12 3l-4 4M5 15v4h14v-4"
@@ -324,27 +330,40 @@ export default function PostCard({ post }: any) {
 
       {/* REPORT MODAL */}
       {showReport && (
-        <div style={{
-          position: "fixed",
-          inset: 0,
-          background: "rgba(0,0,0,0.75)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center"
-        }}>
-          <div style={{
-            width: "320px",
-            background: "#1a1a1a",
-            borderRadius: "14px",
-            padding: "18px"
-          }}>
-            <h3>Report Post</h3>
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.75)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
+          }}
+        >
+          <div
+            style={{
+              width: "320px",
+              background: "#1a1a1a",
+              borderRadius: "14px",
+              padding: "18px"
+            }}
+          >
+            <h3 style={{ marginBottom: "10px" }}>Report Post</h3>
+
             {reasons.map((r) => (
-              <label key={r}>
-                <input type="radio" onChange={() => setSelectedReason(r)} /> {r}
+              <label key={r} style={{ display: "block", marginBottom: "6px" }}>
+                <input
+                  type="radio"
+                  onChange={() => setSelectedReason(r)}
+                />{" "}
+                {r}
               </label>
             ))}
-            <button onClick={submitReport}>Submit</button>
+
+            <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
+              <button className="tap" onClick={submitReport}>Submit</button>
+              <button className="tap" onClick={() => setShowReport(false)}>Cancel</button>
+            </div>
           </div>
         </div>
       )}
