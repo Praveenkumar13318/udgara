@@ -3,8 +3,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import PostCard from "./components/PostCard";
 
-/* ================= TYPES ================= */
-
 type Post = {
   postId: string;
   npId: string;
@@ -29,8 +27,6 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
 
   const loadingRef = useRef(false);
-
-  /* ================= LOAD ================= */
 
   useEffect(() => {
     const publicId = localStorage.getItem("publicId");
@@ -70,10 +66,8 @@ export default function Home() {
       } else {
         setPosts(prev => {
           const map = new Map<string, Post>();
-
           prev.forEach((p) => p?.postId && map.set(p.postId, p));
           newPosts.forEach((p) => p?.postId && map.set(p.postId, p));
-
           return Array.from(map.values());
         });
       }
@@ -89,15 +83,11 @@ export default function Home() {
     loadingRef.current = false;
   }
 
-  /* ================= SYNC FILTERED POSTS ================= */
-
   useEffect(() => {
     if (!search.trim()) {
       setFilteredPosts(posts);
     }
   }, [posts]);
-
-  /* ================= REFRESH ================= */
 
   async function refreshPosts() {
     try {
@@ -122,8 +112,6 @@ export default function Home() {
     }
   }
 
-  /* ================= SEARCH ================= */
-
   useEffect(() => {
 
     const delay = setTimeout(async () => {
@@ -147,15 +135,9 @@ export default function Home() {
 
   }, [search]);
 
-  /* ================= SCROLL ================= */
-
   const handleScroll = useCallback(() => {
 
-    if (window.scrollY > 300) {
-      setShowNewBtn(true);
-    } else {
-      setShowNewBtn(false);
-    }
+    setShowNewBtn(window.scrollY > 300);
 
     if (
       hasMore &&
@@ -173,8 +155,6 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
-  /* ================= UI ================= */
-
   return (
 
     <div
@@ -182,39 +162,48 @@ export default function Home() {
         width: "100%",
         maxWidth: "680px",
         margin: "0 auto",
-        padding: "8px 12px 110px"
+        padding: "6px 12px 110px" // 🔥 gap fixed
       }}
     >
 
-      {/* SEARCH */}
+      {/* 🔥 PREMIUM SEARCH */}
 
       <div
         style={{
           position: "sticky",
-          top: "60px",
+          top: "56px",
           zIndex: 90,
-          background: "#0b0b0c",
-          padding: "10px 12px",
-          borderBottom: "1px solid #1f1f1f",
-          marginBottom: "8px"
+          padding: "6px 6px",
+          background: "rgba(11,11,12,0.85)",
+          backdropFilter: "blur(10px)"
         }}
       >
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search posts..."
-          onFocus={(e: any) => e.currentTarget.style.border = "1px solid #1e90ff"}
-          onBlur={(e: any) => e.currentTarget.style.border = "1px solid #262626"}
           style={{
             width: "100%",
-            padding: "12px 14px",
-            borderRadius: "12px",
-            border: "1px solid #262626",
-            background: "#141414",
+            padding: "14px 16px",
+            borderRadius: "999px",
+            border: "1px solid rgba(255,255,255,0.06)",
+            background: "rgba(255,255,255,0.04)",
             color: "#fff",
             fontSize: "14px",
             outline: "none",
-            transition: "all 0.2s ease"
+            backdropFilter: "blur(6px)",
+            boxShadow: "0 4px 14px rgba(0,0,0,0.4)",
+            transition: "all 0.25s ease"
+          }}
+          onFocus={(e: any) => {
+            e.currentTarget.style.border = "1px solid #1e90ff";
+            e.currentTarget.style.background = "rgba(30,144,255,0.08)";
+            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(30,144,255,0.15)";
+          }}
+          onBlur={(e: any) => {
+            e.currentTarget.style.border = "1px solid rgba(255,255,255,0.06)";
+            e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+            e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.4)";
           }}
         />
       </div>
@@ -226,7 +215,7 @@ export default function Home() {
           onClick={refreshPosts}
           style={{
             position: "fixed",
-            top: "72px",
+            top: "70px",
             left: "50%",
             transform: "translateX(-50%)",
             background: "#1e90ff",
@@ -236,8 +225,7 @@ export default function Home() {
             fontSize: "12px",
             fontWeight: 500,
             cursor: "pointer",
-            zIndex: 1000,
-            boxShadow: "0 6px 16px rgba(0,0,0,0.3)"
+            zIndex: 1000
           }}
         >
           ↑ New Posts
@@ -246,14 +234,7 @@ export default function Home() {
 
       {/* POSTS */}
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "12px",
-          padding: "4px"
-        }}
-      >
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         {filteredPosts.map((post) => (
           <PostCard key={post.postId} post={post} />
         ))}
@@ -300,8 +281,6 @@ export default function Home() {
       >
         Create Post
       </button>
-
-      {/* SPINNER */}
 
       <style>
         {`

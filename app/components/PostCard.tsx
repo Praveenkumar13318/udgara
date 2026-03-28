@@ -67,14 +67,13 @@ export default function PostCard({ post }: any) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          postId: post.postId, // ✅ FIXED ONLY THIS
+          postId: post.postId,
           publicId
         })
       });
 
       const data = await res.json();
 
-      // ✅ SYNC WITH BACKEND (NO UI BREAK)
       if (data.success) {
         setLiked(data.action === "liked");
         setLikes(data.likeCount);
@@ -128,8 +127,6 @@ export default function PostCard({ post }: any) {
         return;
       }
 
-      console.log("Report success:", data);
-
       setShowReport(false);
       setSelectedReason("");
 
@@ -143,13 +140,22 @@ export default function PostCard({ post }: any) {
     <>
       <div
         style={{
-          padding: "14px 16px",
-          borderBottom: "1px solid #1f1f1f"
+          padding: "16px 16px 14px",
+          borderBottom: "1px solid rgba(255,255,255,0.06)"
         }}
       >
 
         {/* HEADER */}
-        <div style={{ fontSize: "13px", color: "#777", marginBottom: "6px" }}>
+        <div
+          style={{
+            fontSize: "13px",
+            color: "#777",
+            marginBottom: "8px",
+            display: "flex",
+            alignItems: "center",
+            gap: "6px"
+          }}
+        >
           <span
             className="tap no-select"
             onClick={(e) => {
@@ -159,15 +165,17 @@ export default function PostCard({ post }: any) {
             }}
             style={{
               color: "#fff",
-              fontWeight: 600,
-              userSelect: "none"
+              fontWeight: 600
             }}
           >
             {post.npId?.toUpperCase()}
           </span>
 
-          {" • "}
-          {timeAgo(post.createdAt)}
+          <span style={{ color: "#555" }}>•</span>
+
+          <span style={{ color: "#888" }}>
+            {timeAgo(post.createdAt)}
+          </span>
         </div>
 
         {/* CONTENT */}
@@ -176,7 +184,9 @@ export default function PostCard({ post }: any) {
           className="tap no-select"
           style={{
             color: "#eaeaea",
-            marginBottom: "10px"
+            marginBottom: "12px",
+            lineHeight: "1.5",
+            fontSize: "15px"
           }}
         >
           {post.content}
@@ -188,9 +198,9 @@ export default function PostCard({ post }: any) {
             onClick={() => router.push(`/post/${post.postId}`)}
             className="tap no-select"
             style={{
-              borderRadius: "12px",
+              borderRadius: "14px",
               overflow: "hidden",
-              marginBottom: "10px"
+              marginBottom: "12px"
             }}
           >
             <img
@@ -211,7 +221,8 @@ export default function PostCard({ post }: any) {
             alignItems: "center"
           }}
         >
-          <div style={{ display: "flex", gap: "24px", alignItems: "center" }}>
+
+          <div style={{ display: "flex", gap: "22px", alignItems: "center" }}>
 
             {/* LIKE */}
             <div
@@ -232,7 +243,7 @@ export default function PostCard({ post }: any) {
                 />
               </svg>
 
-              <span style={{ fontSize: "13px", userSelect: "none" }}>
+              <span style={{ fontSize: "13px" }}>
                 {likes}
               </span>
             </div>
@@ -259,7 +270,8 @@ export default function PostCard({ post }: any) {
                   strokeWidth="1.6"
                 />
               </svg>
-              <span style={{ fontSize: "13px", userSelect: "none" }}>
+
+              <span style={{ fontSize: "13px" }}>
                 {comments}
               </span>
             </div>
@@ -303,7 +315,7 @@ export default function PostCard({ post }: any) {
 
       </div>
 
-      {/* REPORT MODAL */}
+      {/* REPORT MODAL (UNCHANGED LOGIC) */}
       {showReport && (
         <div
           style={{
@@ -319,11 +331,11 @@ export default function PostCard({ post }: any) {
             style={{
               width: "320px",
               background: "#1a1a1a",
-              borderRadius: "12px",
+              borderRadius: "14px",
               padding: "18px"
             }}
           >
-            <h3>Report Post</h3>
+            <h3 style={{ marginBottom: "10px" }}>Report Post</h3>
 
             {reasons.map((r) => (
               <label key={r} style={{ display: "block", marginBottom: "6px" }}>
@@ -335,8 +347,10 @@ export default function PostCard({ post }: any) {
               </label>
             ))}
 
-            <button className="tap" onClick={submitReport}>Submit</button>
-            <button className="tap" onClick={() => setShowReport(false)}>Cancel</button>
+            <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
+              <button className="tap" onClick={submitReport}>Submit</button>
+              <button className="tap" onClick={() => setShowReport(false)}>Cancel</button>
+            </div>
           </div>
         </div>
       )}
