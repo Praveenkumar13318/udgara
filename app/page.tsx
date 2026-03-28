@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useLayoutEffect } from "react";
 import PostCard from "./components/PostCard";
 
 type Post = {
@@ -13,6 +13,11 @@ type Post = {
   createdAt?: string;
   createdAtMs?: number;
 };
+
+// ✅ Disable browser scroll restore (VERY IMPORTANT)
+if (typeof window !== "undefined") {
+  window.history.scrollRestoration = "manual";
+}
 
 export default function Home() {
 
@@ -27,14 +32,22 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
 
   const loadingRef = useRef(false);
-  const restoredRef = useRef(false); // ✅ prevent multiple restores
+
+  /* ================= RESTORE SCROLL BEFORE PAINT ================= */
+
+  useLayoutEffect(() => {
+    const savedScroll = sessionStorage.getItem("feedScroll");
+
+    if (savedScroll) {
+      window.scrollTo(0, Number(savedScroll));
+    }
+  }, []);
 
   /* ================= INITIAL LOAD ================= */
 
   useEffect(() => {
     const publicId = localStorage.getItem("publicId");
     if (!publicId) return;
-
     loadPosts(null, publicId);
   }, []);
 
@@ -88,24 +101,6 @@ export default function Home() {
     setLoading(false);
     loadingRef.current = false;
   }
-
-  /* ================= RESTORE SCROLL ================= */
-
-  useEffect(() => {
-
-    if (restoredRef.current) return;
-
-    const savedScroll = sessionStorage.getItem("feedScroll");
-
-    if (savedScroll && posts.length > 0) {
-      restoredRef.current = true;
-
-      setTimeout(() => {
-        window.scrollTo(0, Number(savedScroll));
-      }, 100);
-    }
-
-  }, [posts]);
 
   /* ================= SEARCH ================= */
 
@@ -169,7 +164,7 @@ export default function Home() {
 
     const scrollY = window.scrollY;
 
-    // ✅ SAVE SCROLL
+    // ✅ SAVE SCROLL (continuous)
     sessionStorage.setItem("feedScroll", scrollY.toString());
 
     setShowNewBtn(scrollY > 300);
@@ -267,7 +262,17 @@ export default function Home() {
 
       {loading && (
         <div style={{ textAlign: "center", padding: "18px" }}>
-          Loading...
+          <div
+            style={{
+              width: "26px",
+              height: "26px",
+              border: "3px solid #333",
+              borderTop: "3px solid #1e90ff",
+              borderRadius: "50%",
+              margin: "0 auto",
+              animation: "spin 0.8s linear infinite"
+            }}
+          />
         </div>
       )}
 
@@ -287,11 +292,22 @@ export default function Home() {
           color: "white",
           fontSize: "14px",
           fontWeight: 600,
-          cursor: "pointer"
+          cursor: "pointer",
+          boxShadow: "0 10px 26px rgba(0,0,0,0.5)",
+          zIndex: 1000
         }}
       >
         Create Post
       </button>
+
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
 
     </div>
   );
