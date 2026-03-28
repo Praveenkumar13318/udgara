@@ -253,7 +253,10 @@ export default function PostCard({ post }: any) {
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                router.push(`/post/${post.postId}`);
+                sessionStorage.setItem("feedScroll", window.scrollY.toString());
+sessionStorage.setItem("feedCache", JSON.stringify(document.body.innerHTML));
+
+window.location.href = `/post/${post.postId}`;
               }}
               className="tap no-select"
               style={{
