@@ -88,22 +88,7 @@ export default function Home() {
       setFilteredPosts(posts);
     }
   }, [posts]);
-const scrollRestored = useRef(false);
 
-useEffect(() => {
-  if (scrollRestored.current) return;
-
-  if (filteredPosts.length === 0) return;
-
-  const savedScroll = sessionStorage.getItem("feedScroll");
-  if (!savedScroll) return;
-
-  scrollRestored.current = true;
-
-  setTimeout(() => {
-    window.scrollTo(0, Number(savedScroll));
-  }, 100);
-}, [filteredPosts]);
   async function refreshPosts() {
     try {
       const publicId = localStorage.getItem("publicId");
