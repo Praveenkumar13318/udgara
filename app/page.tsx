@@ -89,19 +89,6 @@ export default function Home() {
     }
   }, [posts]);
 
-  // ✅ ADDED ONLY THIS BLOCK
-  useEffect(() => {
-    const lastPostId = sessionStorage.getItem("lastPostId");
-    if (!lastPostId) return;
-
-    const el = document.getElementById(`post-${lastPostId}`);
-    if (!el) return;
-
-    requestAnimationFrame(() => {
-      el.scrollIntoView({ block: "center" });
-    });
-  }, [filteredPosts]);
-
   async function refreshPosts() {
     try {
       const publicId = localStorage.getItem("publicId");
@@ -175,7 +162,7 @@ export default function Home() {
         width: "100%",
         maxWidth: "680px",
         margin: "0 auto",
-        padding: "6px 12px 110px"
+        padding: "6px 12px 110px" // 🔥 gap fixed
       }}
     >
 
@@ -249,9 +236,7 @@ export default function Home() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         {filteredPosts.map((post) => (
-          <div id={`post-${post.postId}`} key={post.postId}>
-            <PostCard post={post} />
-          </div>
+          <PostCard key={post.postId} post={post} />
         ))}
       </div>
 
