@@ -27,11 +27,7 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
 
   const loadingRef = useRef(false);
-useEffect(() => {
-  if ("scrollRestoration" in window.history) {
-    window.history.scrollRestoration = "manual";
-  }
-}, []);
+
   useEffect(() => {
     const publicId = localStorage.getItem("publicId");
     if (!publicId) return;
