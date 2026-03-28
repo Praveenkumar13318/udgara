@@ -136,6 +136,12 @@ export default function PostCard({ post }: any) {
     }
   }
 
+  // ✅ SAFE NAVIGATION FUNCTION (ONLY ADDITION)
+  function goToPost() {
+    sessionStorage.setItem("lastPostId", post.postId);
+    router.push(`/post/${post.postId}`);
+  }
+
   return (
     <>
       <div
@@ -180,10 +186,7 @@ export default function PostCard({ post }: any) {
 
         {/* CONTENT */}
         <div
-          onClick={() => {
-            sessionStorage.setItem("feedScroll", window.scrollY.toString());
-            router.push(`/post/${post.postId}`);
-          }}
+          onClick={goToPost}
           className="tap no-select"
           style={{
             color: "#eaeaea",
@@ -198,10 +201,7 @@ export default function PostCard({ post }: any) {
         {/* IMAGE */}
         {post.image && (
           <div
-            onClick={() => {
-              sessionStorage.setItem("feedScroll", window.scrollY.toString());
-              router.push(`/post/${post.postId}`);
-            }}
+            onClick={goToPost}
             className="tap no-select"
             style={{
               borderRadius: "14px",
@@ -259,8 +259,7 @@ export default function PostCard({ post }: any) {
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                sessionStorage.setItem("feedScroll", window.scrollY.toString());
-                router.push(`/post/${post.postId}`);
+                goToPost();
               }}
               className="tap no-select"
               style={{
