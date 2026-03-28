@@ -30,6 +30,12 @@ function timeAgo(dateString: any) {
 export default function PostCard({ post }: any) {
   const router = useRouter();
 
+  // ✅ NEW (SAFE NAV FUNCTION)
+  const openPost = () => {
+    sessionStorage.setItem("feedScroll", window.scrollY.toString());
+    router.push(`/post/${post.postId}`);
+  };
+
   const [showReport, setShowReport] = useState(false);
   const [selectedReason, setSelectedReason] = useState("");
 
@@ -180,7 +186,7 @@ export default function PostCard({ post }: any) {
 
         {/* CONTENT */}
         <div
-          onClick={() => router.push(`/post/${post.postId}`)}
+          onClick={openPost} // ✅ FIXED
           className="tap no-select"
           style={{
             color: "#eaeaea",
@@ -195,7 +201,7 @@ export default function PostCard({ post }: any) {
         {/* IMAGE */}
         {post.image && (
           <div
-            onClick={() => router.push(`/post/${post.postId}`)}
+            onClick={openPost} // ✅ FIXED
             className="tap no-select"
             style={{
               borderRadius: "14px",
@@ -253,10 +259,8 @@ export default function PostCard({ post }: any) {
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                sessionStorage.setItem("feedScroll", window.scrollY.toString());
-sessionStorage.setItem("feedCache", JSON.stringify(document.body.innerHTML));
-
-window.location.href = `/post/${post.postId}`;
+                sessionStorage.setItem("feedScroll", window.scrollY.toString()); // ✅ FIXED
+                router.push(`/post/${post.postId}`);
               }}
               className="tap no-select"
               style={{
@@ -318,7 +322,7 @@ window.location.href = `/post/${post.postId}`;
 
       </div>
 
-      {/* REPORT MODAL (UNCHANGED LOGIC) */}
+      {/* REPORT MODAL (UNCHANGED) */}
       {showReport && (
         <div
           style={{

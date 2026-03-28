@@ -27,27 +27,12 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
 
   const loadingRef = useRef(false);
-  const restoredRef = useRef(false);
-
-  /* ================= INITIAL LOAD ================= */
 
   useEffect(() => {
     const publicId = localStorage.getItem("publicId");
     if (!publicId) return;
-
-    // ✅ LOAD CACHE FIRST (NO UI JUMP)
-    const cached = sessionStorage.getItem("feedCache");
-    if (cached) {
-      const parsed = JSON.parse(cached);
-      setPosts(parsed);
-      setFilteredPosts(parsed);
-    }
-
     loadPosts(null, publicId);
-
   }, []);
-
-  /* ================= LOAD POSTS ================= */
 
   async function loadPosts(
     customCursor: number | null = cursor,
@@ -78,23 +63,12 @@ export default function Home() {
 
       if (!customCursor) {
         setPosts(newPosts);
-        setFilteredPosts(newPosts);
-
-        // ✅ SAVE CACHE
-        sessionStorage.setItem("feedCache", JSON.stringify(newPosts));
-
       } else {
         setPosts(prev => {
           const map = new Map<string, Post>();
           prev.forEach((p) => p?.postId && map.set(p.postId, p));
           newPosts.forEach((p) => p?.postId && map.set(p.postId, p));
-
-          const merged = Array.from(map.values());
-
-          // ✅ UPDATE CACHE
-          sessionStorage.setItem("feedCache", JSON.stringify(merged));
-
-          return merged;
+          return Array.from(map.values());
         });
       }
 
@@ -109,36 +83,34 @@ export default function Home() {
     loadingRef.current = false;
   }
 
-  /* ================= RESTORE SCROLL ================= */
-
-  useEffect(() => {
-
-    if (restoredRef.current) return;
-
-    const savedScroll = sessionStorage.getItem("feedScroll");
-
-    if (!savedScroll) return;
-    if (posts.length === 0) return;
-
-    restoredRef.current = true;
-
-    // wait for DOM paint
-    requestAnimationFrame(() => {
-      window.scrollTo({
-        top: Number(savedScroll),
-        behavior: "auto"
-      });
-    });
-
-  }, [posts]);
-
-  /* ================= SEARCH ================= */
-
   useEffect(() => {
     if (!search.trim()) {
       setFilteredPosts(posts);
     }
   }, [posts]);
+
+  async function refreshPosts() {
+    try {
+      const publicId = localStorage.getItem("publicId");
+      if (!publicId) return;
+
+      const res = await fetch(`/api/posts?publicId=${publicId}`);
+      const data = await res.json();
+
+      const newPosts: Post[] = data.posts || [];
+
+      setPosts(newPosts);
+      setFilteredPosts(newPosts);
+
+      setCursor(data.nextCursor || null);
+      setHasMore(true);
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+    } catch (err) {
+      console.log("REFRESH ERROR:", err);
+    }
+  }
 
   useEffect(() => {
 
@@ -163,48 +135,14 @@ export default function Home() {
 
   }, [search]);
 
-  /* ================= REFRESH ================= */
-
-  async function refreshPosts() {
-    try {
-      const publicId = localStorage.getItem("publicId");
-      if (!publicId) return;
-
-      const res = await fetch(`/api/posts?publicId=${publicId}`);
-      const data = await res.json();
-
-      const newPosts: Post[] = data.posts || [];
-
-      setPosts(newPosts);
-      setFilteredPosts(newPosts);
-
-      sessionStorage.setItem("feedCache", JSON.stringify(newPosts));
-
-      setCursor(data.nextCursor || null);
-      setHasMore(true);
-
-      window.scrollTo({ top: 0, behavior: "smooth" });
-
-    } catch (err) {
-      console.log("REFRESH ERROR:", err);
-    }
-  }
-
-  /* ================= SCROLL ================= */
-
   const handleScroll = useCallback(() => {
 
-    const scrollY = window.scrollY;
-
-    // ✅ SAVE SCROLL
-    sessionStorage.setItem("feedScroll", scrollY.toString());
-
-    setShowNewBtn(scrollY > 300);
+    setShowNewBtn(window.scrollY > 300);
 
     if (
       hasMore &&
       !loadingRef.current &&
-      window.innerHeight + scrollY >=
+      window.innerHeight + window.scrollY >=
       document.body.offsetHeight - 200
     ) {
       loadPosts(cursor);
@@ -217,8 +155,6 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
-  /* ================= UI ================= */
-
   return (
 
     <div
@@ -226,11 +162,11 @@ export default function Home() {
         width: "100%",
         maxWidth: "680px",
         margin: "0 auto",
-        padding: "6px 12px 110px"
+        padding: "6px 12px 110px" // 🔥 gap fixed
       }}
     >
 
-      {/* SEARCH */}
+      {/* 🔥 PREMIUM SEARCH */}
 
       <div
         style={{
@@ -254,10 +190,47 @@ export default function Home() {
             background: "rgba(255,255,255,0.04)",
             color: "#fff",
             fontSize: "14px",
-            outline: "none"
+            outline: "none",
+            backdropFilter: "blur(6px)",
+            boxShadow: "0 4px 14px rgba(0,0,0,0.4)",
+            transition: "all 0.25s ease"
+          }}
+          onFocus={(e: any) => {
+            e.currentTarget.style.border = "1px solid #1e90ff";
+            e.currentTarget.style.background = "rgba(30,144,255,0.08)";
+            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(30,144,255,0.15)";
+          }}
+          onBlur={(e: any) => {
+            e.currentTarget.style.border = "1px solid rgba(255,255,255,0.06)";
+            e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+            e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.4)";
           }}
         />
       </div>
+
+      {/* NEW POSTS BUTTON */}
+
+      {showNewBtn && (
+        <div
+          onClick={refreshPosts}
+          style={{
+            position: "fixed",
+            top: "70px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "#1e90ff",
+            color: "white",
+            padding: "7px 14px",
+            borderRadius: "18px",
+            fontSize: "12px",
+            fontWeight: 500,
+            cursor: "pointer",
+            zIndex: 1000
+          }}
+        >
+          ↑ New Posts
+        </div>
+      )}
 
       {/* POSTS */}
 
@@ -271,7 +244,17 @@ export default function Home() {
 
       {loading && (
         <div style={{ textAlign: "center", padding: "18px" }}>
-          Loading...
+          <div
+            style={{
+              width: "26px",
+              height: "26px",
+              border: "3px solid #333",
+              borderTop: "3px solid #1e90ff",
+              borderRadius: "50%",
+              margin: "0 auto",
+              animation: "spin 0.8s linear infinite"
+            }}
+          />
         </div>
       )}
 
@@ -291,11 +274,22 @@ export default function Home() {
           color: "white",
           fontSize: "14px",
           fontWeight: 600,
-          cursor: "pointer"
+          cursor: "pointer",
+          boxShadow: "0 10px 26px rgba(0,0,0,0.5)",
+          zIndex: 1000
         }}
       >
         Create Post
       </button>
+
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
 
     </div>
   );
