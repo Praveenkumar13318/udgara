@@ -28,6 +28,9 @@ export default function Home() {
 
   const loadingRef = useRef(false);
 
+  // ✅ ADD THIS (SCROLL RESTORE CONTROL)
+  const restoredRef = useRef(false);
+
   useEffect(() => {
     const publicId = localStorage.getItem("publicId");
     if (!publicId) return;
@@ -82,6 +85,24 @@ export default function Home() {
     setLoading(false);
     loadingRef.current = false;
   }
+
+  // ✅ ADD THIS (ACTUAL FIX)
+  useEffect(() => {
+
+    if (restoredRef.current) return;
+
+    const savedScroll = sessionStorage.getItem("feedScroll");
+
+    if (!savedScroll) return;
+    if (posts.length === 0) return;
+
+    restoredRef.current = true;
+
+    requestAnimationFrame(() => {
+      window.scrollTo(0, Number(savedScroll));
+    });
+
+  }, [posts]);
 
   useEffect(() => {
     if (!search.trim()) {
@@ -162,7 +183,7 @@ export default function Home() {
         width: "100%",
         maxWidth: "680px",
         margin: "0 auto",
-        padding: "6px 12px 110px" // 🔥 gap fixed
+        padding: "6px 12px 110px"
       }}
     >
 
@@ -195,42 +216,8 @@ export default function Home() {
             boxShadow: "0 4px 14px rgba(0,0,0,0.4)",
             transition: "all 0.25s ease"
           }}
-          onFocus={(e: any) => {
-            e.currentTarget.style.border = "1px solid #1e90ff";
-            e.currentTarget.style.background = "rgba(30,144,255,0.08)";
-            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(30,144,255,0.15)";
-          }}
-          onBlur={(e: any) => {
-            e.currentTarget.style.border = "1px solid rgba(255,255,255,0.06)";
-            e.currentTarget.style.background = "rgba(255,255,255,0.04)";
-            e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.4)";
-          }}
         />
       </div>
-
-      {/* NEW POSTS BUTTON */}
-
-      {showNewBtn && (
-        <div
-          onClick={refreshPosts}
-          style={{
-            position: "fixed",
-            top: "70px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            background: "#1e90ff",
-            color: "white",
-            padding: "7px 14px",
-            borderRadius: "18px",
-            fontSize: "12px",
-            fontWeight: 500,
-            cursor: "pointer",
-            zIndex: 1000
-          }}
-        >
-          ↑ New Posts
-        </div>
-      )}
 
       {/* POSTS */}
 
@@ -240,7 +227,7 @@ export default function Home() {
         ))}
       </div>
 
-      {/* LOADING */}
+      {/* LOADING (UNCHANGED) */}
 
       {loading && (
         <div style={{ textAlign: "center", padding: "18px" }}>
