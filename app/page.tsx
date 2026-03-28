@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import PostCard from "./components/PostCard";
+
+/* ================= TYPES ================= */
 
 type Post = {
   postId: string;
@@ -28,10 +30,17 @@ export default function Home() {
 
   const loadingRef = useRef(false);
 
+  /* ================= LOAD ================= */
+
   useEffect(() => {
+
     const publicId = localStorage.getItem("publicId");
+
+    // ✅ FIX: avoid null fetch
     if (!publicId) return;
+
     loadPosts(null, publicId);
+
   }, []);
 
   async function loadPosts(
@@ -49,7 +58,11 @@ export default function Home() {
       const publicId =
         overridePublicId || localStorage.getItem("publicId");
 
-      if (!publicId) return;
+      // ✅ FIX: ensure valid id
+      if (!publicId) {
+        console.log("Missing publicId, skipping fetch");
+        return;
+      }
 
       const url = customCursor
         ? `/api/posts?cursor=${customCursor}&publicId=${publicId}`
@@ -62,18 +75,38 @@ export default function Home() {
       const nextCursor = data.nextCursor || null;
 
       if (!customCursor) {
+
         setPosts(newPosts);
+        setFilteredPosts(newPosts);
+
       } else {
+
         setPosts(prev => {
+
           const map = new Map<string, Post>();
-          prev.forEach((p) => p?.postId && map.set(p.postId, p));
-          newPosts.forEach((p) => p?.postId && map.set(p.postId, p));
-          return Array.from(map.values());
+
+          prev.forEach((p: Post) => {
+            if (p?.postId) map.set(p.postId, p);
+          });
+
+          newPosts.forEach((p: Post) => {
+            if (p?.postId) map.set(p.postId, p);
+          });
+
+          const unique = Array.from(map.values());
+
+          setFilteredPosts(unique);
+          return unique;
+
         });
+
       }
 
       setCursor(nextCursor);
-      if (!nextCursor) setHasMore(false);
+
+      if (!nextCursor) {
+        setHasMore(false);
+      }
 
     } catch (err) {
       console.log("LOAD ERROR:", err);
@@ -83,25 +116,15 @@ export default function Home() {
     loadingRef.current = false;
   }
 
-  useEffect(() => {
-    if (!search.trim()) {
-      setFilteredPosts(posts);
-    }
-  }, [posts]);
-useEffect(() => {
-  if (posts.length === 0) return;
+  /* ================= REFRESH ================= */
 
-  const savedScroll = sessionStorage.getItem("feedScroll");
-
-  if (savedScroll) {
-    setTimeout(() => {
-      window.scrollTo(0, Number(savedScroll));
-    }, 0);
-  }
-}, [posts]);
   async function refreshPosts() {
+
     try {
+
       const publicId = localStorage.getItem("publicId");
+
+      // ✅ FIX
       if (!publicId) return;
 
       const res = await fetch(`/api/posts?publicId=${publicId}`);
@@ -120,19 +143,27 @@ useEffect(() => {
     } catch (err) {
       console.log("REFRESH ERROR:", err);
     }
+
   }
+
+  /* ================= SEARCH ================= */
 
   useEffect(() => {
 
     const delay = setTimeout(async () => {
 
-      if (!search.trim()) return;
+      if (!search.trim()) {
+        setFilteredPosts(posts);
+        return;
+      }
 
       try {
+
         const res = await fetch(`/api/search?q=${search}`);
         const data = await res.json();
 
         const safeData: Post[] = Array.isArray(data) ? data : [];
+
         setFilteredPosts(safeData);
 
       } catch (err) {
@@ -143,11 +174,17 @@ useEffect(() => {
 
     return () => clearTimeout(delay);
 
-  }, [search]);
+  }, [search, posts]);
 
-  const handleScroll = useCallback(() => {
+  /* ================= SCROLL ================= */
 
-    setShowNewBtn(window.scrollY > 300);
+  function handleScroll() {
+
+    if (window.scrollY > 300) {
+      setShowNewBtn(true);
+    } else {
+      setShowNewBtn(false);
+    }
 
     if (
       hasMore &&
@@ -158,12 +195,14 @@ useEffect(() => {
       loadPosts(cursor);
     }
 
-  }, [cursor, hasMore]);
+  }
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [handleScroll]);
+  }, [cursor, hasMore]);
+
+  /* ================= UI ================= */
 
   return (
 
@@ -172,48 +211,39 @@ useEffect(() => {
         width: "100%",
         maxWidth: "680px",
         margin: "0 auto",
-        padding: "6px 12px 110px" // 🔥 gap fixed
+        padding: "8px 12px 110px"
       }}
     >
 
-      {/* 🔥 PREMIUM SEARCH */}
+      {/* SEARCH */}
 
       <div
         style={{
           position: "sticky",
-          top: "56px",
+          top: "60px",
           zIndex: 90,
-          padding: "6px 6px",
-          background: "rgba(11,11,12,0.85)",
-          backdropFilter: "blur(10px)"
+          background: "#0b0b0c",
+          padding: "10px 12px",
+          borderBottom: "1px solid #1f1f1f",
+          marginBottom: "8px"
         }}
       >
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search posts..."
+          onFocus={(e: any) => e.currentTarget.style.border = "1px solid #1e90ff"}
+          onBlur={(e: any) => e.currentTarget.style.border = "1px solid #262626"}
           style={{
             width: "100%",
-            padding: "14px 16px",
-            borderRadius: "999px",
-            border: "1px solid rgba(255,255,255,0.06)",
-            background: "rgba(255,255,255,0.04)",
+            padding: "12px 14px",
+            borderRadius: "12px",
+            border: "1px solid #262626",
+            background: "#141414",
             color: "#fff",
             fontSize: "14px",
             outline: "none",
-            backdropFilter: "blur(6px)",
-            boxShadow: "0 4px 14px rgba(0,0,0,0.4)",
-            transition: "all 0.25s ease"
-          }}
-          onFocus={(e: any) => {
-            e.currentTarget.style.border = "1px solid #1e90ff";
-            e.currentTarget.style.background = "rgba(30,144,255,0.08)";
-            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(30,144,255,0.15)";
-          }}
-          onBlur={(e: any) => {
-            e.currentTarget.style.border = "1px solid rgba(255,255,255,0.06)";
-            e.currentTarget.style.background = "rgba(255,255,255,0.04)";
-            e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.4)";
+            transition: "all 0.2s ease"
           }}
         />
       </div>
@@ -225,7 +255,7 @@ useEffect(() => {
           onClick={refreshPosts}
           style={{
             position: "fixed",
-            top: "70px",
+            top: "72px",
             left: "50%",
             transform: "translateX(-50%)",
             background: "#1e90ff",
@@ -235,7 +265,8 @@ useEffect(() => {
             fontSize: "12px",
             fontWeight: 500,
             cursor: "pointer",
-            zIndex: 1000
+            zIndex: 1000,
+            boxShadow: "0 6px 16px rgba(0,0,0,0.3)"
           }}
         >
           ↑ New Posts
@@ -244,7 +275,14 @@ useEffect(() => {
 
       {/* POSTS */}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+          padding: "4px"
+        }}
+      >
         {filteredPosts.map((post) => (
           <PostCard key={post.postId} post={post} />
         ))}
@@ -291,6 +329,8 @@ useEffect(() => {
       >
         Create Post
       </button>
+
+      {/* SPINNER */}
 
       <style>
         {`
