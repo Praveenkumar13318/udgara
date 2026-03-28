@@ -28,8 +28,8 @@ export default function RootLayout({
     marginBottom: 18,
     color: "#ddd",
     textDecoration: "none",
-    padding: "8px 8px",
-    borderRadius: "8px",
+    padding: "10px 10px",
+    borderRadius: "10px",
     transition: "all 0.2s ease",
     transform: "scale(1)"
   };
@@ -50,28 +50,39 @@ export default function RootLayout({
       <body
         style={{
           margin: 0,
-          background: "#0f0f0f",
+          background: "#0b0b0c",
           color: "#f1f1f1",
           fontFamily: "system-ui, Arial, sans-serif",
         }}
       >
+
+        {/* ================= HEADER ================= */}
 
         <header
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            padding: "12px 16px",
-            borderBottom: "1px solid #2a2a2a",
-            background: "#111",
+            padding: "14px 16px",
+            background: "rgba(15,15,15,0.9)",
+            backdropFilter: "blur(10px)",
             position: "sticky",
             top: 0,
-            zIndex: 100
+            zIndex: 100,
+            boxShadow: "0 2px 10px rgba(0,0,0,0.4)"
           }}
         >
 
           <Link href="/" style={{ textDecoration: "none", color: "white" }}>
-            <h2 style={{ margin: 0, fontWeight: 600 }}>Udgara</h2>
+            <h2
+              style={{
+                margin: 0,
+                fontWeight: 700,
+                letterSpacing: "-0.3px"
+              }}
+            >
+              Udgara
+            </h2>
           </Link>
 
           {publicId && (
@@ -81,17 +92,17 @@ export default function RootLayout({
                 position: "absolute",
                 left: "50%",
                 transform: "translateX(-50%)",
-                fontSize: "14px",
-                color: "#aaa",
-                letterSpacing: "1px",
-                userSelect: "none",
-                WebkitUserSelect: "none",
-                WebkitTouchCallout: "none"
+                fontSize: "13px",
+                color: "#888",
+                letterSpacing: "1.2px",
+                fontWeight: 500
               }}
             >
               {publicId.toUpperCase()}
             </div>
           )}
+
+          {/* Hamburger */}
 
           <div
             onClick={() => setMenuOpen(!menuOpen)}
@@ -102,8 +113,7 @@ export default function RootLayout({
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
-              cursor: "pointer",
-              userSelect: "none"
+              cursor: "pointer"
             }}
           >
             <span style={{
@@ -121,7 +131,7 @@ export default function RootLayout({
               background: "#fff",
               borderRadius: 2,
               opacity: menuOpen ? 0 : 1,
-              transition: "all 0.3s ease"
+              transition: "all 0.2s ease"
             }} />
 
             <span style={{
@@ -136,23 +146,23 @@ export default function RootLayout({
 
         </header>
 
+        {/* ================= OVERLAY ================= */}
+
         {menuOpen && (
           <div
             onClick={() => setMenuOpen(false)}
             className="no-select"
             style={{
               position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
+              inset: 0,
               background: "rgba(0,0,0,0.5)",
-              backdropFilter: "blur(6px)",
-              zIndex: 1500,
-              transition: "opacity 0.3s ease"
+              backdropFilter: "blur(8px)",
+              zIndex: 1500
             }}
           />
         )}
+
+        {/* ================= MENU ================= */}
 
         {menuOpen && (
           <div
@@ -162,13 +172,14 @@ export default function RootLayout({
               right: 0,
               width: 260,
               height: "100vh",
-              background: "#121212",
-              borderLeft: "1px solid #2a2a2a",
+              background: "rgba(18,18,18,0.95)",
+              backdropFilter: "blur(12px)",
+              borderLeft: "1px solid rgba(255,255,255,0.05)",
               padding: 24,
               zIndex: 2000,
-              transform: menuOpen ? "translateX(0)" : "translateX(100%)",
-              transition: "transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)",
-              boxShadow: "-4px 0 20px rgba(0,0,0,0.6)"
+              transform: "translateX(0)",
+              transition: "transform 0.35s ease",
+              boxShadow: "-6px 0 25px rgba(0,0,0,0.6)"
             }}
           >
 
@@ -177,7 +188,8 @@ export default function RootLayout({
                 marginBottom: 20,
                 cursor: "pointer",
                 textAlign: "right",
-                fontSize: 18
+                fontSize: 18,
+                color: "#aaa"
               }}
               onClick={() => setMenuOpen(false)}
             >
@@ -271,6 +283,8 @@ export default function RootLayout({
 
           </div>
         )}
+
+        {/* ================= MAIN ================= */}
 
         <main
           style={{
