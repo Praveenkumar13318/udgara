@@ -14,11 +14,6 @@ type Post = {
   createdAtMs?: number;
 };
 
-// ✅ disable browser scroll restore
-if (typeof window !== "undefined") {
-  window.history.scrollRestoration = "manual";
-}
-
 export default function Home() {
 
   const [posts, setPosts] = useState<Post[]>([]);
@@ -32,9 +27,6 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
 
   const loadingRef = useRef(false);
-  const restoredRef = useRef(false);
-
-  /* ================= LOAD POSTS ================= */
 
   useEffect(() => {
     const publicId = localStorage.getItem("publicId");
@@ -46,12 +38,14 @@ export default function Home() {
     customCursor: number | null = cursor,
     overridePublicId?: string
   ) {
+
     if (loadingRef.current) return;
     loadingRef.current = true;
 
     setLoading(true);
 
     try {
+
       const publicId =
         overridePublicId || localStorage.getItem("publicId");
 
@@ -72,8 +66,8 @@ export default function Home() {
       } else {
         setPosts(prev => {
           const map = new Map<string, Post>();
-          prev.forEach(p => p?.postId && map.set(p.postId, p));
-          newPosts.forEach(p => p?.postId && map.set(p.postId, p));
+          prev.forEach((p) => p?.postId && map.set(p.postId, p));
+          newPosts.forEach((p) => p?.postId && map.set(p.postId, p));
           return Array.from(map.values());
         });
       }
@@ -89,56 +83,11 @@ export default function Home() {
     loadingRef.current = false;
   }
 
-  /* ================= RESTORE POSITION (PRO LEVEL) ================= */
-
-  useEffect(() => {
-    if (restoredRef.current) return;
-
-    const lastPostId = sessionStorage.getItem("lastPostId");
-
-    if (!lastPostId) return;
-    if (posts.length === 0) return;
-
-    const el = document.getElementById(`post-${lastPostId}`);
-
-    if (el) {
-      restoredRef.current = true;
-
-      requestAnimationFrame(() => {
-        el.scrollIntoView({
-          behavior: "instant",
-          block: "center"
-        });
-      });
-    }
-
-  }, [posts]);
-
-  /* ================= SEARCH ================= */
-
   useEffect(() => {
     if (!search.trim()) {
       setFilteredPosts(posts);
     }
   }, [posts]);
-
-  useEffect(() => {
-    const delay = setTimeout(async () => {
-      if (!search.trim()) return;
-
-      try {
-        const res = await fetch(`/api/search?q=${search}`);
-        const data = await res.json();
-        setFilteredPosts(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.log("Search error", err);
-      }
-    }, 400);
-
-    return () => clearTimeout(delay);
-  }, [search]);
-
-  /* ================= REFRESH ================= */
 
   async function refreshPosts() {
     try {
@@ -163,21 +112,37 @@ export default function Home() {
     }
   }
 
-  /* ================= SCROLL ================= */
+  useEffect(() => {
+
+    const delay = setTimeout(async () => {
+
+      if (!search.trim()) return;
+
+      try {
+        const res = await fetch(`/api/search?q=${search}`);
+        const data = await res.json();
+
+        const safeData: Post[] = Array.isArray(data) ? data : [];
+        setFilteredPosts(safeData);
+
+      } catch (err) {
+        console.log("Search error", err);
+      }
+
+    }, 400);
+
+    return () => clearTimeout(delay);
+
+  }, [search]);
 
   const handleScroll = useCallback(() => {
 
-    const scrollY = window.scrollY;
-
-    // fallback save (backup)
-    sessionStorage.setItem("feedScroll", scrollY.toString());
-
-    setShowNewBtn(scrollY > 300);
+    setShowNewBtn(window.scrollY > 300);
 
     if (
       hasMore &&
       !loadingRef.current &&
-      window.innerHeight + scrollY >=
+      window.innerHeight + window.scrollY >=
       document.body.offsetHeight - 200
     ) {
       loadPosts(cursor);
@@ -190,26 +155,25 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
-  /* ================= UI ================= */
-
   return (
+
     <div
       style={{
         width: "100%",
         maxWidth: "680px",
         margin: "0 auto",
-        padding: "6px 12px 110px"
+        padding: "6px 12px 110px" // 🔥 gap fixed
       }}
     >
 
-      {/* SEARCH */}
+      {/* 🔥 PREMIUM SEARCH */}
 
       <div
         style={{
           position: "sticky",
           top: "56px",
           zIndex: 90,
-          padding: "6px",
+          padding: "6px 6px",
           background: "rgba(11,11,12,0.85)",
           backdropFilter: "blur(10px)"
         }}
@@ -226,12 +190,25 @@ export default function Home() {
             background: "rgba(255,255,255,0.04)",
             color: "#fff",
             fontSize: "14px",
-            outline: "none"
+            outline: "none",
+            backdropFilter: "blur(6px)",
+            boxShadow: "0 4px 14px rgba(0,0,0,0.4)",
+            transition: "all 0.25s ease"
+          }}
+          onFocus={(e: any) => {
+            e.currentTarget.style.border = "1px solid #1e90ff";
+            e.currentTarget.style.background = "rgba(30,144,255,0.08)";
+            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(30,144,255,0.15)";
+          }}
+          onBlur={(e: any) => {
+            e.currentTarget.style.border = "1px solid rgba(255,255,255,0.06)";
+            e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+            e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.4)";
           }}
         />
       </div>
 
-      {/* NEW POSTS */}
+      {/* NEW POSTS BUTTON */}
 
       {showNewBtn && (
         <div
@@ -246,6 +223,7 @@ export default function Home() {
             padding: "7px 14px",
             borderRadius: "18px",
             fontSize: "12px",
+            fontWeight: 500,
             cursor: "pointer",
             zIndex: 1000
           }}
@@ -258,9 +236,7 @@ export default function Home() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         {filteredPosts.map((post) => (
-          <div id={`post-${post.postId}`} key={post.postId}>
-            <PostCard post={post} />
-          </div>
+          <PostCard key={post.postId} post={post} />
         ))}
       </div>
 
@@ -268,7 +244,17 @@ export default function Home() {
 
       {loading && (
         <div style={{ textAlign: "center", padding: "18px" }}>
-          Loading...
+          <div
+            style={{
+              width: "26px",
+              height: "26px",
+              border: "3px solid #333",
+              borderTop: "3px solid #1e90ff",
+              borderRadius: "50%",
+              margin: "0 auto",
+              animation: "spin 0.8s linear infinite"
+            }}
+          />
         </div>
       )}
 
@@ -288,11 +274,22 @@ export default function Home() {
           color: "white",
           fontSize: "14px",
           fontWeight: 600,
-          cursor: "pointer"
+          cursor: "pointer",
+          boxShadow: "0 10px 26px rgba(0,0,0,0.5)",
+          zIndex: 1000
         }}
       >
         Create Post
       </button>
+
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
 
     </div>
   );

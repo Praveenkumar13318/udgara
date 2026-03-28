@@ -253,8 +253,7 @@ export default function PostCard({ post }: any) {
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                sessionStorage.setItem("lastPostId", post.postId);
-router.push(`/post/${post.postId}`);
+                router.push(`/post/${post.postId}`);
               }}
               className="tap no-select"
               style={{
