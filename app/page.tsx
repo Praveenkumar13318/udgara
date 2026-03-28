@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import PostCard from "./components/PostCard";
 
 /* ================= TYPES ================= */
@@ -33,14 +33,9 @@ export default function Home() {
   /* ================= LOAD ================= */
 
   useEffect(() => {
-
     const publicId = localStorage.getItem("publicId");
-
-    // ✅ FIX: avoid null fetch
     if (!publicId) return;
-
     loadPosts(null, publicId);
-
   }, []);
 
   async function loadPosts(
@@ -58,11 +53,7 @@ export default function Home() {
       const publicId =
         overridePublicId || localStorage.getItem("publicId");
 
-      // ✅ FIX: ensure valid id
-      if (!publicId) {
-        console.log("Missing publicId, skipping fetch");
-        return;
-      }
+      if (!publicId) return;
 
       const url = customCursor
         ? `/api/posts?cursor=${customCursor}&publicId=${publicId}`
@@ -75,38 +66,20 @@ export default function Home() {
       const nextCursor = data.nextCursor || null;
 
       if (!customCursor) {
-
         setPosts(newPosts);
-        setFilteredPosts(newPosts);
-
       } else {
-
         setPosts(prev => {
-
           const map = new Map<string, Post>();
 
-          prev.forEach((p: Post) => {
-            if (p?.postId) map.set(p.postId, p);
-          });
+          prev.forEach((p) => p?.postId && map.set(p.postId, p));
+          newPosts.forEach((p) => p?.postId && map.set(p.postId, p));
 
-          newPosts.forEach((p: Post) => {
-            if (p?.postId) map.set(p.postId, p);
-          });
-
-          const unique = Array.from(map.values());
-
-          setFilteredPosts(unique);
-          return unique;
-
+          return Array.from(map.values());
         });
-
       }
 
       setCursor(nextCursor);
-
-      if (!nextCursor) {
-        setHasMore(false);
-      }
+      if (!nextCursor) setHasMore(false);
 
     } catch (err) {
       console.log("LOAD ERROR:", err);
@@ -116,15 +89,19 @@ export default function Home() {
     loadingRef.current = false;
   }
 
+  /* ================= SYNC FILTERED POSTS ================= */
+
+  useEffect(() => {
+    if (!search.trim()) {
+      setFilteredPosts(posts);
+    }
+  }, [posts]);
+
   /* ================= REFRESH ================= */
 
   async function refreshPosts() {
-
     try {
-
       const publicId = localStorage.getItem("publicId");
-
-      // ✅ FIX
       if (!publicId) return;
 
       const res = await fetch(`/api/posts?publicId=${publicId}`);
@@ -143,7 +120,6 @@ export default function Home() {
     } catch (err) {
       console.log("REFRESH ERROR:", err);
     }
-
   }
 
   /* ================= SEARCH ================= */
@@ -152,18 +128,13 @@ export default function Home() {
 
     const delay = setTimeout(async () => {
 
-      if (!search.trim()) {
-        setFilteredPosts(posts);
-        return;
-      }
+      if (!search.trim()) return;
 
       try {
-
         const res = await fetch(`/api/search?q=${search}`);
         const data = await res.json();
 
         const safeData: Post[] = Array.isArray(data) ? data : [];
-
         setFilteredPosts(safeData);
 
       } catch (err) {
@@ -174,11 +145,11 @@ export default function Home() {
 
     return () => clearTimeout(delay);
 
-  }, [search, posts]);
+  }, [search]);
 
   /* ================= SCROLL ================= */
 
-  function handleScroll() {
+  const handleScroll = useCallback(() => {
 
     if (window.scrollY > 300) {
       setShowNewBtn(true);
@@ -195,12 +166,12 @@ export default function Home() {
       loadPosts(cursor);
     }
 
-  }
+  }, [cursor, hasMore]);
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [cursor, hasMore]);
+  }, [handleScroll]);
 
   /* ================= UI ================= */
 
