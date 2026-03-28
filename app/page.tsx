@@ -34,13 +34,27 @@ export default function Home() {
   const loadingRef = useRef(false);
   const restoredRef = useRef(false);
 
-  /* ================= LOAD POSTS ================= */
+  /* ================= INITIAL LOAD WITH CACHE ================= */
 
   useEffect(() => {
     const publicId = localStorage.getItem("publicId");
     if (!publicId) return;
+
+    // ✅ LOAD CACHE FIRST (VERY IMPORTANT)
+    const cached = sessionStorage.getItem("feedCache");
+
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      setPosts(parsed);
+      setFilteredPosts(parsed);
+    }
+
+    // fetch latest in background
     loadPosts(null, publicId);
+
   }, []);
+
+  /* ================= LOAD POSTS ================= */
 
   async function loadPosts(
     customCursor: number | null = cursor,
@@ -69,12 +83,23 @@ export default function Home() {
 
       if (!customCursor) {
         setPosts(newPosts);
+        setFilteredPosts(newPosts);
+
+        // ✅ SAVE CACHE
+        sessionStorage.setItem("feedCache", JSON.stringify(newPosts));
+
       } else {
         setPosts(prev => {
           const map = new Map<string, Post>();
           prev.forEach(p => p?.postId && map.set(p.postId, p));
           newPosts.forEach(p => p?.postId && map.set(p.postId, p));
-          return Array.from(map.values());
+
+          const merged = Array.from(map.values());
+
+          // ✅ UPDATE CACHE
+          sessionStorage.setItem("feedCache", JSON.stringify(merged));
+
+          return merged;
         });
       }
 
@@ -89,28 +114,29 @@ export default function Home() {
     loadingRef.current = false;
   }
 
-  /* ================= RESTORE POSITION (PRO LEVEL) ================= */
+  /* ================= RESTORE POSITION (FINAL FIX) ================= */
 
   useEffect(() => {
     if (restoredRef.current) return;
 
     const lastPostId = sessionStorage.getItem("lastPostId");
-
     if (!lastPostId) return;
+
     if (posts.length === 0) return;
 
-    const el = document.getElementById(`post-${lastPostId}`);
+    // wait for DOM stability (important)
+    setTimeout(() => {
+      const el = document.getElementById(`post-${lastPostId}`);
 
-    if (el) {
-      restoredRef.current = true;
-
-      requestAnimationFrame(() => {
+      if (el) {
         el.scrollIntoView({
-          behavior: "instant",
+          behavior: "auto",
           block: "center"
         });
-      });
-    }
+
+        restoredRef.current = true;
+      }
+    }, 50);
 
   }, [posts]);
 
@@ -153,6 +179,9 @@ export default function Home() {
       setPosts(newPosts);
       setFilteredPosts(newPosts);
 
+      // update cache
+      sessionStorage.setItem("feedCache", JSON.stringify(newPosts));
+
       setCursor(data.nextCursor || null);
       setHasMore(true);
 
@@ -169,7 +198,6 @@ export default function Home() {
 
     const scrollY = window.scrollY;
 
-    // fallback save (backup)
     sessionStorage.setItem("feedScroll", scrollY.toString());
 
     setShowNewBtn(scrollY > 300);
