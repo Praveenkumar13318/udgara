@@ -154,7 +154,15 @@ export default function Home() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
+useEffect(() => {
+  const savedScroll = sessionStorage.getItem("feedScroll");
 
+  if (savedScroll) {
+    requestAnimationFrame(() => {
+      window.scrollTo(0, Number(savedScroll));
+    });
+  }
+}, []);
   return (
 
     <div
