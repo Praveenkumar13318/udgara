@@ -180,12 +180,7 @@ export default function PostCard({ post }: any) {
 
         {/* CONTENT */}
         <div
-          onClick={() => {
-            sessionStorage.setItem("feedScroll", window.scrollY.toString());
-            window.dispatchEvent(
-              new CustomEvent("openPost", { detail: post.postId })
-            );
-          }}
+          onClick={() => router.push(`/post/${post.postId}`)}
           className="tap no-select"
           style={{
             color: "#eaeaea",
@@ -200,12 +195,7 @@ export default function PostCard({ post }: any) {
         {/* IMAGE */}
         {post.image && (
           <div
-            onClick={() => {
-              sessionStorage.setItem("feedScroll", window.scrollY.toString());
-              window.dispatchEvent(
-                new CustomEvent("openPost", { detail: post.postId })
-              );
-            }}
+            onClick={() => router.push(`/post/${post.postId}`)}
             className="tap no-select"
             style={{
               borderRadius: "14px",
@@ -263,10 +253,7 @@ export default function PostCard({ post }: any) {
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                sessionStorage.setItem("feedScroll", window.scrollY.toString());
-                window.dispatchEvent(
-                  new CustomEvent("openPost", { detail: post.postId })
-                );
+                router.push(`/post/${post.postId}`);
               }}
               className="tap no-select"
               style={{
@@ -328,7 +315,7 @@ export default function PostCard({ post }: any) {
 
       </div>
 
-      {/* REPORT MODAL */}
+      {/* REPORT MODAL (UNCHANGED LOGIC) */}
       {showReport && (
         <div
           style={{
