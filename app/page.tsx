@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import PostCard from "./components/PostCard";
-
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { fetchPosts } from "./lib/api";
 type Post = {
   postId: string;
   npId: string;
@@ -27,7 +28,17 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
 
   const loadingRef = useRef(false);
-
+const {
+  data,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage,
+} = useInfiniteQuery({
+  queryKey: ["feed"],
+  queryFn: ({ pageParam = null }: any) => fetchPosts({ pageParam }),
+  initialPageParam: null, // ✅ ADD THIS LINE
+  getNextPageParam: (lastPage: any) => lastPage.nextCursor || undefined,
+});
   useEffect(() => {
     const publicId = localStorage.getItem("publicId");
     if (!publicId) return;
