@@ -149,7 +149,7 @@ const {
   const handleScroll = useCallback(() => {
 
     setShowNewBtn(window.scrollY > 300);
-
+sessionStorage.setItem("scrollY", String(window.scrollY));
     if (
   hasNextPage &&
   !isFetchingNextPage &&
@@ -165,7 +165,15 @@ const {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
+useEffect(() => {
+  const saved = sessionStorage.getItem("scrollY");
 
+  if (saved) {
+    setTimeout(() => {
+      window.scrollTo(0, Number(saved));
+    }, 100);
+  }
+}, []);
   return (
 
     <div
