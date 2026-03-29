@@ -27,7 +27,7 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
 
   const loadingRef = useRef(false);
-const [activePostId, setActivePostId] = useState<string | null>(null);
+
   useEffect(() => {
     const publicId = localStorage.getItem("publicId");
     if (!publicId) return;
@@ -88,14 +88,7 @@ const [activePostId, setActivePostId] = useState<string | null>(null);
       setFilteredPosts(posts);
     }
   }, [posts]);
-useEffect(() => {
-  const handler = (e: any) => {
-    setActivePostId(e.detail);
-  };
 
-  window.addEventListener("openPost", handler);
-  return () => window.removeEventListener("openPost", handler);
-}, []);
   async function refreshPosts() {
     try {
       const publicId = localStorage.getItem("publicId");
@@ -289,7 +282,7 @@ useEffect(() => {
         Create Post
       </button>
 
-           <style>
+      <style>
         {`
           @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -297,48 +290,6 @@ useEffect(() => {
           }
         `}
       </style>
-
-      {activePostId && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "#000",
-            zIndex: 2000,
-            overflowY: "auto"
-          }}
-        >
-          <button
-            onClick={() => setActivePostId(null)}
-            style={{
-              position: "fixed",
-              top: "20px",
-              left: "20px",
-              zIndex: 2100,
-              background: "#111",
-              color: "#fff",
-              padding: "8px 14px",
-              borderRadius: "8px",
-              border: "none",
-              cursor: "pointer"
-            }}
-          >
-            ← Back
-          </button>
-
-          <div style={{ paddingTop: "60px" }}>
-            {posts
-              .filter(p => p.postId === activePostId)
-              .map(p => (
-                <PostCard key={p.postId} post={p} />
-              ))}
-
-            <div style={{ padding: "12px", color: "#aaa" }}>
-              Comments coming here...
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );

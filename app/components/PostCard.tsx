@@ -45,11 +45,6 @@ export default function PostCard({ post }: any) {
     "Misinformation",
     "Other"
   ];
-function openPost() {
-  window.dispatchEvent(
-    new CustomEvent("openPost", { detail: post.postId })
-  );
-}  
 
   /* ================= LIKE ================= */
   async function handleLike(e: any) {
@@ -185,7 +180,7 @@ function openPost() {
 
         {/* CONTENT */}
         <div
-          onClick={openPost}
+          onClick={() => router.push(`/post/${post.postId}`)}
           className="tap no-select"
           style={{
             color: "#eaeaea",
@@ -200,7 +195,7 @@ function openPost() {
         {/* IMAGE */}
         {post.image && (
           <div
-            onClick={openPost}
+            onClick={() => router.push(`/post/${post.postId}`)}
             className="tap no-select"
             style={{
               borderRadius: "14px",
@@ -258,7 +253,7 @@ function openPost() {
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                openPost();
+                router.push(`/post/${post.postId}`);
               }}
               className="tap no-select"
               style={{
