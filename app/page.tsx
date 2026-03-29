@@ -253,21 +253,21 @@ const {
 
       {/* LOADING */}
 
-      {loading && (
-        <div style={{ textAlign: "center", padding: "18px" }}>
-          <div
-            style={{
-              width: "26px",
-              height: "26px",
-              border: "3px solid #333",
-              borderTop: "3px solid #1e90ff",
-              borderRadius: "50%",
-              margin: "0 auto",
-              animation: "spin 0.8s linear infinite"
-            }}
-          />
-        </div>
-      )}
+      {isFetchingNextPage && (
+  <div style={{ textAlign: "center", padding: "18px" }}>
+    <div
+      style={{
+        width: "26px",
+        height: "26px",
+        border: "3px solid #333",
+        borderTop: "3px solid #1e90ff",
+        borderRadius: "50%",
+        margin: "0 auto",
+        animation: "spin 0.8s linear infinite"
+      }}
+    />
+  </div>
+)}
 
       {/* CREATE BUTTON */}
 
