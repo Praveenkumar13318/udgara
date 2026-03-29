@@ -3,7 +3,7 @@
 import "./globals.css";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-
+import Providers from "./providers";
 export default function RootLayout({
   children,
 }: {
@@ -286,16 +286,17 @@ export default function RootLayout({
 
         {/* ================= MAIN ================= */}
 
-        <main
-          style={{
-            maxWidth: 760,
-            margin: "0 auto",
-            padding: "16px 14px"
-          }}
-        >
-          {children}
-        </main>
-
+        <Providers>
+  <main
+    style={{
+      maxWidth: 760,
+      margin: "0 auto",
+      padding: "16px 14px"
+    }}
+  >
+    {children}
+  </main>
+</Providers>
       </body>
     </html>
   );
