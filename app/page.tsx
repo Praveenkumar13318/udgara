@@ -156,7 +156,9 @@ const {
       window.innerHeight + window.scrollY >=
       document.body.offsetHeight - 200
     ) {
-      loadPosts(cursor);
+      if (hasNextPage) {
+  fetchNextPage();
+}
     }
 
   }, [cursor, hasMore]);
@@ -246,9 +248,9 @@ const {
       {/* POSTS */}
 
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-        {filteredPosts.map((post) => (
-          <PostCard key={post.postId} post={post} />
-        ))}
+        {(data?.pages.flatMap((page: any) => page.posts) || []).map((post: any) => (
+  <PostCard key={post.postId} post={post} />
+))}
       </div>
 
       {/* LOADING */}
