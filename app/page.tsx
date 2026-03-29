@@ -151,17 +151,15 @@ const {
     setShowNewBtn(window.scrollY > 300);
 
     if (
-      hasMore &&
-      !loadingRef.current &&
-      window.innerHeight + window.scrollY >=
-      document.body.offsetHeight - 200
-    ) {
-      if (hasNextPage) {
+  hasNextPage &&
+  !isFetchingNextPage &&
+  window.innerHeight + window.scrollY >=
+    document.documentElement.scrollHeight - 200
+) {
   fetchNextPage();
 }
-    }
 
-  }, [cursor, hasMore]);
+  }, [hasNextPage, isFetchingNextPage]);
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
