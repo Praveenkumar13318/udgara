@@ -11,96 +11,19 @@ const postRateLimit = new Map<string, number>();
    CREATE POST
 ========================= */
 
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-
-    const content = body.content;
-    const image = body.image;
-    const publicId = body.publicId;
-
-    if (!publicId) {
-      return NextResponse.json(
-        { error: "User not logged in" },
-        { status: 401 }
-      );
-    }
-
-    if (!content || content.trim().length < 3) {
-      return NextResponse.json(
-        { error: "Content too short" },
-        { status: 400 }
-      );
-    }
-
-    const now = Date.now();
-    const lastPostTime = postRateLimit.get(publicId);
-
-    if (lastPostTime && now - lastPostTime < 60000) {
-      const remaining = Math.ceil((60000 - (now - lastPostTime)) / 1000);
-
-      return NextResponse.json(
-        { error: `Please wait ${remaining}s before posting again.` },
-        { status: 429 }
-      );
-    }
-
-    const db: any = await connectDB();
-
-    const postId = "post_" + Math.random().toString(36).substring(2, 10);
-
-    let imageUrl: string | null = null;
-
-    if (image && typeof image === "string" && image.trim() !== "") {
-      imageUrl = image;
-    }
-
-    const post = {
-      postId,
-      npId: publicId.toUpperCase(),
-      content: content.trim(),
-      image: imageUrl,
-      likes: 0,
-      commentsCount: 0,
-      views: 0,
-      reports: 0,
-      createdAt: new Date(),
-      createdAtMs: now
-    };
-
-    await db.collection("posts").insertOne(post);
-
-    postRateLimit.set(publicId, now);
-
-    return NextResponse.json({
-      success: true,
-      post
-    });
-
-  } catch (error) {
-    console.error("CREATE POST ERROR:", error);
-
-    return NextResponse.json(
-      { error: "Failed to create post" },
-      { status: 500 }
-    );
-  }
-}
-
-
-/* =========================
-   LOAD POSTS / SINGLE POST
-========================= */
-
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
 
     const postId = searchParams.get("postId");
     const cursor = searchParams.get("cursor");
-    const publicId = searchParams.get("publicId"); // ✅ ADDED
+    const publicId = searchParams.get("publicId"); // optional (OK)
 
     const db: any = await connectDB();
+
+    /* =========================
+       SINGLE POST
+    ========================= */
 
     if (postId) {
       const post = await db
@@ -116,6 +39,10 @@ export async function GET(req: Request) {
 
       return NextResponse.json({ post });
     }
+
+    /* =========================
+       FEED (PUBLIC)
+    ========================= */
 
     const limit = 10;
 
@@ -135,7 +62,9 @@ export async function GET(req: Request) {
       .limit(limit)
       .toArray();
 
-    /* 🔥 ADD THIS BLOCK ONLY */
+    /* =========================
+       LIKES (OPTIONAL)
+    ========================= */
 
     const postIds = posts.map((p: any) => p.postId);
 
@@ -152,14 +81,26 @@ export async function GET(req: Request) {
       likeMap.get(l.postId)?.add(l.npId);
     });
 
+    /* =========================
+       ENRICH POSTS
+    ========================= */
+
     const enrichedPosts = posts.map((post: any) => {
       const users = likeMap.get(post.postId) || new Set();
 
       return {
         ...post,
-        isLiked: publicId ? users.has(publicId.toUpperCase()) : false // ✅ KEY FIX
+        // 🔥 IMPORTANT: SAFE CHECK
+        isLiked:
+          publicId && typeof publicId === "string"
+            ? users.has(publicId.toUpperCase())
+            : false
       };
     });
+
+    /* =========================
+       PAGINATION
+    ========================= */
 
     const nextCursor =
       enrichedPosts.length > 0
@@ -167,7 +108,7 @@ export async function GET(req: Request) {
         : null;
 
     return NextResponse.json({
-      posts: enrichedPosts, // ✅ UPDATED
+      posts: enrichedPosts,
       nextCursor
     });
 
@@ -180,3 +121,4 @@ export async function GET(req: Request) {
     );
   }
 }
+
