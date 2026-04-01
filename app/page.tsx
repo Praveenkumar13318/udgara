@@ -33,6 +33,7 @@ const {
   fetchNextPage,
   hasNextPage,
   isFetchingNextPage,
+  isLoading,
 } = useInfiniteQuery({
   queryKey: ["feed"],
   queryFn: ({ pageParam = null }: any) => fetchPosts({ pageParam }),
@@ -253,11 +254,22 @@ useEffect(() => {
 
       {/* POSTS */}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-        {(data?.pages.flatMap((page: any) => page.posts) || []).map((post: any) => (
-  <PostCard key={post.postId} post={post} />
-))}
-      </div>
+     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+
+  {/* 🔥 FIRST LOAD (NO BLANK SCREEN) */}
+  {isLoading && (
+    <div style={{ textAlign: "center", padding: "40px", color: "#777" }}>
+      Loading feed...
+    </div>
+  )}
+
+  {/* 🔥 POSTS */}
+  {!isLoading &&
+    (data?.pages.flatMap((page: any) => page.posts) || []).map((post: any) => (
+      <PostCard key={post.postId} post={post} />
+    ))}
+
+</div>
 
       {/* LOADING */}
 
