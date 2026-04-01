@@ -59,6 +59,57 @@ export async function POST(req: Request) {
 }
 
 /* =========================
+   DELETE POST (SECURE)
+========================= */
+export async function DELETE(req: Request) {
+  try {
+    const body = await req.json();
+
+    const { postId, publicId } = body;
+
+    if (!postId || !publicId) {
+      return NextResponse.json(
+        { error: "Missing data" },
+        { status: 400 }
+      );
+    }
+
+    const db: any = await connectDB();
+
+    const post = await db.collection("posts").findOne({ postId });
+
+    if (!post) {
+      return NextResponse.json(
+        { error: "Post not found" },
+        { status: 404 }
+      );
+    }
+
+    // 🔐 ONLY OWNER CAN DELETE
+    if (post.npId !== publicId.toUpperCase()) {
+      return NextResponse.json(
+        { error: "Not allowed" },
+        { status: 403 }
+      );
+    }
+
+    await db.collection("posts").deleteOne({ postId });
+
+    return NextResponse.json({
+      success: true
+    });
+
+  } catch (error) {
+    console.error("DELETE ERROR:", error);
+
+    return NextResponse.json(
+      { error: "Failed to delete post" },
+      { status: 500 }
+    );
+  }
+}
+
+/* =========================
    LOAD POSTS / SINGLE POST
 ========================= */
 export async function GET(req: Request) {
@@ -71,7 +122,7 @@ export async function GET(req: Request) {
 
     const db: any = await connectDB();
 
-    /* SINGLE POST */
+    /* ===== SINGLE POST ===== */
     if (postId) {
       const post = await db
         .collection("posts")
@@ -87,7 +138,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ post });
     }
 
-    /* FEED */
+    /* ===== FEED ===== */
     const limit = 10;
 
     let query: any = {};
@@ -106,7 +157,7 @@ export async function GET(req: Request) {
       .limit(limit)
       .toArray();
 
-    /* LIKES */
+    /* ===== LIKES ===== */
     const postIds = posts.map((p: any) => p.postId);
 
     const likes = await db.collection("likes").find({
@@ -122,7 +173,7 @@ export async function GET(req: Request) {
       likeMap.get(l.postId)?.add(l.npId);
     });
 
-    /* ENRICH */
+    /* ===== ENRICH ===== */
     const enrichedPosts = posts.map((post: any) => {
       const users = likeMap.get(post.postId) || new Set();
 
