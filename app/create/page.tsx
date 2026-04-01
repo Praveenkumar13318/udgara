@@ -18,7 +18,7 @@ export default function CreatePost() {
   useEffect(() => {
     const id = localStorage.getItem("publicId");
     if (!id) {
-      window.location.href = "/login";
+      router.replace("/login");
     } else {
       setPublicId(id);
     }
@@ -63,7 +63,13 @@ export default function CreatePost() {
           return;
         }
 
-        imageUrl = uploadData.imageUrl;
+        if (!uploadData.imageUrl) {
+  setMessage("Image upload failed");
+  setPosting(false);
+  return;
+}
+
+imageUrl = uploadData.imageUrl;
       }
 
       const res = await fetch("/api/posts", {
@@ -77,16 +83,29 @@ export default function CreatePost() {
           publicId
         })
       });
+console.log("POST RESPONSE STATUS:", res.status);
+      let data;
 
-      const data = await res.json();
+try {
+  data = await res.json();
+} catch {
+  setMessage("Invalid server response");
+  setPosting(false);
+  return;
+}
+
+if (!res.ok) {
+  setMessage(data?.error || "Failed to create post");
+  setPosting(false);
+  return;
+}
 
       if (data.success) {
         setMessage("Post created 🎉");
         setContent("");
         setImage(null);
 
-        router.push("/");
-        router.refresh();
+        router.replace("/");
       } else {
         setMessage(data.error || "Failed to create post");
       }
