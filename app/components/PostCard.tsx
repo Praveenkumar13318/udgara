@@ -334,24 +334,47 @@ router.push(`/post/${post.postId}`);
 
           </div>
 
-          {/* REPORT */}
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              setShowReport(true);
-            }}
-            className="tap no-select"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24">
-              <path
-                d="M5 3v18M5 3h12l-2 4 2 4H5"
-                fill="none"
-                stroke="#ff4d4d"
-                strokeWidth="1.6"
-              />
-            </svg>
-          </div>
+         <div style={{ display: "flex", gap: "14px", alignItems: "center" }}>
+
+  {/* DELETE BUTTON */}
+  {post.npId === localStorage.getItem("publicId")?.toUpperCase() && (
+    <div
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        handleDelete();
+      }}
+      style={{
+        color: "#ff4d4d",
+        fontSize: "13px",
+        cursor: "pointer",
+        fontWeight: 500
+      }}
+    >
+      Delete
+    </div>
+  )}
+
+  {/* REPORT BUTTON */}
+  <div
+    onClick={(e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      setShowReport(true);
+    }}
+    className="tap no-select"
+  >
+    <svg width="20" height="20" viewBox="0 0 24 24">
+      <path
+        d="M5 3v18M5 3h12l-2 4 2 4H5"
+        fill="none"
+        stroke="#ff4d4d"
+        strokeWidth="1.6"
+      />
+    </svg>
+  </div>
+
+</div>
         </div>
 
       </div>
@@ -387,30 +410,7 @@ router.push(`/post/${post.postId}`);
                 {r}
               </label>
             ))}
-{isOwner && (
-  <button
-    onClick={(e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      handleDelete();
-    }}
-    style={{
-      background: "transparent",
-      border: "none",
-      color: "#ff4d4d",
-      cursor: "pointer",
-      display: "flex",
-      alignItems: "center",
-      gap: "4px",
-      opacity: 0.7,
-      fontSize: "13px"
-    }}
-    onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-    onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.7")}
-  >
-    🗑
-  </button>
-)}
+
             <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
               <button className="tap" onClick={submitReport}>Submit</button>
               <button className="tap" onClick={() => setShowReport(false)}>Cancel</button>
