@@ -2,29 +2,76 @@ import { NextResponse } from "next/server";
 import { connectDB } from "../../lib/mongodb";
 
 /* =========================
-   POST RATE LIMIT (1 MIN)
-========================= */
-
-const postRateLimit = new Map<string, number>();
-
-/* =========================
    CREATE POST
 ========================= */
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
 
+    const { content, image, publicId } = body;
+
+    if (!publicId || typeof publicId !== "string") {
+      return NextResponse.json(
+        { error: "User not logged in" },
+        { status: 401 }
+      );
+    }
+
+    if (!content || content.trim().length < 3) {
+      return NextResponse.json(
+        { error: "Content too short" },
+        { status: 400 }
+      );
+    }
+
+    const db: any = await connectDB();
+
+    const postId = "post_" + Math.random().toString(36).substring(2, 10);
+
+    const post = {
+      postId,
+      npId: publicId.toUpperCase(),
+      content: content.trim(),
+      image: image || null,
+      likes: 0,
+      commentsCount: 0,
+      views: 0,
+      reports: 0,
+      createdAt: new Date(),
+      createdAtMs: Date.now()
+    };
+
+    await db.collection("posts").insertOne(post);
+
+    return NextResponse.json({
+      success: true,
+      post
+    });
+
+  } catch (error) {
+    console.error("POST ERROR:", error);
+
+    return NextResponse.json(
+      { error: "Failed to create post" },
+      { status: 500 }
+    );
+  }
+}
+
+/* =========================
+   LOAD POSTS / SINGLE POST
+========================= */
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
 
     const postId = searchParams.get("postId");
     const cursor = searchParams.get("cursor");
-    const publicId = searchParams.get("publicId"); // optional (OK)
+    const publicId = searchParams.get("publicId");
 
     const db: any = await connectDB();
 
-    /* =========================
-       SINGLE POST
-    ========================= */
-
+    /* SINGLE POST */
     if (postId) {
       const post = await db
         .collection("posts")
@@ -40,10 +87,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ post });
     }
 
-    /* =========================
-       FEED (PUBLIC)
-    ========================= */
-
+    /* FEED */
     const limit = 10;
 
     let query: any = {};
@@ -62,10 +106,7 @@ export async function GET(req: Request) {
       .limit(limit)
       .toArray();
 
-    /* =========================
-       LIKES (OPTIONAL)
-    ========================= */
-
+    /* LIKES */
     const postIds = posts.map((p: any) => p.postId);
 
     const likes = await db.collection("likes").find({
@@ -81,26 +122,18 @@ export async function GET(req: Request) {
       likeMap.get(l.postId)?.add(l.npId);
     });
 
-    /* =========================
-       ENRICH POSTS
-    ========================= */
-
+    /* ENRICH */
     const enrichedPosts = posts.map((post: any) => {
       const users = likeMap.get(post.postId) || new Set();
 
       return {
         ...post,
-        // 🔥 IMPORTANT: SAFE CHECK
         isLiked:
           publicId && typeof publicId === "string"
             ? users.has(publicId.toUpperCase())
             : false
       };
     });
-
-    /* =========================
-       PAGINATION
-    ========================= */
 
     const nextCursor =
       enrichedPosts.length > 0
@@ -117,49 +150,6 @@ export async function GET(req: Request) {
 
     return NextResponse.json(
       { error: "Failed to load posts" },
-      { status: 500 }
-    );
-  }
-}
-export async function DELETE(req: Request) {
-  try {
-    const { postId, publicId } = await req.json();
-
-    if (!postId || !publicId) {
-      return NextResponse.json(
-        { error: "Missing data" },
-        { status: 400 }
-      );
-    }
-
-    const db: any = await connectDB();
-
-    const post = await db.collection("posts").findOne({ postId });
-
-    if (!post) {
-      return NextResponse.json(
-        { error: "Post not found" },
-        { status: 404 }
-      );
-    }
-
-    // 🔒 ONLY OWNER CAN DELETE
-    if (post.npId !== publicId.toUpperCase()) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 403 }
-      );
-    }
-
-    await db.collection("posts").deleteOne({ postId });
-
-    return NextResponse.json({ success: true });
-
-  } catch (error) {
-    console.error("DELETE ERROR:", error);
-
-    return NextResponse.json(
-      { error: "Server error" },
       { status: 500 }
     );
   }
