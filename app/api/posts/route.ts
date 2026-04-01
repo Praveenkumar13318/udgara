@@ -121,4 +121,46 @@ export async function GET(req: Request) {
     );
   }
 }
+export async function DELETE(req: Request) {
+  try {
+    const { postId, publicId } = await req.json();
 
+    if (!postId || !publicId) {
+      return NextResponse.json(
+        { error: "Missing data" },
+        { status: 400 }
+      );
+    }
+
+    const db: any = await connectDB();
+
+    const post = await db.collection("posts").findOne({ postId });
+
+    if (!post) {
+      return NextResponse.json(
+        { error: "Post not found" },
+        { status: 404 }
+      );
+    }
+
+    // 🔒 ONLY OWNER CAN DELETE
+    if (post.npId !== publicId.toUpperCase()) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 403 }
+      );
+    }
+
+    await db.collection("posts").deleteOne({ postId });
+
+    return NextResponse.json({ success: true });
+
+  } catch (error) {
+    console.error("DELETE ERROR:", error);
+
+    return NextResponse.json(
+      { error: "Server error" },
+      { status: 500 }
+    );
+  }
+}

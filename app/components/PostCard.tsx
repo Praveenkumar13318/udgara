@@ -28,6 +28,12 @@ function timeAgo(dateString: any) {
 }
 
 export default function PostCard({ post }: any) {
+  const publicId =
+  typeof window !== "undefined"
+    ? localStorage.getItem("publicId")
+    : null;
+
+const isOwner = publicId && publicId === post.npId;
   const router = useRouter();
 
   const [showReport, setShowReport] = useState(false);
@@ -135,7 +141,35 @@ export default function PostCard({ post }: any) {
       alert("Network error while reporting");
     }
   }
+async function handleDelete() {
+  const confirmDelete = window.confirm("Delete this post?");
+  if (!confirmDelete) return;
 
+  try {
+    const res = await fetch("/api/posts", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        postId: post.postId,
+        publicId,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || "Delete failed");
+      return;
+    }
+
+    window.location.reload();
+
+  } catch (err) {
+    console.log("Delete error", err);
+  }
+}
   return (
     <>
       <div
@@ -194,7 +228,22 @@ export default function PostCard({ post }: any) {
         >
           {post.content}
         </div>
-
+{isOwner && (
+  <div style={{ marginTop: "8px" }}>
+    <button
+      onClick={handleDelete}
+      style={{
+        background: "transparent",
+        border: "none",
+        color: "#ff4d4d",
+        fontSize: "13px",
+        cursor: "pointer"
+      }}
+    >
+      Delete
+    </button>
+  </div>
+)}
         {/* IMAGE */}
         {post.image && (
           <div
