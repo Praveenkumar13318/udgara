@@ -228,22 +228,7 @@ async function handleDelete() {
         >
           {post.content}
         </div>
-{isOwner && (
-  <div style={{ marginTop: "8px" }}>
-    <button
-      onClick={handleDelete}
-      style={{
-        background: "transparent",
-        border: "none",
-        color: "#ff4d4d",
-        fontSize: "13px",
-        cursor: "pointer"
-      }}
-    >
-      Delete
-    </button>
-  </div>
-)}
+
         {/* IMAGE */}
         {post.image && (
           <div
@@ -402,7 +387,30 @@ router.push(`/post/${post.postId}`);
                 {r}
               </label>
             ))}
-
+{isOwner && (
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      handleDelete();
+    }}
+    style={{
+      background: "transparent",
+      border: "none",
+      color: "#ff4d4d",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      gap: "4px",
+      opacity: 0.7,
+      fontSize: "13px"
+    }}
+    onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+    onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.7")}
+  >
+    🗑
+  </button>
+)}
             <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
               <button className="tap" onClick={submitReport}>Submit</button>
               <button className="tap" onClick={() => setShowReport(false)}>Cancel</button>
