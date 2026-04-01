@@ -253,24 +253,62 @@ useEffect(() => {
       )}
 
       {/* POSTS */}
+<div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
 
-     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-
-  {/* 🔥 FIRST LOAD (NO BLANK SCREEN) */}
+  {/* 🔥 SKELETON BUFFER LOADING */}
   {isLoading && (
-    <div style={{ textAlign: "center", padding: "40px", color: "#777" }}>
-      Loading feed...
-    </div>
+    <>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div
+          key={i}
+          style={{
+            padding: "16px",
+            borderBottom: "1px solid rgba(255,255,255,0.06)",
+            animation: "pulse 1.2s infinite"
+          }}
+        >
+          {/* username */}
+          <div
+            style={{
+              width: "30%",
+              height: "10px",
+              background: "#222",
+              borderRadius: "6px",
+              marginBottom: "10px"
+            }}
+          />
+
+          {/* content lines */}
+          <div
+            style={{
+              width: "90%",
+              height: "12px",
+              background: "#222",
+              borderRadius: "6px",
+              marginBottom: "6px"
+            }}
+          />
+
+          <div
+            style={{
+              width: "70%",
+              height: "12px",
+              background: "#222",
+              borderRadius: "6px"
+            }}
+          />
+        </div>
+      ))}
+    </>
   )}
 
-  {/* 🔥 POSTS */}
+  {/* 🔥 REAL POSTS */}
   {!isLoading &&
     (data?.pages.flatMap((page: any) => page.posts) || []).map((post: any) => (
       <PostCard key={post.postId} post={post} />
     ))}
 
 </div>
-
       {/* LOADING */}
 
       {isFetchingNextPage && (
@@ -313,15 +351,18 @@ useEffect(() => {
         Create Post
       </button>
 
-      <style>
-        {`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}
-      </style>
+     <style>{`
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
 
+  @keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+  }
+`}</style>
     </div>
   );
 }
