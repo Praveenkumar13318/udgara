@@ -22,6 +22,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
 
   const [search, setSearch] = useState("");
+  const isSearching = search.trim().length > 0;
   const [showNewBtn, setShowNewBtn] = useState(false);
 
   const [cursor, setCursor] = useState<number | null>(null);
@@ -302,11 +303,22 @@ useEffect(() => {
     </>
   )}
 
-  {/* 🔥 REAL POSTS */}
-  {!isLoading &&
-    (data?.pages.flatMap((page: any) => page.posts) || []).map((post: any) => (
-      <PostCard key={post.postId} post={post} />
-    ))}
+ {/* 🔥 SEARCH RESULTS */}
+{!isLoading && isSearching &&
+  filteredPosts.map((post: any) => (
+    <PostCard key={post.postId} post={post} />
+  ))}
+  {isSearching && filteredPosts.length === 0 && (
+  <div style={{ textAlign: "center", color: "#777", padding: "20px" }}>
+    No results found
+  </div>
+)}
+
+{/* 🔥 NORMAL FEED */}
+{!isLoading && !isSearching &&
+  (data?.pages.flatMap((page: any) => page.posts) || []).map((post: any) => (
+    <PostCard key={post.postId} post={post} />
+  ))}
 
 </div>
       {/* LOADING */}
