@@ -17,16 +17,15 @@ type Post = {
 
 export default function Home() {
 
-  const [posts, setPosts] = useState<Post[]>([]);
+  
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(false);
+  
 
   const [search, setSearch] = useState("");
   const isSearching = search.trim().length > 0;
   const [showNewBtn, setShowNewBtn] = useState(false);
 
-  const [cursor, setCursor] = useState<number | null>(null);
-  const [hasMore, setHasMore] = useState(true);
+  
 
   const loadingRef = useRef(false);
 const {
@@ -41,67 +40,7 @@ const {
   initialPageParam: null, // ✅ ADD THIS LINE
   getNextPageParam: (lastPage: any) => lastPage.nextCursor || undefined,
 });
-  useEffect(() => {
-    const publicId = localStorage.getItem("publicId");
-    if (!publicId) return;
-    loadPosts(null, publicId);
-  }, []);
-
-  async function loadPosts(
-    customCursor: number | null = cursor,
-    overridePublicId?: string
-  ) {
-
-    if (loadingRef.current) return;
-    loadingRef.current = true;
-
-    setLoading(true);
-
-    try {
-
-      const publicId =
-        overridePublicId || localStorage.getItem("publicId");
-
-      if (!publicId) return;
-
-      const url = customCursor
-        ? `/api/posts?cursor=${customCursor}&publicId=${publicId}`
-        : `/api/posts?publicId=${publicId}`;
-
-      const res = await fetch(url);
-      const data = await res.json();
-
-      const newPosts: Post[] = data.posts || [];
-      const nextCursor = data.nextCursor || null;
-
-      if (!customCursor) {
-        setPosts(newPosts);
-      } else {
-        setPosts(prev => {
-          const map = new Map<string, Post>();
-          prev.forEach((p) => p?.postId && map.set(p.postId, p));
-          newPosts.forEach((p) => p?.postId && map.set(p.postId, p));
-          return Array.from(map.values());
-        });
-      }
-
-      setCursor(nextCursor);
-      if (!nextCursor) setHasMore(false);
-
-    } catch (err) {
-      console.log("LOAD ERROR:", err);
-    }
-
-    setLoading(false);
-    loadingRef.current = false;
-  }
-
-  useEffect(() => {
-    if (!search.trim()) {
-      setFilteredPosts(posts);
-    }
-  }, [posts]);
-
+  
   async function refreshPosts() {
     try {
       const publicId = localStorage.getItem("publicId");
@@ -112,12 +51,8 @@ const {
 
       const newPosts: Post[] = data.posts || [];
 
-      setPosts(newPosts);
       setFilteredPosts(newPosts);
-
-      setCursor(data.nextCursor || null);
-      setHasMore(true);
-
+window.location.reload();
       window.scrollTo({ top: 0, behavior: "smooth" });
 
     } catch (err) {
@@ -167,6 +102,15 @@ sessionStorage.setItem("scrollY", String(window.scrollY));
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
+  useEffect(() => {
+  const handleFocus = () => {
+    window.location.reload();
+  };
+
+  window.addEventListener("focus", handleFocus);
+
+  return () => window.removeEventListener("focus", handleFocus);
+}, []);
 useEffect(() => {
   const saved = sessionStorage.getItem("scrollY");
 
