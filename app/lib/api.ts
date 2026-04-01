@@ -1,17 +1,37 @@
 export async function fetchPosts({ pageParam = null }: any) {
-  const publicId = localStorage.getItem("publicId");
+  try {
+    let url = "/api/posts";
 
-  if (!publicId) return { posts: [], nextCursor: null };
+    // pagination
+    if (pageParam) {
+      url += `?cursor=${pageParam}`;
+    }
 
-  const url = pageParam
-    ? `/api/posts?cursor=${pageParam}&publicId=${publicId}`
-    : `/api/posts?publicId=${publicId}`;
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store", // always fresh feed
+    });
 
-  const res = await fetch(url);
-  const data = await res.json();
+    if (!res.ok) {
+      throw new Error("Failed to fetch posts");
+    }
 
-  return {
-    posts: data.posts || [],
-    nextCursor: data.nextCursor || null,
-  };
+    const data = await res.json();
+
+    return {
+      posts: Array.isArray(data.posts) ? data.posts : [],
+      nextCursor: data.nextCursor || null,
+    };
+
+  } catch (error) {
+    console.error("FETCH POSTS ERROR:", error);
+
+    return {
+      posts: [],
+      nextCursor: null,
+    };
+  }
 }
