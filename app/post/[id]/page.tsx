@@ -161,125 +161,204 @@ export default function PostPage() {
   }
 
   return (
-    <main style={{ maxWidth: 700, margin: "0 auto", padding: 20 }}>
+  <main style={{
+    maxWidth: "700px",
+    margin: "0 auto",
+    padding: "16px"
+  }}>
 
-      {/* POST */}
+    {/* ================= POST ================= */}
+    <div style={{
+      background: "linear-gradient(180deg,#1a1a1a,#141414)",
+      padding: "18px",
+      borderRadius: "16px",
+      border: "1px solid #262626",
+      boxShadow: "0 4px 20px rgba(0,0,0,0.4)"
+    }}>
+
+      {/* USER */}
       <div style={{
-        background: "#1a1a1a",
-        padding: 20,
-        borderRadius: 14,
-        border: "1px solid #2c2c2c"
+        fontSize: "13px",
+        color: "#8a8a8a",
+        marginBottom: "8px"
       }}>
-        <div style={{ color: "#888", fontSize: 13, marginBottom: 6 }}>
-          {post.npId}
-        </div>
-
-        <div style={{ fontSize: 18 }}>{post.content}</div>
-
-        {post.image && (
-          <img src={post.image} style={{
-            width: "100%",
-            marginTop: 12,
-            borderRadius: 10
-          }} />
-        )}
-
-        {/* ACTION BAR */}
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginTop: 14
-        }}>
-          <div style={{ display: "flex", gap: 20 }}>
-
-            {/* LIKE */}
-            <div onClick={handleLike} style={{ display: "flex", gap: 6 }}>
-              <svg width="20" height="20">
-                <path
-                  d="M16.697 5.5c-1.222 0-2.404.724-2.997 1.86-.593-1.136-1.775-1.86-2.997-1.86-1.93 0-3.5 1.57-3.5 3.5 0 4.25 6.497 8.5 6.497 8.5s6.497-4.25 6.497-8.5c0-1.93-1.57-3.5-3.5-3.5z"
-                  fill={post.isLiked ? "#ff2d55" : "none"}
-                  stroke="#ff2d55"
-                  strokeWidth="1.6"
-                />
-              </svg>
-              {post.likes}
-            </div>
-
-            {/* COMMENT */}
-            <div style={{ display: "flex", gap: 6 }}>
-              <svg width="20" height="20">
-                <path d="M4 4h16v12H8l-4 4V4z"
-                  fill="none" stroke="#888" strokeWidth="1.6" />
-              </svg>
-              {comments.length}
-            </div>
-
-            {/* SHARE */}
-            <div onClick={handleShare}>
-              <svg width="20" height="20">
-                <path d="M12 3v12M12 3l4 4M12 3l-4 4M5 15v4h14v-4"
-                  fill="none" stroke="#888" strokeWidth="1.6" />
-              </svg>
-            </div>
-
-          </div>
-
-          {/* REPORT */}
-          <div onClick={handleReport}>
-            <svg width="20" height="20">
-              <path d="M5 3v18M5 3h12l-2 4 2 4H5"
-                fill="none" stroke="#ff4d4d" strokeWidth="1.6" />
-            </svg>
-          </div>
-        </div>
-
+        {post.npId}
       </div>
 
-      {/* COMMENT BOX */}
-      <div style={{ marginTop: 20 }}>
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Write a comment..."
+      {/* CONTENT */}
+      <div style={{
+        fontSize: "18px",
+        color: "#f1f1f1",
+        lineHeight: "1.6",
+        marginBottom: "12px"
+      }}>
+        {post.content}
+      </div>
+
+      {/* IMAGE */}
+      {post.image && (
+        <img
+          src={post.image}
           style={{
             width: "100%",
-            padding: 10,
-            background: "#111",
-            color: "#fff",
-            border: "1px solid #333",
-            borderRadius: 8
+            borderRadius: "12px",
+            marginBottom: "14px"
           }}
         />
+      )}
 
-        <button onClick={addComment} style={{
-          marginTop: 10,
-          padding: "10px 16px",
-          background: "#ff4d4d",
-          border: "none",
-          borderRadius: 6,
-          color: "#fff"
+      {/* ACTION BAR */}
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        borderTop: "1px solid #222",
+        paddingTop: "10px"
+      }}>
+
+        <div style={{
+          display: "flex",
+          gap: "24px",
+          alignItems: "center"
         }}>
-          {loadingComment ? "Posting..." : "Post"}
-        </button>
-      </div>
 
-      {/* COMMENTS */}
-      <div style={{ marginTop: 20 }}>
-        {comments.map((c) => (
-          <div key={c._id} style={{
-            padding: 12,
-            background: "#161616",
-            borderRadius: 10,
-            marginBottom: 10
+          {/* LIKE */}
+          <div
+            onClick={handleLike}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              cursor: "pointer"
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <path
+                d="M16.697 5.5c-1.222 0-2.404.724-2.997 1.86-.593-1.136-1.775-1.86-2.997-1.86-1.93 0-3.5 1.57-3.5 3.5 0 4.25 6.497 8.5 6.497 8.5s6.497-4.25 6.497-8.5c0-1.93-1.57-3.5-3.5-3.5z"
+                fill={post.isLiked ? "#ff2d55" : "none"}
+                stroke={post.isLiked ? "#ff2d55" : "#888"}
+                strokeWidth="1.6"
+              />
+            </svg>
+            <span style={{ fontSize: "13px" }}>{post.likes}</span>
+          </div>
+
+          {/* COMMENT */}
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px"
           }}>
-            <div style={{ color: "#aaa", fontSize: 12 }}>
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <path
+                d="M4 4h16v12H8l-4 4V4z"
+                fill="none"
+                stroke="#888"
+                strokeWidth="1.6"
+              />
+            </svg>
+            <span style={{ fontSize: "13px" }}>{comments.length}</span>
+          </div>
+
+          {/* SHARE */}
+          <div onClick={handleShare} style={{ cursor: "pointer" }}>
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <path
+                d="M12 3v12M12 3l4 4M12 3l-4 4M5 15v4h14v-4"
+                fill="none"
+                stroke="#888"
+                strokeWidth="1.6"
+              />
+            </svg>
+          </div>
+
+        </div>
+
+        {/* REPORT */}
+        <div onClick={handleReport} style={{ cursor: "pointer" }}>
+          <svg width="20" height="20" viewBox="0 0 24 24">
+            <path
+              d="M5 3v18M5 3h12l-2 4 2 4H5"
+              fill="none"
+              stroke="#ff4d4d"
+              strokeWidth="1.6"
+            />
+          </svg>
+        </div>
+
+      </div>
+    </div>
+
+    {/* ================= COMMENT INPUT ================= */}
+    <div style={{
+      marginTop: "18px",
+      display: "flex",
+      gap: "10px"
+    }}>
+
+      <input
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Write a comment..."
+        style={{
+          flex: 1,
+          padding: "12px",
+          borderRadius: "12px",
+          border: "1px solid #2a2a2a",
+          background: "#111",
+          color: "#fff",
+          outline: "none"
+        }}
+      />
+
+      <button
+        onClick={addComment}
+        disabled={loadingComment}
+        style={{
+          padding: "10px 16px",
+          borderRadius: "12px",
+          border: "none",
+          background: loadingComment ? "#444" : "#ff4d4d",
+          color: "#fff",
+          cursor: "pointer"
+        }}
+      >
+        {loadingComment ? "..." : "Post"}
+      </button>
+
+    </div>
+
+    {/* ================= COMMENTS ================= */}
+    <div style={{ marginTop: "18px" }}>
+      {comments.length === 0 ? (
+        <div style={{ color: "#666" }}>
+          No comments yet
+        </div>
+      ) : (
+        comments.map((c) => (
+          <div key={c._id} style={{
+            background: "#161616",
+            padding: "14px",
+            borderRadius: "12px",
+            marginBottom: "10px",
+            border: "1px solid #262626"
+          }}>
+            <div style={{
+              fontSize: "12px",
+              color: "#888",
+              marginBottom: "4px"
+            }}>
               {c.npId}
             </div>
-            <div>{c.text}</div>
-          </div>
-        ))}
-      </div>
 
-    </main>
-  );
+            <div style={{ color: "#eaeaea" }}>
+              {c.text}
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+
+  </main>
+);
 }
