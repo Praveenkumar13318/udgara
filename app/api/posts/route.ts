@@ -174,17 +174,23 @@ export async function GET(req: Request) {
     });
 
     /* ===== ENRICH ===== */
-    const enrichedPosts = posts.map((post: any) => {
-      const users = likeMap.get(post.postId) || new Set();
+   const enrichedPosts = await Promise.all(
+  posts.map(async (post: any) => {
 
-      return {
-        ...post,
-        isLiked:
-          publicId && typeof publicId === "string"
-            ? users.has(publicId.toUpperCase())
-            : false
-      };
-    });
+    const users = likeMap.get(post.postId) || new Set();
+
+    const likeCount = users.size; // ✅ REAL COUNT
+
+    return {
+      ...post,
+      likes: likeCount, // 🔥 OVERRIDE WRONG VALUE
+      isLiked:
+        publicId && typeof publicId === "string"
+          ? users.has(publicId.toUpperCase())
+          : false
+    };
+  })
+);
 
     const nextCursor =
       enrichedPosts.length > 0
