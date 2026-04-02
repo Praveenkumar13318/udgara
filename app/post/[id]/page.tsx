@@ -14,6 +14,9 @@ export default function PostPage() {
   const [loadingComment, setLoadingComment] = useState(false);
   const [loadingPost, setLoadingPost] = useState(true);
 
+  const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
+
   useEffect(() => {
     if (!postId) return;
     loadPost();
@@ -22,9 +25,16 @@ export default function PostPage() {
 
   async function loadPost() {
     try {
-      const res = await fetch(`/api/posts?postId=${postId}`);
+      const publicId = localStorage.getItem("publicId");
+
+      const res = await fetch(`/api/posts?postId=${postId}&publicId=${publicId || ""}`);
       const data = await res.json();
+
       setPost(data.post);
+
+      setLiked(data.post?.isLiked || false);
+      setLikesCount(data.post?.likes || 0);
+
     } catch (error) {
       console.log("Post load error", error);
     }
@@ -41,6 +51,54 @@ export default function PostPage() {
       setComments([]);
     }
   }
+
+  /* =========================
+     LIKE SYSTEM (PRODUCTION)
+  ========================= */
+
+  async function handleLike() {
+    const publicId = localStorage.getItem("publicId");
+
+    if (!publicId) {
+      alert("Login first");
+      return;
+    }
+
+    // optimistic UI
+    const newLiked = !liked;
+    setLiked(newLiked);
+    setLikesCount(prev => newLiked ? prev + 1 : prev - 1);
+
+    try {
+      const res = await fetch("/api/like", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          postId,
+          npId: publicId
+        })
+      });
+
+      const data = await res.json();
+
+      // sync with backend
+      setLiked(data.liked);
+      setLikesCount(data.likes);
+
+    } catch (error) {
+      console.log("Like error", error);
+
+      // rollback
+      setLiked(prev => !prev);
+      setLikesCount(prev => liked ? prev + 1 : prev - 1);
+    }
+  }
+
+  /* =========================
+     COMMENT
+  ========================= */
 
   async function addComment() {
     const publicId = localStorage.getItem("publicId");
@@ -71,182 +129,126 @@ export default function PostPage() {
     setLoadingComment(false);
   }
 
-  /* LOADING */
+  /* ========================= */
 
   if (loadingPost) {
-    return (
-      <div style={{ padding: "40px", textAlign: "center", color: "#aaa" }}>
-        Loading post...
-      </div>
-    );
+    return <div style={{ padding: 40, textAlign: "center" }}>Loading...</div>;
   }
 
   if (!post) {
-    return (
-      <div style={{ padding: "40px", textAlign: "center", color: "#aaa" }}>
-        Post not found
-      </div>
-    );
+    return <div style={{ padding: 40, textAlign: "center" }}>Post not found</div>;
   }
 
   return (
-
-    <main style={{
-      maxWidth: "700px",
-      margin: "0 auto",
-      padding: "20px"
-    }}>
+    <main style={{ maxWidth: 700, margin: "0 auto", padding: 20 }}>
 
       {/* POST CARD */}
-
       <div style={{
         background: "#111",
-        padding: "20px",
-        borderRadius: "16px",
-        marginBottom: "20px",
-        border: "1px solid #222",
-        boxShadow: "0 0 12px rgba(0,0,0,0.5)"
+        padding: 20,
+        borderRadius: 16,
+        border: "1px solid #222"
       }}>
 
-        {/* HEADER */}
-        <div style={{
-          color: "#888",
-          fontSize: "13px",
-          marginBottom: "8px"
-        }}>
-          {post.npId?.toUpperCase()} • {new Date(post.createdAt).toLocaleDateString()}
+        <div style={{ color: "#888", fontSize: 13 }}>
+          {post.npId} • {new Date(post.createdAt).toLocaleDateString()}
         </div>
 
-        {/* CONTENT */}
-        <div style={{
-          fontSize: "18px",
-          lineHeight: "1.6",
-          color: "#fff",
-          marginBottom: "12px"
-        }}>
+        <div style={{ marginTop: 8, fontSize: 18 }}>
           {post.content}
         </div>
 
-        {/* IMAGE */}
         {post.image && (
-          <img
-            src={post.image}
-            style={{
-              width: "100%",
-              borderRadius: "12px",
-              marginBottom: "12px",
-              maxHeight: "420px",
-              objectFit: "cover"
-            }}
-          />
+          <img src={post.image} style={{
+            width: "100%",
+            borderRadius: 12,
+            marginTop: 12
+          }} />
         )}
 
         {/* ACTION BAR */}
         <div style={{
           display: "flex",
-          justifyContent: "space-between",
-          paddingTop: "10px",
-          borderTop: "1px solid #222",
-          color: "#aaa",
-          fontSize: "14px"
+          justifyContent: "space-around",
+          marginTop: 15,
+          paddingTop: 10,
+          borderTop: "1px solid #222"
         }}>
-          <span>❤️ {post.likes || 0}</span>
-          <span>💬 {comments.length}</span>
-          <span>🔁 Share</span>
-          <span>🚩 Report</span>
+
+          {/* LIKE */}
+          <div onClick={handleLike} style={{ cursor: "pointer" }}>
+            ❤️ {likesCount}
+          </div>
+
+          {/* COMMENT */}
+          <div>
+            💬 {comments.length}
+          </div>
+
+          {/* SHARE */}
+          <div onClick={() => {
+            navigator.share?.({
+              title: "Udgara Post",
+              text: post.content
+            });
+          }}>
+            🔁
+          </div>
+
+          {/* REPORT */}
+          <div onClick={() => alert("Report coming soon")}>
+            🚩
+          </div>
+
         </div>
 
       </div>
 
       {/* COMMENT INPUT */}
+      <div style={{ marginTop: 20, display: "flex", gap: 10 }}>
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Write comment..."
+          style={{
+            flex: 1,
+            padding: 10,
+            background: "#111",
+            border: "1px solid #333",
+            borderRadius: 10,
+            color: "white"
+          }}
+        />
 
-      <div style={{ marginBottom: "20px" }}>
-
-        <div style={{
-          display: "flex",
-          gap: "10px",
-          alignItems: "center"
+        <button onClick={addComment} style={{
+          background: "#ff4747",
+          border: "none",
+          padding: "10px 16px",
+          borderRadius: 10,
+          color: "white"
         }}>
-
-          <textarea
-            placeholder="Write a comment..."
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            style={{
-              flex: 1,
-              padding: "12px",
-              borderRadius: "10px",
-              border: "1px solid #333",
-              background: "#111",
-              color: "white",
-              resize: "none",
-              minHeight: "40px"
-            }}
-          />
-
-          <button
-            onClick={addComment}
-            disabled={loadingComment}
-            style={{
-              padding: "10px 16px",
-              background: loadingComment ? "#444" : "#ff4747",
-              border: "none",
-              borderRadius: "10px",
-              color: "white",
-              fontWeight: "bold",
-              cursor: "pointer"
-            }}
-          >
-            {loadingComment ? "..." : "Post"}
-          </button>
-
-        </div>
-
+          Post
+        </button>
       </div>
 
       {/* COMMENTS */}
-
-      {comments.length === 0 ? (
-        <div style={{ color: "#777" }}>
-          No comments yet. Start the discussion.
-        </div>
-      ) : (
-
-        comments.map((c) => (
-
-          <div
-            key={c._id}
-            style={{
-              background: "#111",
-              padding: "14px",
-              borderRadius: "12px",
-              marginBottom: "10px",
-              border: "1px solid #222"
-            }}
-          >
-
-            <div style={{
-              color: "#888",
-              fontSize: "12px",
-              marginBottom: "4px"
-            }}>
-              {c.npId?.toUpperCase()}
+      <div style={{ marginTop: 20 }}>
+        {comments.map((c) => (
+          <div key={c._id} style={{
+            background: "#111",
+            padding: 12,
+            borderRadius: 10,
+            marginBottom: 10,
+            border: "1px solid #222"
+          }}>
+            <div style={{ color: "#888", fontSize: 12 }}>
+              {c.npId}
             </div>
-
-            <div style={{
-              color: "#fff",
-              fontSize: "14px"
-            }}>
-              {c.text}
-            </div>
-
+            <div>{c.text}</div>
           </div>
-
-        ))
-
-      )}
+        ))}
+      </div>
 
     </main>
-
   );
 }
