@@ -1,25 +1,40 @@
 export async function fetchPosts({ pageParam = null }: any) {
   try {
+    let publicId: string | null = null;
+
+    // ✅ SAFE CLIENT CHECK
+    if (typeof window !== "undefined") {
+      publicId = localStorage.getItem("publicId");
+    }
+
+    // ✅ BUILD URL PROPERLY
     let url = "/api/posts";
 
-    // pagination
     if (pageParam) {
       url += `?cursor=${pageParam}`;
     }
 
-    const res = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store", // always fresh feed
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch posts");
+    if (publicId) {
+      url += pageParam
+        ? `&publicId=${publicId}`
+        : `?publicId=${publicId}`;
     }
 
-    const data = await res.json();
+    // ✅ FETCH DATA
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      console.log("FETCH ERROR:", res.status);
+      return { posts: [], nextCursor: null };
+    }
+
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      console.log("Invalid JSON response");
+      return { posts: [], nextCursor: null };
+    }
 
     return {
       posts: Array.isArray(data.posts) ? data.posts : [],
@@ -27,7 +42,7 @@ export async function fetchPosts({ pageParam = null }: any) {
     };
 
   } catch (error) {
-    console.error("FETCH POSTS ERROR:", error);
+    console.log("FETCH POSTS ERROR:", error);
 
     return {
       posts: [],

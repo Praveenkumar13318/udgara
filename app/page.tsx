@@ -41,24 +41,14 @@ const {
   getNextPageParam: (lastPage: any) => lastPage.nextCursor || undefined,
 });
   
-  async function refreshPosts() {
-    try {
-      const publicId = localStorage.getItem("publicId");
-      if (!publicId) return;
-
-      const res = await fetch(`/api/posts?publicId=${publicId}`);
-      const data = await res.json();
-
-      const newPosts: Post[] = data.posts || [];
-
-      setFilteredPosts(newPosts);
-window.location.reload();
-      window.scrollTo({ top: 0, behavior: "smooth" });
-
-    } catch (err) {
-      console.log("REFRESH ERROR:", err);
-    }
+ async function refreshPosts() {
+  try {
+    await fetchNextPage(); // load latest properly
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } catch (err) {
+    console.log("REFRESH ERROR:", err);
   }
+}
 
   useEffect(() => {
 
@@ -102,15 +92,7 @@ sessionStorage.setItem("scrollY", String(window.scrollY));
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
-  useEffect(() => {
-  const handleFocus = () => {
-    window.location.reload();
-  };
-
-  window.addEventListener("focus", handleFocus);
-
-  return () => window.removeEventListener("focus", handleFocus);
-}, []);
+ 
 useEffect(() => {
   const saved = sessionStorage.getItem("scrollY");
 
