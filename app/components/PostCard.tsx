@@ -64,7 +64,11 @@ const isOwner = publicId && publicId === post.npId;
       router.push("/login");
       return;
     }
+const optimisticLiked = !liked;
+const optimisticCount = optimisticLiked ? likes + 1 : likes - 1;
 
+setLiked(optimisticLiked);
+setLikes(optimisticCount);
     
 
     try {
