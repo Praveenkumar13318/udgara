@@ -5,10 +5,13 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const postId = body.postId;
-    const publicId = body.publicId;
+    const postId = String(body.postId || "").trim();
+    const publicId = String(body.publicId || "").trim();
 
-    // 🔒 VALIDATION
+    /* =========================
+       VALIDATION (PRO LEVEL)
+    ========================= */
+
     if (!postId || !publicId) {
       return NextResponse.json(
         { error: "Missing postId or publicId" },
@@ -20,16 +23,18 @@ export async function POST(req: Request) {
 
     const npId = publicId.toUpperCase();
 
-    // 🔍 CHECK IF ALREADY LIKED
-    const existingLike = await db.collection("likes").findOne({
+    /* =========================
+       TOGGLE LIKE (SAFE)
+    ========================= */
+
+    let action: "liked" | "unliked";
+
+    const existing = await db.collection("likes").findOne({
       postId,
       npId
     });
 
-    let action: "liked" | "unliked";
-
-    if (existingLike) {
-      // ❌ UNLIKE
+    if (existing) {
       await db.collection("likes").deleteOne({
         postId,
         npId
@@ -38,7 +43,6 @@ export async function POST(req: Request) {
       action = "unliked";
     } else {
       try {
-        // ✅ LIKE
         await db.collection("likes").insertOne({
           postId,
           npId,
@@ -47,20 +51,27 @@ export async function POST(req: Request) {
 
         action = "liked";
 
-      } catch (error: any) {
-        // 🔥 HANDLE DUPLICATE (RACE CONDITION SAFE)
-        if (error.code === 11000) {
+      } catch (err: any) {
+        // 🔥 DUPLICATE SAFE (MULTI-CLICK PROTECTION)
+        if (err.code === 11000) {
           action = "liked";
         } else {
-          throw error;
+          throw err;
         }
       }
     }
 
-    // 📊 ALWAYS GET REAL COUNT (SOURCE OF TRUTH)
+    /* =========================
+       SOURCE OF TRUTH COUNT
+    ========================= */
+
     const likeCount = await db.collection("likes").countDocuments({
       postId
     });
+
+    /* =========================
+       RESPONSE
+    ========================= */
 
     return NextResponse.json({
       success: true,

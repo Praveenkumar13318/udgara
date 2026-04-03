@@ -124,19 +124,41 @@ export async function GET(req: Request) {
 
     /* ===== SINGLE POST ===== */
     if (postId) {
-      const post = await db
-        .collection("posts")
-        .findOne({ postId });
+  const post = await db.collection("posts").findOne({ postId });
 
-      if (!post) {
-        return NextResponse.json(
-          { error: "Post not found" },
-          { status: 404 }
-        );
-      }
+  if (!post) {
+    return NextResponse.json({ error: "Post not found" }, { status: 404 });
+  }
 
-      return NextResponse.json({ post });
+  /* =========================
+     GET LIKES FOR THIS POST
+  ========================= */
+
+  const likes = await db.collection("likes").find({ postId }).toArray();
+
+  const likeUsers = new Set(
+    likes.map((l: any) => l.npId)
+  );
+
+  const likeCount = likeUsers.size;
+
+  const isLiked =
+    publicId && typeof publicId === "string"
+      ? likeUsers.has(publicId.toUpperCase())
+      : false;
+
+  /* =========================
+     RETURN ENRICHED POST
+  ========================= */
+
+  return NextResponse.json({
+    post: {
+      ...post,
+      likes: likeCount,
+      isLiked
     }
+  });
+}
 
     /* ===== FEED ===== */
     const limit = 10;

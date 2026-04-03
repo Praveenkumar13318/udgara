@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 /* ================= TIME ================= */
@@ -35,6 +36,7 @@ export default function PostCard({ post }: any) {
 
 const isOwner = publicId && publicId === post.npId;
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [showReport, setShowReport] = useState(false);
   const [selectedReason, setSelectedReason] = useState("");
@@ -63,10 +65,7 @@ const isOwner = publicId && publicId === post.npId;
       return;
     }
 
-    const newLiked = !liked;
-
-    setLiked(newLiked);
-    setLikes((prev: number) => newLiked ? prev + 1 : prev - 1);
+    
 
     try {
       const res = await fetch("/api/like", {
@@ -81,9 +80,32 @@ const isOwner = publicId && publicId === post.npId;
       const data = await res.json();
 
       if (data.success) {
-        setLiked(data.action === "liked");
-        setLikes(data.likeCount);
-      }
+  const isLikedNow = data.action === "liked";
+
+  setLiked(isLikedNow);
+  setLikes(data.likeCount);
+
+  // 🔥 SYNC HOME FEED
+  queryClient.setQueryData(["feed"], (old: any) => {
+    if (!old) return old;
+
+    return {
+      ...old,
+      pages: old.pages.map((page: any) => ({
+        ...page,
+        posts: page.posts.map((p: any) =>
+          p.postId === post.postId
+            ? {
+                ...p,
+                likes: data.likeCount,
+                isLiked: isLikedNow
+              }
+            : p
+        )
+      }))
+    };
+  });
+}
 
     } catch (err) {
       console.log("LIKE ERROR:", err);
