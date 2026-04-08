@@ -78,7 +78,6 @@ imageUrl = uploadData.imageUrl;
   body: JSON.stringify({
     content,
     image: imageUrl,
-    publicId
   })
 });
 console.log("POST RESPONSE STATUS:", res.status);

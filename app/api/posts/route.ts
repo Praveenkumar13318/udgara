@@ -12,10 +12,7 @@ export async function POST(req: Request) {
 
 const user = getUserFromRequest(req);
 
-// fallback (temporary, for backward compatibility)
-const publicId =
-  user?.publicId ||
-  (typeof body.publicId === "string" ? body.publicId : null);
+const publicId = user?.publicId || null;
 
     if (!publicId) {
   return NextResponse.json(
