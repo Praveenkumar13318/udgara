@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import PostCard from "./components/PostCard";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchPosts } from "./lib/api";
+import { useRouter } from "next/navigation";
 type Post = {
   postId: string;
   npId: string;
@@ -24,7 +25,7 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const isSearching = search.trim().length > 0;
   const [showNewBtn, setShowNewBtn] = useState(false);
-
+const router = useRouter();
   
 
   const loadingRef = useRef(false);
@@ -36,20 +37,19 @@ const {
   isLoading,
 } = useInfiniteQuery({
   queryKey: ["feed"],
-  queryFn: ({ pageParam = null }: any) => fetchPosts({ pageParam }),
-  initialPageParam: null, // ✅ ADD THIS LINE
-  getNextPageParam: (lastPage: any) => lastPage.nextCursor || undefined,
-});
-  
- async function refreshPosts() {
-  try {
-    await fetchNextPage(); // load latest properly
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  } catch (err) {
-    console.log("REFRESH ERROR:", err);
-  }
-}
 
+  queryFn: ({ pageParam = null }: any) =>
+    fetchPosts({ pageParam }),
+
+  initialPageParam: null,
+
+  getNextPageParam: (lastPage: any) =>
+    lastPage.nextCursor || undefined,
+
+  staleTime: 1000 * 60 * 2, // ✅ prevents refetch spam
+  gcTime: 1000 * 60 * 10,   // ✅ keeps cache alive
+});  
+ 
   useEffect(() => {
 
     const delay = setTimeout(async () => {
@@ -76,7 +76,7 @@ const {
   const handleScroll = useCallback(() => {
 
     setShowNewBtn(window.scrollY > 300);
-sessionStorage.setItem("scrollY", String(window.scrollY));
+
     if (
   hasNextPage &&
   !isFetchingNextPage &&
@@ -93,15 +93,7 @@ sessionStorage.setItem("scrollY", String(window.scrollY));
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
  
-useEffect(() => {
-  const saved = sessionStorage.getItem("scrollY");
 
-  if (saved) {
-    setTimeout(() => {
-      window.scrollTo(0, Number(saved));
-    }, 100);
-  }
-}, []);
   return (
 
     <div
@@ -159,7 +151,7 @@ useEffect(() => {
 
       {showNewBtn && (
         <div
-          onClick={refreshPosts}
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           style={{
             position: "fixed",
             top: "70px",
@@ -274,7 +266,7 @@ useEffect(() => {
       {/* CREATE BUTTON */}
 
       <button
-        onClick={() => window.location.href = "/create"}
+      onClick={() => router.push("/create")}
         style={{
           position: "fixed",
           bottom: "18px",
