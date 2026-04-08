@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import PostCard from "./components/PostCard";
+import PostCard from "../components/PostCard";
+import { fetchPosts } from "../lib/api";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { fetchPosts } from "./lib/api";
 import { useRouter } from "next/navigation";
 type Post = {
   postId: string;
