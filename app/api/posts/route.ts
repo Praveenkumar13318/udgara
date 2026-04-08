@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "../../lib/mongodb";
-
+import { getUserFromRequest } from "../../lib/auth";
 /* =========================
    CREATE POST
 ========================= */
@@ -8,14 +8,21 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const { content, image, publicId } = body;
+    const { content, image } = body;
 
-    if (!publicId || typeof publicId !== "string") {
-      return NextResponse.json(
-        { error: "User not logged in" },
-        { status: 401 }
-      );
-    }
+const user = getUserFromRequest(req);
+
+// fallback (temporary, for backward compatibility)
+const publicId =
+  user?.publicId ||
+  (typeof body.publicId === "string" ? body.publicId : null);
+
+    if (!publicId) {
+  return NextResponse.json(
+    { error: "Unauthorized" },
+    { status: 401 }
+  );
+}
 
     if (!content || content.trim().length < 3) {
       return NextResponse.json(

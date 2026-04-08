@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { fetchWithAuth } from "../lib/fetcher";
 export default function CreatePost() {
 
   const router = useRouter();
@@ -72,17 +73,14 @@ const queryClient = useQueryClient();
 imageUrl = uploadData.imageUrl;
       }
 
-      const res = await fetch("/api/posts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          content,
-          image: imageUrl,
-          publicId
-        })
-      });
+      const res = await fetchWithAuth("/api/posts", {
+  method: "POST",
+  body: JSON.stringify({
+    content,
+    image: imageUrl,
+    publicId
+  })
+});
 console.log("POST RESPONSE STATUS:", res.status);
       let data;
 
