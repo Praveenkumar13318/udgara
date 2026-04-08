@@ -8,9 +8,7 @@ const nextConfig = {
   reactStrictMode: true,
 
   // 🔥 IMPORTANT FIX
-  experimental: {
-    turbo: false
-  }
+ 
 };
 
 module.exports = withPWA(nextConfig);
