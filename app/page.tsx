@@ -74,15 +74,7 @@ refetchOnWindowFocus: false,
     return () => clearTimeout(delay);
 
   }, [search]);
-  useEffect(() => {
-  const saved = sessionStorage.getItem("scrollY");
-
-  if (saved) {
-    window.scrollTo(0, Number(saved));
-    sessionStorage.removeItem("scrollY");
-  }
-}, []);
-
+ 
   const handleScroll = useCallback(() => {
 
     setShowNewBtn(window.scrollY > 300);
