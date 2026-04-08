@@ -152,9 +152,48 @@ export default function PostPage() {
     setLoadingComment(false);
   }
 
-  if (loadingPost) {
-    return <div style={{ padding: 40, color: "#aaa" }}>Loading...</div>;
-  }
+ if (loadingPost) {
+  return (
+    <main
+      style={{
+        maxWidth: "700px",
+        margin: "0 auto",
+        padding: "16px"
+      }}
+    >
+
+      {/* USER */}
+      <div style={{ marginBottom: "12px" }}>
+        <div style={{ width: "100px", height: "10px", background: "#222", marginBottom: "8px" }} />
+      </div>
+
+      {/* CONTENT */}
+      <div style={{ marginBottom: "16px" }}>
+        <div style={{ height: "12px", background: "#222", marginBottom: "8px" }} />
+        <div style={{ height: "12px", background: "#222", width: "90%", marginBottom: "8px" }} />
+        <div style={{ height: "12px", background: "#222", width: "70%" }} />
+      </div>
+
+      {/* IMAGE */}
+      <div
+        style={{
+          width: "100%",
+          height: "200px",
+          background: "#1a1a1a",
+          borderRadius: "12px",
+          marginBottom: "16px"
+        }}
+      />
+
+      {/* ACTION BAR */}
+      <div style={{ display: "flex", gap: "20px" }}>
+        <div style={{ width: "40px", height: "12px", background: "#222" }} />
+        <div style={{ width: "40px", height: "12px", background: "#222" }} />
+      </div>
+
+    </main>
+  );
+}
 
   if (!post) {
     return <div style={{ padding: 40 }}>Post not found</div>;
