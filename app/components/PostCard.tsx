@@ -243,8 +243,9 @@ async function handleDelete() {
         {/* CONTENT */}
         <div
           onClick={() => {
-  sessionStorage.setItem("anchorPostId", post.postId);
-  router.push(`/post/${post.postId}`);
+  sessionStorage.setItem("scrollY", String(window.scrollY));
+router.push(`/post/${post.postId}`);
+  
 }}
           className="tap no-select"
           style={{
@@ -261,8 +262,8 @@ async function handleDelete() {
         {post.image && (
           <div
             onClick={() => {
-  sessionStorage.setItem("anchorPostId", post.postId);
-  router.push(`/post/${post.postId}`);
+  sessionStorage.setItem("scrollY", String(window.scrollY));
+router.push(`/post/${post.postId}`);
 }}
             className="tap no-select"
             style={{
@@ -321,7 +322,7 @@ async function handleDelete() {
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                sessionStorage.setItem("anchorPostId", post.postId);
+                sessionStorage.setItem("scrollY", String(window.scrollY));
 router.push(`/post/${post.postId}`);
               }}
               className="tap no-select"

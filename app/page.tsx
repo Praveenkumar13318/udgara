@@ -26,7 +26,7 @@ export default function Home() {
   const isSearching = search.trim().length > 0;
   const [showNewBtn, setShowNewBtn] = useState(false);
 const router = useRouter();
-  
+  const scrollRef = useRef(0);
 
   const loadingRef = useRef(false);
 const {
@@ -48,6 +48,8 @@ const {
 
   staleTime: 1000 * 60 * 2, // ✅ prevents refetch spam
   gcTime: 1000 * 60 * 10,   // ✅ keeps cache alive
+  refetchOnMount: false,
+refetchOnWindowFocus: false,
 });  
  
   useEffect(() => {
@@ -73,33 +75,13 @@ const {
 
   }, [search]);
   useEffect(() => {
-  const anchorId = sessionStorage.getItem("anchorPostId");
-  if (!anchorId) return;
+  const saved = sessionStorage.getItem("scrollY");
 
-  let attempts = 0;
-
-  const tryScroll = () => {
-    const el = document.getElementById(`post-${anchorId}`);
-
-    if (el) {
-      el.scrollIntoView({
-        behavior: "auto",
-        block: "center",
-      });
-
-      sessionStorage.removeItem("anchorPostId");
-      return;
-    }
-
-    if (attempts < 15) { // 🔥 increased retries
-      attempts++;
-      requestAnimationFrame(tryScroll); // 🔥 smoother than setTimeout
-    }
-  };
-
-  requestAnimationFrame(tryScroll);
-
-}, [data]);
+  if (saved) {
+    window.scrollTo(0, Number(saved));
+    sessionStorage.removeItem("scrollY");
+  }
+}, []);
 
   const handleScroll = useCallback(() => {
 
