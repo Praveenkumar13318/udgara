@@ -109,6 +109,7 @@ setLikes(optimisticCount);
       }))
     };
   });
+  queryClient.invalidateQueries({ queryKey: ["feed"] });
 }
 
     } catch (err) {
@@ -190,7 +191,7 @@ async function handleDelete() {
       return;
     }
 
-    window.location.reload();
+    queryClient.invalidateQueries({ queryKey: ["feed"] });
 
   } catch (err) {
     console.log("Delete error", err);
@@ -199,11 +200,12 @@ async function handleDelete() {
   return (
     <>
       <div
-        style={{
-          padding: "16px 16px 14px",
-          borderBottom: "1px solid rgba(255,255,255,0.06)"
-        }}
-      >
+  id={`post-${post.postId}`} // 🔥 ADD THIS LINE
+  style={{
+    padding: "16px 16px 14px",
+    borderBottom: "1px solid rgba(255,255,255,0.06)"
+  }}
+>
 
         {/* HEADER */}
         <div

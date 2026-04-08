@@ -72,6 +72,34 @@ const {
     return () => clearTimeout(delay);
 
   }, [search]);
+  useEffect(() => {
+  const anchorId = sessionStorage.getItem("anchorPostId");
+  if (!anchorId) return;
+
+  let attempts = 0;
+
+  const tryScroll = () => {
+    const el = document.getElementById(`post-${anchorId}`);
+
+    if (el) {
+      el.scrollIntoView({
+        behavior: "auto",
+        block: "center",
+      });
+
+      sessionStorage.removeItem("anchorPostId");
+      return;
+    }
+
+    if (attempts < 10) {
+      attempts++;
+      setTimeout(tryScroll, 200);
+    }
+  };
+
+  setTimeout(tryScroll, 300);
+
+}, [data]);
 
   const handleScroll = useCallback(() => {
 
