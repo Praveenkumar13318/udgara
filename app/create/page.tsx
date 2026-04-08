@@ -99,15 +99,28 @@ if (!res.ok) {
   setPosting(false);
   return;
 }
+if (data.success) {
 
-      if (data.success) {
+  const newPost = data.post; // 👈 make sure backend returns post
 
-  // 🔥 1. invalidate feed cache
-  await queryClient.invalidateQueries({ queryKey: ["feed"] });
+  queryClient.setQueryData(["feed"], (oldData: any) => {
+    if (!oldData) return oldData;
 
-  // 🔥 2. navigate AFTER cache update
+    return {
+      ...oldData,
+      pages: [
+        {
+          ...oldData.pages[0],
+          posts: [newPost, ...oldData.pages[0].posts]
+        },
+        ...oldData.pages.slice(1)
+      ]
+    };
+  });
+
   router.replace("/");
-} else {
+}
+       else {
         setMessage(data.error || "Failed to create post");
       }
 
