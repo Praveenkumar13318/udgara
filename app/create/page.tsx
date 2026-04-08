@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-
+import { useQueryClient } from "@tanstack/react-query";
 export default function CreatePost() {
 
   const router = useRouter();
@@ -11,7 +11,7 @@ export default function CreatePost() {
   const [image, setImage] = useState<File | null>(null);
   const [message, setMessage] = useState("");
   const [posting, setPosting] = useState(false);
-
+const queryClient = useQueryClient();
   const [publicId, setPublicId] = useState<string | null>(null);
 
   /* ✅ FIX: safely load publicId */
@@ -101,12 +101,13 @@ if (!res.ok) {
 }
 
       if (data.success) {
-        setMessage("Post created 🎉");
-        setContent("");
-        setImage(null);
 
-        router.replace("/");
-      } else {
+  // 🔥 1. invalidate feed cache
+  await queryClient.invalidateQueries({ queryKey: ["feed"] });
+
+  // 🔥 2. navigate AFTER cache update
+  router.replace("/");
+} else {
         setMessage(data.error || "Failed to create post");
       }
 
