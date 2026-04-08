@@ -150,29 +150,31 @@ refetchOnWindowFocus: false,
       </div>
 
       {/* NEW POSTS BUTTON */}
-
-      {showNewBtn && (
-        <div
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          style={{
-            position: "fixed",
-            top: "70px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            background: "#1e90ff",
-            color: "white",
-            padding: "7px 14px",
-            borderRadius: "18px",
-            fontSize: "12px",
-            fontWeight: 500,
-            cursor: "pointer",
-            zIndex: 1000
-          }}
-        >
-          ↑ New Posts
-        </div>
-      )}
-
+{showNewBtn && (
+  <button
+    onMouseDown={(e) => e.preventDefault()} // 🔥 BLOCK FOCUS
+    onClick={() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }}
+    style={{
+      position: "fixed",
+      top: "70px",
+      left: "50%",
+      transform: "translateX(-50%)",
+      background: "#1e90ff",
+      color: "white",
+      padding: "7px 14px",
+      borderRadius: "18px",
+      fontSize: "12px",
+      fontWeight: 500,
+      cursor: "pointer",
+      zIndex: 1000,
+      border: "none"
+    }}
+  >
+    ↑ New Posts
+  </button>
+)}
       {/* POSTS */}
 <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
 
