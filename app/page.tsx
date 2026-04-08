@@ -91,13 +91,13 @@ const {
       return;
     }
 
-    if (attempts < 10) {
+    if (attempts < 15) { // 🔥 increased retries
       attempts++;
-      setTimeout(tryScroll, 200);
+      requestAnimationFrame(tryScroll); // 🔥 smoother than setTimeout
     }
   };
 
-  setTimeout(tryScroll, 300);
+  requestAnimationFrame(tryScroll);
 
 }, [data]);
 
