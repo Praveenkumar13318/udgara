@@ -36,6 +36,33 @@ export default function PostCard({ post }: any) {
 
 const isOwner = publicId && publicId === post.npId;
   const router = useRouter();
+  function renderText(text: string) {
+  return text.split(/(#[\w-]+)/g).map((part, i) => {
+    if (part.startsWith("#")) {
+      const tag = part.substring(1);
+
+      return (
+        <span
+          key={i}
+          style={{
+            color: "#1e90ff",
+            cursor: "pointer",
+            fontWeight: 500
+          }}
+          onClick={(e) => {
+            e.stopPropagation(); // 🔥 VERY IMPORTANT (prevents post open)
+            e.preventDefault();
+            router.push(`/search?q=${tag}`);
+          }}
+        >
+          {part}
+        </span>
+      );
+    }
+
+    return part;
+  });
+}
   const queryClient = useQueryClient();
 
   const [showReport, setShowReport] = useState(false);
@@ -255,7 +282,7 @@ router.push(`/post/${post.postId}`, { scroll: false });
             fontSize: "15px"
           }}
         >
-          {post.content}
+          {renderText(post.content)}
         </div>
 
         {/* IMAGE */}
