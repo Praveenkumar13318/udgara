@@ -1,5 +1,7 @@
-import type { ReactNode } from "react";
-
-export default function FeedLayout({ children }: { children: ReactNode }) {
+export default function FeedLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return <>{children}</>;
 }
