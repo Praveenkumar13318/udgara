@@ -18,39 +18,93 @@ export default function ProfilePage() {
   const [posts, setPosts] = useState<any[]>([]);
   const [comments, setComments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
+const [error, setError] = useState(false);
   useEffect(() => {
-    if (!npId) return;
-    loadData();
-  }, [npId]);
+  if (!npId) return;
+
+  setLoading(true); // 🔥 important
+
+  loadData();
+}, [npId]);
 
   async function loadData() {
 
     try {
 
-      const res = await fetch(`/api/profile?npId=${npId}`);
-      const data = await res.json();
+  const res = await fetch(`/api/profile?npId=${npId}`);
 
-      const profile = data?.data || {};
+  if (!res.ok) throw new Error("API failed");
 
-      setPosts(Array.isArray(profile.posts) ? profile.posts : []);
-      setComments(Array.isArray(profile.comments) ? profile.comments : []);
+  const data = await res.json();
 
-    } catch (err) {
-      console.log("Profile load error", err);
-    }
+  const profile = data?.data || {};
+
+  setPosts(Array.isArray(profile.posts) ? profile.posts : []);
+  setComments(Array.isArray(profile.comments) ? profile.comments : []);
+
+} catch (err) {
+  console.log("Profile load error", err);
+  setError(true); // 🔥 IMPORTANT
+}
 
     setLoading(false);
 
   }
+  if (error) {
+  return (
+    <div style={{ textAlign: "center", padding: "40px", color: "#888" }}>
+      Failed to load profile
+    </div>
+  );
+}
 
   if (loading) {
-    return (
-      <div style={{ padding: "40px", textAlign: "center", color: "#aaa" }}>
-        Loading profile...
+  return (
+    <main
+      style={{
+        maxWidth: "720px",
+        margin: "40px auto",
+        padding: "20px"
+      }}
+    >
+
+      {/* HEADER SKELETON */}
+      <div
+        style={{
+          background: "#111",
+          padding: "28px",
+          borderRadius: "18px",
+          marginBottom: "30px"
+        }}
+      >
+        <div style={{ width: "120px", height: "18px", background: "#222", borderRadius: "6px" }} />
+
+        <div style={{ display: "flex", gap: "20px", marginTop: "20px" }}>
+          <div style={{ width: "40px", height: "20px", background: "#222", borderRadius: "6px" }} />
+          <div style={{ width: "40px", height: "20px", background: "#222", borderRadius: "6px" }} />
+          <div style={{ width: "40px", height: "20px", background: "#222", borderRadius: "6px" }} />
+        </div>
       </div>
-    );
-  }
+
+      {/* POSTS SKELETON */}
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div
+          key={i}
+          style={{
+            padding: "16px",
+            background: "#111",
+            borderRadius: "12px",
+            marginBottom: "12px"
+          }}
+        >
+          <div style={{ width: "30%", height: "10px", background: "#222", marginBottom: "10px" }} />
+          <div style={{ width: "80%", height: "12px", background: "#222" }} />
+        </div>
+      ))}
+
+    </main>
+  );
+}
 
   const totalLikes = posts.reduce(
     (acc, p) => acc + (p.likes || 0),
