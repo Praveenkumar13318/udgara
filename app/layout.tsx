@@ -1,9 +1,10 @@
 "use client";
-
+import { useAuthStore } from "@/store/authStore";
 import "./globals.css";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import Providers from "./providers";
+import { useRouter } from "next/navigation";
 export default function RootLayout({
   children,
 }: {
@@ -11,17 +12,18 @@ export default function RootLayout({
 }) {
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [publicId, setPublicId] = useState<string | null>(null);
+  const { user, hydrate, logout } = useAuthStore();
 
-  useEffect(() => {
-    const id = localStorage.getItem("publicId");
-    setPublicId(id);
-  }, []);
+useEffect(() => {
+  hydrate();
+}, []);
 
-  function logout() {
-    localStorage.removeItem("publicId");
-    window.location.href = "/login";
-  }
+const router = useRouter();
+
+function handleLogout() {
+  logout();
+  router.push("/login");
+}
 
   const linkStyle = {
     display: "block",
@@ -85,7 +87,7 @@ export default function RootLayout({
             </h2>
           </Link>
 
-          {publicId && (
+          {user?.publicId && (
             <div
               className="no-select"
               style={{
@@ -98,7 +100,7 @@ export default function RootLayout({
                 fontWeight: 500
               }}
             >
-              {publicId.toUpperCase()}
+              {user?.publicId.toUpperCase()}
             </div>
           )}
 
@@ -204,8 +206,8 @@ export default function RootLayout({
               Home
             </Link>
 
-            {publicId && (
-              <Link href={`/profile/${publicId}`} style={linkStyle}
+            {user?.publicId && (
+              <Link href={`/profile/${user?.publicId}`} style={linkStyle}
                 onClick={() => setMenuOpen(false)}
                 onMouseEnter={hoverIn} onMouseLeave={hoverOut}
                 onMouseDown={pressIn} onMouseUp={pressOut}
@@ -214,7 +216,7 @@ export default function RootLayout({
               </Link>
             )}
 
-            {publicId && (
+            {user?.publicId && (
               <Link href="/create" style={linkStyle}
                 onClick={() => setMenuOpen(false)}
                 onMouseEnter={hoverIn} onMouseLeave={hoverOut}
@@ -224,9 +226,9 @@ export default function RootLayout({
               </Link>
             )}
 
-            {publicId && <div style={{ height: 1, background: "#1f1f1f", margin: "18px 0" }} />}
+            {user?.publicId && <div style={{ height: 1, background: "#1f1f1f", margin: "18px 0" }} />}
 
-            {publicId && (
+            {user?.publicId && (
               <>
                 <Link href="/terms" style={linkStyle}
                   onClick={() => setMenuOpen(false)}
@@ -246,9 +248,9 @@ export default function RootLayout({
               </>
             )}
 
-            {publicId && <div style={{ height: 1, background: "#1f1f1f", margin: "18px 0" }} />}
+            {user?.publicId && <div style={{ height: 1, background: "#1f1f1f", margin: "18px 0" }} />}
 
-            {publicId && (
+            {user?.publicId && (
               <Link href="/about" style={linkStyle}
                 onClick={() => setMenuOpen(false)}
                 onMouseEnter={hoverIn} onMouseLeave={hoverOut}
@@ -258,7 +260,7 @@ export default function RootLayout({
               </Link>
             )}
 
-            {publicId ? (
+            {user?.publicId ? (
               <div
                 onClick={logout}
                 onMouseDown={pressIn}

@@ -2,12 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useAuthStore } from "@/store/authStore";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<"landing" | "email" | "otp">("landing");
   const [message, setMessage] = useState("");
+  const setUser = useAuthStore((s) => s.setUser);
+const router = useRouter();
 
   async function sendOtp() {
     try {
@@ -51,16 +55,13 @@ export default function LoginPage() {
       }
 
       // 🔥 CLEAN SESSION
-      localStorage.clear();
+     localStorage.setItem("token", data.token);
 
-      // 🔐 STORE TOKEN + USER ID
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("publicId", data.publicId.toUpperCase());
+setUser({
+  publicId: data.publicId.toUpperCase(),
+});
 
-      console.log("LOGIN SUCCESS:", data);
-
-      // 🚀 REDIRECT
-      window.location.href = "/";
+router.push("/");
 
     } catch (error) {
       console.error(error);
