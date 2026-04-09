@@ -5,12 +5,23 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: any) {
   try {
-    const db: any = await connectDB();
+    // ✅ FIX: use full correct URL
+    const res = await fetch(
+      `https://udgara.vercel.app/api/posts?postId=${params.id}`,
+      {
+        cache: "no-store",
+      }
+    );
 
-    // ✅ USE ID EXACTLY AS IS
-    const post = await db.collection("posts").findOne({
-      postId: params.id,
-    });
+    if (!res.ok) {
+      return {
+        title: "Udgara",
+        description: "View post on Udgara",
+      };
+    }
+
+    const data = await res.json();
+    const post = data?.post;
 
     if (!post) {
       return {
@@ -19,38 +30,20 @@ export async function generateMetadata({ params }: any) {
       };
     }
 
-    const title = `${post.publicId?.toUpperCase()} on Udgara`;
+    const title = `${post.publicId} on Udgara`;
     const description =
       post.content?.slice(0, 120) || "View post on Udgara";
 
     const image =
-      post.image ||
-      "https://udgara.vercel.app/icon-152.png";
+      post.image || "https://udgara.vercel.app/icon-152.png";
 
     return {
       title,
       description,
-
       openGraph: {
         title,
         description,
-        url: `https://udgara.vercel.app/post/${post.postId}`,
-        type: "article",
-
-        images: [
-          {
-            url: image,
-            width: 1200,
-            height: 630,
-          },
-        ],
-      },
-
-      twitter: {
-        card: "summary_large_image",
-        title,
-        description,
-        images: [image],
+        images: [{ url: image }],
       },
     };
   } catch (e) {
