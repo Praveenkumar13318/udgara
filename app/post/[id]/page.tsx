@@ -27,7 +27,16 @@ export default function PostPage() {
 
   async function loadPost() {
     try {
-      const res = await fetch(`/api/posts?postId=${postId}&publicId=${publicId}`);
+      const token =
+  typeof window !== "undefined"
+    ? localStorage.getItem("token")
+    : null;
+
+const res = await fetch(`/api/posts?postId=${postId}`, {
+  headers: {
+    Authorization: token ? `Bearer ${token}` : ""
+  }
+});
       const data = await res.json();
 
       setPost({
@@ -54,7 +63,8 @@ export default function PostPage() {
 
   /* ================= LIKE ================= */
   async function handleLike() {
-    if (!publicId) {
+    const token = localStorage.getItem("token");
+if (!token) {
       alert("Login first");
       return;
     }
@@ -68,16 +78,18 @@ export default function PostPage() {
     }));
 
     try {
-      const res = await fetch("/api/like", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          postId: post.postId,
-          publicId
-        })
-      });
+      const token = localStorage.getItem("token");
+
+const res = await fetch("/api/like", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: token ? `Bearer ${token}` : ""
+  },
+  body: JSON.stringify({
+    postId: post.postId
+  })
+});
 
       const data = await res.json();
 
