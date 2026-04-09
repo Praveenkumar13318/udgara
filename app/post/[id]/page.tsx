@@ -7,8 +7,14 @@ export async function generateMetadata({ params }: any) {
   try {
     const db: any = await connectDB();
 
+    // 🔥 FIX: normalize ID (handles both formats)
+    let rawId = params.id || "";
+    const postId = rawId.startsWith("post_")
+      ? rawId.replace("post_", "")
+      : rawId;
+
     const post = await db.collection("posts").findOne({
-      postId: params.id,
+      postId: postId,
     });
 
     if (!post) {
@@ -18,29 +24,40 @@ export async function generateMetadata({ params }: any) {
       };
     }
 
+    const title = post.ogTitle || `${post.npId} on Udgara`;
+    const description =
+      post.ogDescription ||
+      post.content?.slice(0, 120) ||
+      "View post on Udgara";
+
+    const image =
+      post.ogImage ||
+      post.image ||
+      "https://udgara.vercel.app/icon-152.png";
+
     return {
-      title: post.ogTitle || `${post.npId} on Udgara`,
-      description:
-        post.ogDescription ||
-        post.content?.slice(0, 120) ||
-        "View post on Udgara",
+      title,
+      description,
 
       openGraph: {
-        title: post.ogTitle || `${post.npId} on Udgara`,
-        description:
-          post.ogDescription || post.content?.slice(0, 120),
-        url: `https://udgara.vercel.app/post/${post.postId}`,
+        title,
+        description,
+        url: `https://udgara.vercel.app/post/post_${post.postId}`, // 🔥 keep prefix for URL
         type: "article",
         images: [
           {
-            url:
-              post.ogImage ||
-              post.image ||
-              "https://udgara.vercel.app/icon-152.png",
+            url: image,
             width: 1200,
             height: 630,
           },
         ],
+      },
+
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [image],
       },
     };
   } catch (e) {
