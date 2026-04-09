@@ -13,9 +13,9 @@ export async function generateMetadata({ params }: any) {
       ? rawId.replace("post_", "")
       : rawId;
 
-    const post = await db.collection("posts").findOne({
-      postId: postId,
-    });
+    const post =
+  await db.collection("posts").findOne({ postId: postId }) ||
+  await db.collection("posts").findOne({ postId: rawId });
 
     if (!post) {
       return {
