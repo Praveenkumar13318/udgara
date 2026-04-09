@@ -105,33 +105,32 @@ const publicId = user?.publicId || null;
     const db: any = await connectDB();
 
     /* ===== SINGLE POST ===== */
-    if (postId) {
+   if (postId) {
   const post = await db.collection("posts").findOne({ postId });
 
   if (!post) {
     return NextResponse.json({ error: "Post not found" }, { status: 404 });
   }
 
-  /* =========================
-     GET LIKES FOR THIS POST
-  ========================= */
+  // 🔥 SAFE MODE (no dependency on user)
+  let likeCount = 0;
+  let isLiked = false;
 
-  const likes = await db.collection("likes").find({ postId }).toArray();
+  try {
+    const likes = await db.collection("likes").find({ postId }).toArray();
 
-  const likeUsers = new Set(
-    likes.map((l: any) => l.npId)
-  );
+    const likeUsers = new Set(
+      likes.map((l: any) => l.npId)
+    );
 
-  const likeCount = likeUsers.size;
+    likeCount = likeUsers.size;
 
-  const isLiked =
-    publicId && typeof publicId === "string"
-      ? likeUsers.has(publicId.toUpperCase())
-      : false;
-
-  /* =========================
-     RETURN ENRICHED POST
-  ========================= */
+    if (publicId && typeof publicId === "string") {
+      isLiked = likeUsers.has(publicId.toUpperCase());
+    }
+  } catch (e) {
+    // ignore errors (important for bots like WhatsApp)
+  }
 
   return NextResponse.json({
     post: {
