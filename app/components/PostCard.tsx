@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-
+import { fetchWithAuth } from "../lib/fetcher";
 /* ================= TIME ================= */
 function timeAgo(dateString: any) {
   if (!dateString) return "";
@@ -86,8 +86,8 @@ const isOwner = publicId && publicId === post.npId;
     e.stopPropagation();
     e.preventDefault();
 
-    const publicId = localStorage.getItem("publicId");
-    if (!publicId) {
+    const token = localStorage.getItem("token");
+if (!token) {
       router.push("/login");
       return;
     }
@@ -99,14 +99,12 @@ setLikes(optimisticCount);
     
 
     try {
-      const res = await fetch("/api/like", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          postId: post.postId,
-          publicId
-        })
-      });
+      const res = await fetchWithAuth("/api/like", {
+  method: "POST",
+  body: JSON.stringify({
+    postId: post.postId
+  })
+});
 
       const data = await res.json();
 
@@ -200,16 +198,12 @@ async function handleDelete() {
   if (!confirmDelete) return;
 
   try {
-    const res = await fetch("/api/posts", {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        postId: post.postId,
-        publicId,
-      }),
-    });
+    const res = await fetchWithAuth("/api/posts", {
+  method: "DELETE",
+  body: JSON.stringify({
+    postId: post.postId,
+  }),
+});
 
     const data = await res.json();
 

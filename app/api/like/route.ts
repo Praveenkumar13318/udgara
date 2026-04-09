@@ -1,12 +1,17 @@
 import { connectDB } from "../../lib/mongodb";
 import { NextResponse } from "next/server";
-
+import { getUserFromRequest } from "../../lib/auth";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
 
     const postId = String(body.postId || "").trim();
-    const publicId = String(body.publicId || "").trim();
+    const user = getUserFromRequest(req);
+
+// 🔐 prefer secure token
+const publicId =
+  user?.publicId ||
+  String(body.publicId || "").trim();
 
     /* =========================
        VALIDATION (PRO LEVEL)

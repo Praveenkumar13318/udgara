@@ -1,27 +1,24 @@
 export async function fetchPosts({ pageParam = null }: any) {
   try {
-    let publicId: string | null = null;
+    // 🔐 GET TOKEN (SAFE CLIENT CHECK)
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("token")
+        : null;
 
-    // ✅ SAFE CLIENT CHECK
-    if (typeof window !== "undefined") {
-      publicId = localStorage.getItem("publicId");
-    }
-
-    // ✅ BUILD URL PROPERLY
+    // ✅ BUILD URL (CLEAN — NO publicId)
     let url = "/api/posts";
 
     if (pageParam) {
       url += `?cursor=${pageParam}`;
     }
 
-    if (publicId) {
-      url += pageParam
-        ? `&publicId=${publicId}`
-        : `?publicId=${publicId}`;
-    }
-
-    // ✅ FETCH DATA
-    const res = await fetch(url);
+    // ✅ FETCH WITH AUTH HEADER
+    const res = await fetch(url, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    });
 
     if (!res.ok) {
       console.log("FETCH ERROR:", res.status);
