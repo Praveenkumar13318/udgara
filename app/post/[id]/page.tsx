@@ -41,10 +41,18 @@ export async function generateMetadata({ params }: any) {
       title,
       description,
       openGraph: {
-        title,
-        description,
-        images: [{ url: image }],
-      },
+  title,
+  description,
+  url: `https://udgara.vercel.app/post/${post.postId}`,
+  type: "article",
+  images: [
+    {
+      url: image,
+      width: 1200,
+      height: 630,
+    },
+  ],
+},
     };
   } catch (e) {
     return {
