@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "../../lib/mongodb";
 import { getUserFromRequest } from "../../lib/auth";
+import { createPost, deletePost } from "../../services/postService";
 /* =========================
    CREATE POST
 ========================= */
@@ -28,25 +29,11 @@ const publicId = user?.publicId || null;
       );
     }
 
-    const db: any = await connectDB();
-
-    const postId = "post_" + Math.random().toString(36).substring(2, 10);
-
-    const post = {
-      postId,
-      npId: publicId.toUpperCase(),
-      content: content.trim(),
-      image: image || null,
-      likes: 0,
-      commentsCount: 0,
-      views: 0,
-      reports: 0,
-      createdAt: new Date(),
-      createdAtMs: Date.now()
-    };
-
-    await db.collection("posts").insertOne(post);
-
+    const post = await createPost({
+  content,
+  image,
+  publicId
+});
     return NextResponse.json({
       success: true,
       post
@@ -69,7 +56,10 @@ export async function DELETE(req: Request) {
   try {
     const body = await req.json();
 
-    const { postId, publicId } = body;
+    const { postId } = body;
+
+const user = getUserFromRequest(req);
+const publicId = user?.publicId || null;
 
     if (!postId || !publicId) {
       return NextResponse.json(
@@ -78,27 +68,14 @@ export async function DELETE(req: Request) {
       );
     }
 
-    const db: any = await connectDB();
-
-    const post = await db.collection("posts").findOne({ postId });
-
-    if (!post) {
-      return NextResponse.json(
-        { error: "Post not found" },
-        { status: 404 }
-      );
-    }
-
-    // 🔐 ONLY OWNER CAN DELETE
-    if (post.npId !== publicId.toUpperCase()) {
-      return NextResponse.json(
-        { error: "Not allowed" },
-        { status: 403 }
-      );
-    }
-
-    await db.collection("posts").deleteOne({ postId });
-
+    try {
+  await deletePost({ postId, publicId });
+} catch (err: any) {
+  return NextResponse.json(
+    { error: err.message },
+    { status: err.message === "Post not found" ? 404 : 403 }
+  );
+}
     return NextResponse.json({
       success: true
     });
@@ -122,7 +99,8 @@ export async function GET(req: Request) {
 
     const postId = searchParams.get("postId");
     const cursor = searchParams.get("cursor");
-    const publicId = searchParams.get("publicId");
+    const user = getUserFromRequest(req);
+const publicId = user?.publicId || null;
 
     const db: any = await connectDB();
 
