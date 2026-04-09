@@ -1,7 +1,7 @@
 import PostClient from "./PostClient";
 import { connectDB } from "@/app/lib/mongodb";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function generateMetadata({ params }: any) {
   try {
