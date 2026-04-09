@@ -10,7 +10,7 @@ export async function generateMetadata({ params }: any) {
     );
 
     const data = await res.json();
-    const post = data?.post;
+    const post = data?.post || data?.posts?.[0];
 
     if (!post) {
       return { title: "Post not found" };
