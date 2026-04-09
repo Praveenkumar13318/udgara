@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-
+import { useQueryClient } from "@tanstack/react-query";
 export default function PostPage() {
   const params = useParams();
   const router = useRouter();
   const postId = params?.id;
-
+const queryClient = useQueryClient();
   const [post, setPost] = useState<any>(null);
   const [comments, setComments] = useState<any[]>([]);
   const [text, setText] = useState("");
@@ -94,12 +94,37 @@ const res = await fetch("/api/like", {
       const data = await res.json();
 
       if (data.success) {
-        setPost((prev: any) => ({
-          ...prev,
-          isLiked: data.action === "liked",
-          likes: data.likeCount
-        }));
-      }
+  const isLikedNow = data.action === "liked";
+
+  setPost((prev: any) => ({
+    ...prev,
+    isLiked: isLikedNow,
+    likes: data.likeCount
+  }));
+
+  // 🔥 SYNC HOME FEED (ONLY ADDITION)
+  queryClient.setQueryData(["feed"], (old: any) => {
+    if (!old) return old;
+
+    return {
+      ...old,
+      pages: old.pages.map((page: any) => ({
+        ...page,
+        posts: page.posts.map((p: any) =>
+          p.postId === post.postId
+            ? {
+                ...p,
+                likes: data.likeCount,
+                isLiked: isLikedNow
+              }
+            : p
+        )
+      }))
+    };
+  });
+
+  queryClient.invalidateQueries({ queryKey: ["feed"] });
+}
     } catch (err) {
       console.log("Like error", err);
     }
