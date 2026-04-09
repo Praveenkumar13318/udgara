@@ -5,7 +5,7 @@ export async function generateMetadata({ params }: any) {
 
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts?postId=${postId}`,
+      `https://udgara.vercel.app/api/posts?postId=${postId}`,
       { cache: "no-store" }
     );
 
@@ -13,21 +13,41 @@ export async function generateMetadata({ params }: any) {
     const post = data?.post || data?.posts?.[0];
 
     if (!post) {
-      return { title: "Post not found" };
+      return {
+        title: "Post not found",
+      };
     }
 
     return {
       title: `${post.npId} on Udgara`,
-      description: post.content || "View post on Udgara",
+      description: post.content?.slice(0, 120) || "View post on Udgara",
+
       openGraph: {
         title: `${post.npId} on Udgara`,
-        description: post.content,
+        description: post.content?.slice(0, 120),
+        url: `https://udgara.vercel.app/post/${post.postId}`,
+        images: post.image
+          ? [
+              {
+                url: post.image,
+                width: 800,
+                height: 600,
+              },
+            ]
+          : [],
+      },
+
+      twitter: {
+        card: "summary_large_image",
+        title: `${post.npId} on Udgara`,
+        description: post.content?.slice(0, 120),
         images: post.image ? [post.image] : [],
-        url: `${process.env.NEXT_PUBLIC_BASE_URL}/post/${post.postId}`,
       },
     };
-  } catch {
-    return { title: "Udgara" };
+  } catch (err) {
+    return {
+      title: "Udgara",
+    };
   }
 }
 
