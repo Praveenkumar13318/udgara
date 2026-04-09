@@ -1,40 +1,64 @@
 import PostClient from "./PostClient";
+import { connectDB } from "@/app/lib/mongodb";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: any) {
-  // 🔥 Clean ID (removes "post_" if exists)
-  const rawId = params.id || "";
-  const id = rawId.startsWith("post_")
-    ? rawId.replace("post_", "")
-    : rawId;
+  try {
+    const db: any = await connectDB();
 
-  return {
-    title: "Udgara",
-    description: "View post on Udgara",
+    // ✅ USE ID EXACTLY AS IS
+    const post = await db.collection("posts").findOne({
+      postId: params.id,
+    });
 
-    openGraph: {
+    if (!post) {
+      return {
+        title: "Udgara",
+        description: "View post on Udgara",
+      };
+    }
+
+    const title = `${post.publicId?.toUpperCase()} on Udgara`;
+    const description =
+      post.content?.slice(0, 120) || "View post on Udgara";
+
+    const image =
+      post.image ||
+      "https://udgara.vercel.app/icon-152.png";
+
+    return {
+      title,
+      description,
+
+      openGraph: {
+        title,
+        description,
+        url: `https://udgara.vercel.app/post/${post.postId}`,
+        type: "article",
+
+        images: [
+          {
+            url: image,
+            width: 1200,
+            height: 630,
+          },
+        ],
+      },
+
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [image],
+      },
+    };
+  } catch (e) {
+    return {
       title: "Udgara",
       description: "View post on Udgara",
-      url: `https://udgara.vercel.app/post/post_${id}`,
-
-      images: [
-        {
-          // 🔥 STATIC IMAGE (always works)
-          url: "https://udgara.vercel.app/icon-152.png",
-          width: 1200,
-          height: 630,
-        },
-      ],
-    },
-
-    twitter: {
-      card: "summary_large_image",
-      title: "Udgara",
-      description: "View post on Udgara",
-      images: ["https://udgara.vercel.app/icon-152.png"],
-    },
-  };
+    };
+  }
 }
 
 export default function Page(props: any) {
