@@ -18,7 +18,11 @@ type Post = {
 
 export default function Home() {
 
-  
+  useEffect(() => {
+  if ("scrollRestoration" in window.history) {
+    window.history.scrollRestoration = "manual";
+  }
+}, []);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   
 
