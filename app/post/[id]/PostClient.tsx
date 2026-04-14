@@ -151,18 +151,11 @@ queryClient.setQueryData(["post", post.postId], (old: any) => {
 
   /* ================= SHARE ================= */
   async function handleShare() {
-    const url = window.location.href;
+  const url = window.location.href;
 
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: "Udgara", url });
-      } catch {}
-    } else {
-      await navigator.clipboard.writeText(url);
-      alert("Link copied");
-    }
-  }
-
+  await navigator.clipboard.writeText(url);
+  alert("Link copied");
+}
   /* ================= REPORT ================= */
   async function handleReport() {
     if (!publicId) {

@@ -165,9 +165,10 @@ refetchOnWindowFocus: false,
 {showNewBtn && (
   <button
     onMouseDown={(e) => e.preventDefault()} // 🔥 BLOCK FOCUS
-    onClick={() => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }}
+    onClick={async () => {
+  await fetchNextPage(); // 🔥 LOAD NEW POSTS
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}}
     style={{
       position: "fixed",
       top: "70px",
@@ -346,7 +347,7 @@ refetchOnWindowFocus: false,
       </span>
 
       <button
-        onClick={() => router.push("/", { scroll: false })}
+        onClick={() => router.back()}
         style={{
           background: "none",
           border: "none",
