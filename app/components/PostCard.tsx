@@ -134,6 +134,19 @@ setLikes(optimisticCount);
       }))
     };
   });
+  // ✅ SYNC SINGLE POST PAGE ALSO
+queryClient.setQueryData(["post", post.postId], (old: any) => {
+  if (!old) return old;
+
+  return {
+    ...old,
+    post: {
+      ...old.post,
+      likes: data.likeCount,
+      isLiked: isLikedNow
+    }
+  };
+});
   queryClient.invalidateQueries({ queryKey: ["feed"] });
 }
 

@@ -122,7 +122,19 @@ const res = await fetch("/api/like", {
       }))
     };
   });
+// 🔥 ADD THIS BLOCK (SYNC POST PAGE)
+queryClient.setQueryData(["post", post.postId], (old: any) => {
+  if (!old) return old;
 
+  return {
+    ...old,
+    post: {
+      ...old.post,
+      likes: data.likeCount,
+      isLiked: isLikedNow
+    }
+  };
+});
   queryClient.invalidateQueries({ queryKey: ["feed"] });
 }
     } catch (err) {
