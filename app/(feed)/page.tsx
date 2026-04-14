@@ -68,15 +68,20 @@ refetchOnWindowFocus: false,
 
     const delay = setTimeout(async () => {
 
-      if (!search.trim()) return;
+      if (!search.trim()) {
+  setFilteredPosts([]);
+  return;
+}
 
       try {
         const res = await fetch(`/api/search?q=${search}`);
-        const data = await res.json();
+        const result = await res.json();
 
-        const safeData: Post[] = Array.isArray(data) ? data : [];
-        setFilteredPosts(safeData);
+const safeData: Post[] = Array.isArray(result?.data)
+  ? result.data
+  : [];
 
+setFilteredPosts(safeData);
       } catch (err) {
         console.log("Search error", err);
       }
@@ -245,11 +250,11 @@ refetchOnWindowFocus: false,
       <PostCard key={post.postId} post={post} />
     ))}
 
-    {filteredPosts.length === 0 && (
-      <div style={{ textAlign: "center", color: "#777", padding: "20px" }}>
-        No results found
-      </div>
-    )}
+    {search.trim() && filteredPosts.length === 0 && (
+  <div style={{ textAlign: "center", color: "#777", padding: "20px" }}>
+    No results found
+  </div>
+)}
   </>
 )}
 
