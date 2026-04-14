@@ -7,6 +7,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import PostClient from "../post/[id]/PostClient";
 type Post = {
   postId: string;
   npId: string;
@@ -332,7 +333,7 @@ refetchOnWindowFocus: false,
         background: "#0b0b0c"
       }}
     >
-      <div style={{ padding: 20 }}>Post ID: {activePostId}</div>
+      <PostClient postId={activePostId} />
     </div>
   </div>
 )}

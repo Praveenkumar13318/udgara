@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-export default function PostPage() {
+export default function PostPage({ postId: propPostId }: { postId?: string }) {
   const params = useParams();
-  const router = useRouter();
-  const postId = params?.id;
+const router = useRouter();
+
+const postId = propPostId || params?.id;
 const queryClient = useQueryClient();
   const [post, setPost] = useState<any>(null);
   const [comments, setComments] = useState<any[]>([]);
