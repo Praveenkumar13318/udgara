@@ -63,7 +63,7 @@ const {
   refetchOnMount: false,
 refetchOnWindowFocus: false,
 });  
- 
+ const isInitialLoading = !data && isLoading;
   useEffect(() => {
 
     const delay = setTimeout(async () => {
@@ -192,7 +192,7 @@ refetchOnWindowFocus: false,
 <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
 
   {/* 🔥 SKELETON BUFFER LOADING */}
-  {isLoading && (
+  {isInitialLoading && (
     <>
       {Array.from({ length: 6 }).map((_, i) => (
         <div
@@ -239,7 +239,7 @@ refetchOnWindowFocus: false,
   )}
 
   {/* 🔍 SEARCH MODE */}
-{!isLoading && isSearching && (
+{!isInitialLoading && isSearching && (
   <>
     {filteredPosts.map((post: any) => (
       <PostCard key={post.postId} post={post} />
@@ -254,7 +254,7 @@ refetchOnWindowFocus: false,
 )}
 
 {/* 🔥 NORMAL FEED */}
-{!isLoading && !isSearching && (
+{!isInitialLoading && !isSearching && (
   <>
     {(data?.pages?.flatMap((page: any) => page.posts || []) ?? []).map((post: any) => (
       <PostCard key={post.postId} post={post} />
