@@ -266,13 +266,9 @@ const showComments = mode !== "post-only";
     {/* ================= POST ================= */}
     {showPost && (
 <div style={{
-      background: "linear-gradient(180deg,#1a1a1a,#141414)",
-      padding: "18px",
-      borderRadius: "16px",
-      border: "1px solid #262626",
-      boxShadow: "0 4px 20px rgba(0,0,0,0.4)"
-    }}>
-
+  padding: "16px 16px 12px",
+  borderBottom: "1px solid rgba(255,255,255,0.06)"
+}}>
       {/* USER */}
       <div style={{
         fontSize: "13px",
@@ -310,7 +306,7 @@ const showComments = mode !== "post-only";
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        borderTop: "1px solid #222",
+        borderTop: "1px solid rgba(255,255,255,0.06)",
         paddingTop: "10px"
       }}>
 
@@ -429,7 +425,12 @@ const showComments = mode !== "post-only";
     )}
     {/* ================= COMMENTS ================= */}
     {showComments && (
-<div style={{ marginTop: "18px" }}>
+<div style={{
+  marginTop: "18px",
+  display: "flex",
+  flexDirection: "column",
+  gap: "6px"
+}}>
       {comments.length === 0 ? (
         <div style={{ color: "#666" }}>
           No comments yet
@@ -437,21 +438,22 @@ const showComments = mode !== "post-only";
       ) : (
         comments.map((c) => (
           <div key={c._id} style={{
-            background: "#161616",
-            padding: "14px",
-            borderRadius: "12px",
-            marginBottom: "10px",
-            border: "1px solid #262626"
-          }}>
+  padding: "12px 0",
+  borderBottom: "1px solid rgba(255,255,255,0.05)"
+}}>
             <div style={{
-              fontSize: "12px",
-              color: "#888",
-              marginBottom: "4px"
-            }}>
+  fontSize: "11px",
+  color: "#6f6f6f",
+  marginBottom: "4px"
+}}>
               {c.npId}
             </div>
 
-            <div style={{ color: "#eaeaea" }}>
+            <div style={{
+  color: "#f1f1f1",
+  fontSize: "14px",
+  lineHeight: "1.5"
+}}>
               {c.text}
             </div>
           </div>
