@@ -322,7 +322,9 @@ refetchOnWindowFocus: false,
       inset: 0,
       background: "#0b0b0c",
       zIndex: 9999,
-      overflowY: "auto",
+      display: "flex",
+      flexDirection: "column",
+      height: "100vh",
       animation: "slideUp 0.25s ease"
     }}
   >
@@ -335,9 +337,8 @@ refetchOnWindowFocus: false,
         padding: "12px 16px",
         borderBottom: "1px solid #1f1f1f",
         display: "flex",
-        alignItems: "center",
         justifyContent: "space-between",
-        zIndex: 10
+        alignItems: "center"
       }}
     >
       <span style={{ fontSize: "16px", fontWeight: 600 }}>
@@ -358,12 +359,24 @@ refetchOnWindowFocus: false,
       </button>
     </div>
 
-    {/* CONTENT */}
-    <div style={{ padding: "16px" }}>
-      <PostClient postId={activePostId} />
+    {/* POST */}
+    <div style={{ padding: "16px", borderBottom: "1px solid #1f1f1f" }}>
+      <PostClient postId={activePostId} mode="post-only" />
+    </div>
+
+    {/* COMMENTS */}
+    <div
+      style={{
+        flex: 1,
+        overflowY: "auto",
+        padding: "16px"
+      }}
+    >
+      <PostClient postId={activePostId} mode="comments-only" />
     </div>
   </div>
 )}
+
 <style jsx global>{`
   @keyframes slideUp {
     from {
@@ -374,6 +387,6 @@ refetchOnWindowFocus: false,
     }
   }
 `}</style>
-    </div>
-  );
-}
+   </div>
+    );
+  }

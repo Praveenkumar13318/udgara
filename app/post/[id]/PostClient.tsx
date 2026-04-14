@@ -3,7 +3,13 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-export default function PostPage({ postId: propPostId }: { postId?: string }) {
+export default function PostPage({
+  postId: propPostId,
+  mode
+}: {
+  postId?: string;
+  mode?: "post-only" | "comments-only";
+})  {
   const params = useParams();
 const router = useRouter();
 
@@ -248,7 +254,8 @@ queryClient.setQueryData(["post", post.postId], (old: any) => {
   if (!post) {
     return <div style={{ padding: 40 }}>Post not found</div>;
   }
-
+const showPost = mode !== "comments-only";
+const showComments = mode !== "post-only";
   return (
   <main style={{
     maxWidth: "700px",
@@ -257,7 +264,8 @@ queryClient.setQueryData(["post", post.postId], (old: any) => {
   }}>
 
     {/* ================= POST ================= */}
-    <div style={{
+    {showPost && (
+<div style={{
       background: "linear-gradient(180deg,#1a1a1a,#141414)",
       padding: "18px",
       borderRadius: "16px",
@@ -273,6 +281,7 @@ queryClient.setQueryData(["post", post.postId], (old: any) => {
       }}>
         {post.npId}
       </div>
+      
 
       {/* CONTENT */}
       <div style={{
@@ -377,9 +386,10 @@ queryClient.setQueryData(["post", post.postId], (old: any) => {
 
       </div>
     </div>
-
+    )}
     {/* ================= COMMENT INPUT ================= */}
-    <div style={{
+    {showComments && (
+<div style={{
       marginTop: "18px",
       display: "flex",
       gap: "10px"
@@ -416,9 +426,10 @@ queryClient.setQueryData(["post", post.postId], (old: any) => {
       </button>
 
     </div>
-
+    )}
     {/* ================= COMMENTS ================= */}
-    <div style={{ marginTop: "18px" }}>
+    {showComments && (
+<div style={{ marginTop: "18px" }}>
       {comments.length === 0 ? (
         <div style={{ color: "#666" }}>
           No comments yet
@@ -444,10 +455,12 @@ queryClient.setQueryData(["post", post.postId], (old: any) => {
               {c.text}
             </div>
           </div>
+        
         ))
       )}
     </div>
-
+    )} 
   </main>
+    
 );
 }
