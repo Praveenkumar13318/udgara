@@ -6,6 +6,7 @@ import { fetchPosts } from "../lib/api";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 type Post = {
   postId: string;
   npId: string;
@@ -17,7 +18,15 @@ type Post = {
   createdAtMs?: number;
 };
 
-export default function Home() {
+export default function HomeWrapper() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Home />
+    </Suspense>
+  );
+}
+
+function Home() {
 
   useEffect(() => {
   if ("scrollRestoration" in window.history) {
