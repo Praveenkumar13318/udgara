@@ -5,6 +5,7 @@ import PostCard from "../components/PostCard";
 import { fetchPosts } from "../lib/api";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 type Post = {
   postId: string;
   npId: string;
@@ -30,7 +31,8 @@ export default function Home() {
   const isSearching = search.trim().length > 0;
   const [showNewBtn, setShowNewBtn] = useState(false);
 const router = useRouter();
-  
+  const searchParams = useSearchParams();
+const activePostId = searchParams.get("post");
 
   const loadingRef = useRef(false);
 const {
@@ -98,25 +100,7 @@ refetchOnWindowFocus: false,
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
- useEffect(() => {
-  const saved = sessionStorage.getItem("feed-scroll");
-  if (!saved) return;
-
-  let attempts = 0;
-
-  const restore = () => {
-    window.scrollTo(0, Number(saved));
-    attempts++;
-
-    if (attempts < 10) {
-      requestAnimationFrame(restore);
-    } else {
-      sessionStorage.removeItem("feed-scroll");
-    }
-  };
-
-  requestAnimationFrame(restore);
-}, []);
+ 
 
   return (
 
@@ -325,6 +309,28 @@ refetchOnWindowFocus: false,
     100% { opacity: 0.5; }
   }
 `}</style>
+    {activePostId && (
+  <div
+    onClick={() => router.push("/", { scroll: false })}
+    style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(0,0,0,0.7)",
+      zIndex: 2000
+    }}
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        maxWidth: "680px",
+        margin: "40px auto",
+        background: "#0b0b0c"
+      }}
+    >
+      <div style={{ padding: 20 }}>Post ID: {activePostId}</div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
