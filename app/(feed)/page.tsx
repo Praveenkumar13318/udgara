@@ -317,26 +317,63 @@ refetchOnWindowFocus: false,
 `}</style>
     {activePostId && (
   <div
-    onClick={() => router.push("/", { scroll: false })}
     style={{
       position: "fixed",
       inset: 0,
-      background: "rgba(0,0,0,0.7)",
-      zIndex: 2000
+      background: "#0b0b0c",
+      zIndex: 9999,
+      overflowY: "auto",
+      animation: "slideUp 0.25s ease"
     }}
   >
+    {/* HEADER */}
     <div
-      onClick={(e) => e.stopPropagation()}
       style={{
-        maxWidth: "680px",
-        margin: "40px auto",
-        background: "#0b0b0c"
+        position: "sticky",
+        top: 0,
+        background: "#0b0b0c",
+        padding: "12px 16px",
+        borderBottom: "1px solid #1f1f1f",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        zIndex: 10
       }}
     >
+      <span style={{ fontSize: "16px", fontWeight: 600 }}>
+        Post
+      </span>
+
+      <button
+        onClick={() => router.push("/", { scroll: false })}
+        style={{
+          background: "none",
+          border: "none",
+          color: "#fff",
+          fontSize: "18px",
+          cursor: "pointer"
+        }}
+      >
+        ✕
+      </button>
+    </div>
+
+    {/* CONTENT */}
+    <div style={{ padding: "16px" }}>
       <PostClient postId={activePostId} />
     </div>
   </div>
 )}
+<style jsx global>{`
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+`}</style>
     </div>
   );
 }
