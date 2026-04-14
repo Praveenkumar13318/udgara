@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { fetchWithAuth } from "../lib/fetcher";
+
 /* ================= TIME ================= */
 function timeAgo(dateString: any) {
   if (!dateString) return "";
@@ -287,9 +288,9 @@ async function handleDelete() {
         <div
           onClick={() => {
   
-sessionStorage.setItem("feed-scroll", String(window.scrollY));
 
-router.push(`/post/${post.postId}`, { scroll: false });
+
+router.push(`/?post=${post.postId}`, { scroll: false });
   
 }}
           className="tap no-select"
@@ -308,9 +309,9 @@ router.push(`/post/${post.postId}`, { scroll: false });
           <div
             onClick={() => {
   
-sessionStorage.setItem("feed-scroll", String(window.scrollY));
 
-router.push(`/post/${post.postId}`, { scroll: false });
+
+router.push(`/?post=${post.postId}`, { scroll: false });
 }}
             className="tap no-select"
             style={{
@@ -378,9 +379,9 @@ router.push(`/post/${post.postId}`, { scroll: false });
                 e.stopPropagation();
                 e.preventDefault();
                 
-sessionStorage.setItem("feed-scroll", String(window.scrollY));
 
-router.push(`/post/${post.postId}`, { scroll: false });
+
+router.push(`/?post=${post.postId}`, { scroll: false });
               }}
               className="tap no-select"
               style={{
