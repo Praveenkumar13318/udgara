@@ -287,6 +287,8 @@ async function handleDelete() {
         <div
           onClick={() => {
   
+sessionStorage.setItem("feed-scroll", String(window.scrollY));
+
 router.push(`/post/${post.postId}`, { scroll: false });
   
 }}
@@ -306,6 +308,8 @@ router.push(`/post/${post.postId}`, { scroll: false });
           <div
             onClick={() => {
   
+sessionStorage.setItem("feed-scroll", String(window.scrollY));
+
 router.push(`/post/${post.postId}`, { scroll: false });
 }}
             className="tap no-select"
@@ -374,6 +378,8 @@ router.push(`/post/${post.postId}`, { scroll: false });
                 e.stopPropagation();
                 e.preventDefault();
                 
+sessionStorage.setItem("feed-scroll", String(window.scrollY));
+
 router.push(`/post/${post.postId}`, { scroll: false });
               }}
               className="tap no-select"

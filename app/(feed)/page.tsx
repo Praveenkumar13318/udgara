@@ -26,7 +26,7 @@ export default function Home() {
   const isSearching = search.trim().length > 0;
   const [showNewBtn, setShowNewBtn] = useState(false);
 const router = useRouter();
-  const scrollRef = useRef(0);
+  
 
   const loadingRef = useRef(false);
 const {
@@ -94,7 +94,13 @@ refetchOnWindowFocus: false,
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
- 
+ useEffect(() => {
+  const saved = sessionStorage.getItem("feed-scroll");
+
+  if (saved) {
+    window.scrollTo(0, Number(saved));
+  }
+}, []);
 
   return (
 
