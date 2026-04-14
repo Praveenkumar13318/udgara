@@ -26,7 +26,7 @@ export default function Home() {
   const isSearching = search.trim().length > 0;
   const [showNewBtn, setShowNewBtn] = useState(false);
 const router = useRouter();
-  const hasRestoredScroll = useRef(false);
+  
 
   const loadingRef = useRef(false);
 const {
@@ -94,18 +94,26 @@ refetchOnWindowFocus: false,
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
- 
-useEffect(() => {
-  if (!data || hasRestoredScroll.current) return;
-
+ useEffect(() => {
   const saved = sessionStorage.getItem("feed-scroll");
+  if (!saved) return;
 
-  if (saved) {
+  let attempts = 0;
+
+  const restore = () => {
     window.scrollTo(0, Number(saved));
-    hasRestoredScroll.current = true; // ✅ IMPORTANT
-    sessionStorage.removeItem("feed-scroll");
-  }
-}, [data]);
+    attempts++;
+
+    if (attempts < 10) {
+      requestAnimationFrame(restore);
+    } else {
+      sessionStorage.removeItem("feed-scroll");
+    }
+  };
+
+  requestAnimationFrame(restore);
+}, []);
+
   return (
 
     <div
