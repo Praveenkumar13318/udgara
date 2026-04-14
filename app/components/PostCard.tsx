@@ -29,6 +29,7 @@ function timeAgo(dateString: any) {
 }
 
 export default function PostCard({ post }: any) {
+  const [isLiking, setIsLiking] = useState(false);
   const publicId =
   typeof window !== "undefined"
     ? localStorage.getItem("publicId")
@@ -70,6 +71,7 @@ const isOwner = publicId && publicId === post.npId;
 
   const [likes, setLikes] = useState(post.likes || 0);
   const [liked, setLiked] = useState(post.isLiked || false);
+  const [animating, setAnimating] = useState(false);
   const comments = post.commentsCount || 0;
 
   const reasons = [
@@ -83,14 +85,19 @@ const isOwner = publicId && publicId === post.npId;
 
   /* ================= LIKE ================= */
   async function handleLike(e: any) {
-    e.stopPropagation();
-    e.preventDefault();
+  e.stopPropagation();
+  e.preventDefault();
 
+  if (isLiking) return; // ✅ BLOCK DOUBLE CLICK
+  setIsLiking(true);
+setAnimating(true);
+setTimeout(() => setAnimating(false), 180);
     const token = localStorage.getItem("token");
 if (!token) {
-      router.push("/login");
-      return;
-    }
+  setIsLiking(false); // ✅ ADD THIS
+  router.push("/login");
+  return;
+}
 const optimisticLiked = !liked;
 const optimisticCount = optimisticLiked ? likes + 1 : likes - 1;
 
@@ -148,10 +155,12 @@ queryClient.setQueryData(["post", post.postId], (old: any) => {
   };
 });
   queryClient.invalidateQueries({ queryKey: ["feed"] });
+  setIsLiking(false);
 }
 
     } catch (err) {
       console.log("LIKE ERROR:", err);
+      setIsLiking(false);
     }
   }
 
@@ -337,7 +346,15 @@ router.push(`/post/${post.postId}`, { scroll: false });
                 gap: "6px"
               }}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24">
+              <svg
+  width="20"
+  height="20"
+  viewBox="0 0 24 24"
+  style={{
+    transform: animating ? "scale(1.25)" : "scale(1)",
+    transition: "transform 0.18s ease"
+  }}
+>
                 <path
                   d="M16.697 5.5c-1.222 0-2.404.724-2.997 1.86-.593-1.136-1.775-1.86-2.997-1.86-1.93 0-3.5 1.57-3.5 3.5 0 4.25 6.497 8.5 6.497 8.5s6.497-4.25 6.497-8.5c0-1.93-1.57-3.5-3.5-3.5z"
                   fill={liked ? "#ff2d55" : "none"}
