@@ -36,9 +36,11 @@ function Home() {
   try {
     const res = await fetch("/api/posts?limit=1");
 const latestData = await res.json();
+if (!latestData?.data) return;
 
-const latest = latestData?.posts?.[0];
-const current = data?.pages?.[0]?.posts?.[0];
+const latest = latestData?.data?.[0];
+const feedData: any = queryClient.getQueryData(["feed"]);
+const current = feedData?.pages?.[0]?.posts?.[0];
 
     if (latest && current && latest.postId !== current.postId) {
       setShowNewBtn(true);
@@ -110,7 +112,8 @@ const safeData: Post[] = Array.isArray(result?.data)
   ? result.data
   : [];
 
-setFilteredPosts(safeData);
+setFilteredPosts(safeData.slice(0, 20));
+
       } catch (err) {
         console.log("Search error", err);
       }
@@ -121,21 +124,22 @@ setFilteredPosts(safeData);
 
   }, [search]);
  
-  const handleScroll = useCallback(() => {
+ const handleScroll = useCallback(() => {
+  if (loadingRef.current) return;
 
-    
+  if (
+    hasNextPage &&
+    !isFetchingNextPage &&
+    window.innerHeight + window.scrollY >=
+      document.documentElement.scrollHeight - 200
+  ) {
+    loadingRef.current = true;
 
-    if (
-  hasNextPage &&
-  !isFetchingNextPage &&
-  window.innerHeight + window.scrollY >=
-    document.documentElement.scrollHeight - 200
-) {
-  fetchNextPage();
-}
-
-  }, [hasNextPage, isFetchingNextPage]);
-
+    fetchNextPage().finally(() => {
+      loadingRef.current = false;
+    });
+  }
+}, [hasNextPage, isFetchingNextPage]);
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -146,7 +150,7 @@ setFilteredPosts(safeData);
   }, 8000);
 
   return () => clearInterval(interval);
-}, [data]);
+}, []);
 
   return (
 
@@ -205,8 +209,15 @@ setFilteredPosts(safeData);
 {showNewBtn && (
   <button
     onMouseDown={(e) => e.preventDefault()} // 🔥 BLOCK FOCUS
-    onClick={() => {
-  queryClient.invalidateQueries({ queryKey: ["feed"] });
+    onClick={async () => {
+  const res = await fetch("/api/posts?limit=10");
+  const fresh = await res.json();
+
+  queryClient.setQueryData(["feed"], {
+    pages: [{ posts: fresh.data }],
+    pageParams: []
+  });
+
   setShowNewBtn(false);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }}
