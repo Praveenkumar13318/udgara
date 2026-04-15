@@ -379,10 +379,16 @@ setFilteredPosts(safeData);
     </div>
 
     {/* POST */}
-    <div style={{ padding: "16px", borderBottom: "1px solid #1f1f1f" }}>
-      <PostClient postId={activePostId} mode="post-only" />
-    </div>
-
+    <div
+  style={{
+    padding: "16px",
+    borderBottom: "1px solid #1f1f1f",
+    maxHeight: "55vh",
+    overflowY: "auto"
+  }}
+>
+  <PostClient postId={activePostId} mode="post-only" />
+</div>
     {/* COMMENTS */}
     <div
       style={{

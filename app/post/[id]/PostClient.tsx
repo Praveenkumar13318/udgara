@@ -251,15 +251,15 @@ const showPost = mode !== "comments-only";
 const showComments = mode !== "post-only";
   return (
   <main style={{
-    maxWidth: "700px",
-    margin: "0 auto",
-    padding: "16px"
-  }}>
+  width: "100%",
+  padding: "0",
+  margin: "0"
+}}>
 
     {/* ================= POST ================= */}
     {showPost && (
 <div style={{
-  padding: "16px 16px 12px",
+  padding: "12px 16px",
   borderBottom: "1px solid rgba(255,255,255,0.06)"
 }}>
       {/* USER */}
@@ -274,7 +274,7 @@ const showComments = mode !== "post-only";
 
       {/* CONTENT */}
       <div style={{
-        fontSize: "18px",
+        fontSize: "16px",
         color: "#f1f1f1",
         lineHeight: "1.6",
         marginBottom: "12px"
@@ -285,13 +285,15 @@ const showComments = mode !== "post-only";
       {/* IMAGE */}
       {post.image && (
         <img
-          src={post.image}
-          style={{
-            width: "100%",
-            borderRadius: "12px",
-            marginBottom: "14px"
-          }}
-        />
+  src={post.image}
+  style={{
+    width: "100%",
+    maxHeight: "60vh",
+    objectFit: "cover",
+    borderRadius: "16px",
+    marginBottom: "12px"
+  }}
+/>
       )}
 
       {/* ACTION BAR */}
@@ -379,7 +381,7 @@ const showComments = mode !== "post-only";
     {/* ================= COMMENT INPUT ================= */}
     {showComments && (
 <div style={{
-      marginTop: "18px",
+      marginTop: "12px",
       display: "flex",
       gap: "10px"
     }}>
@@ -419,7 +421,7 @@ const showComments = mode !== "post-only";
     {/* ================= COMMENTS ================= */}
     {showComments && (
 <div style={{
-  marginTop: "18px",
+  marginTop: "12px",
   display: "flex",
   flexDirection: "column",
   gap: "6px"
