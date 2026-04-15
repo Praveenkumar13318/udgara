@@ -259,13 +259,13 @@ const showComments = mode !== "post-only";
     {/* ================= POST ================= */}
     {showPost && (
 <div style={{
-  padding: "12px 16px",
-  borderBottom: "1px solid rgba(255,255,255,0.06)"
+  padding: "16px",
 }}>
       {/* USER */}
       <div style={{
-        fontSize: "13px",
-        color: "#8a8a8a",
+        fontSize: "12px",
+color: "#6f6f6f",
+letterSpacing: "0.5px",
         marginBottom: "8px"
       }}>
         {post.npId}
@@ -274,8 +274,9 @@ const showComments = mode !== "post-only";
 
       {/* CONTENT */}
       <div style={{
-        fontSize: "16px",
-        color: "#f1f1f1",
+        fontSize: "17px",
+color: "#ffffff",
+fontWeight: "500",
         lineHeight: "1.6",
         marginBottom: "12px"
       }}>
@@ -301,8 +302,7 @@ const showComments = mode !== "post-only";
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        borderTop: "1px solid rgba(255,255,255,0.06)",
-        paddingTop: "10px"
+        paddingTop: "6px"
       }}>
 
         <div style={{
@@ -394,8 +394,8 @@ const showComments = mode !== "post-only";
           flex: 1,
           padding: "12px",
           borderRadius: "12px",
-          border: "1px solid #2a2a2a",
-          background: "#111",
+         background: "#0f0f10",
+border: "1px solid rgba(255,255,255,0.08)",
           color: "#fff",
           outline: "none"
         }}
@@ -433,8 +433,7 @@ const showComments = mode !== "post-only";
       ) : (
         comments.map((c) => (
           <div key={c._id} style={{
-  padding: "12px 0",
-  borderBottom: "1px solid rgba(255,255,255,0.05)"
+  padding: "10px 0"
 }}>
             <div style={{
   fontSize: "11px",
