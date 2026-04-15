@@ -200,8 +200,26 @@ queryClient.setQueryData(["post", post.postId], (old: any) => {
     await loadComments();
     setLoadingComment(false);
   }
+const renderContent = (text: string) => {
+  const parts = text.split(/(#\w+)/g);
 
+  return parts.map((part, i) => {
+    if (part.startsWith("#")) {
+      return (
+        <span
+          key={i}
+          onClick={() => router.push(`/search?q=${part.replace("#", "")}`)}
+          style={{ color: "#4da6ff", cursor: "pointer" }}
+        >
+          {part}
+        </span>
+      );
+    }
+    return part;
+  });
+};
  if (loadingPost) {
+  
   return (
     <main
       style={{
@@ -280,7 +298,7 @@ fontWeight: "500",
         lineHeight: "1.6",
         marginBottom: "12px"
       }}>
-        {post.content}
+        {renderContent(post.content)}
       </div>
 
       {/* IMAGE */}
