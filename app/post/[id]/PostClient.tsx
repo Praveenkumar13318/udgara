@@ -32,13 +32,36 @@ const queryClient = useQueryClient();
   loadPost();
   loadComments();
 
-  // ✅ AUTO REFRESH (PRODUCTION SAFE)
-  const interval = setInterval(() => {
+  let interval: any;
+
+  const startPolling = () => {
+  if (interval) clearInterval(interval); // ✅ ADD THIS LINE
+
+  interval = setInterval(() => {
     loadPost();
     loadComments();
-  }, 5000); // every 5 sec
+  }, 5000);
+};
 
-  return () => clearInterval(interval);
+  const stopPolling = () => {
+    if (interval) clearInterval(interval);
+  };
+const handleVisibility = () => {
+  if (document.hidden) {
+    stopPolling();
+  } else {
+    startPolling();
+  }
+};
+  // ✅ start when active
+  startPolling();
+document.addEventListener("visibilitychange", handleVisibility);
+  // ✅ stop when tab inactive
+  
+  return () => {
+  stopPolling();
+  document.removeEventListener("visibilitychange", handleVisibility);
+};
 }, [postId]);
 
   async function loadPost() {
@@ -192,7 +215,13 @@ queryClient.setQueryData(["post", post.postId], (old: any) => {
     if (!text.trim()) return;
 
     setLoadingComment(true);
+const tempComment = {
+  _id: Date.now(),
+  npId: publicId,
+  text
+};
 
+setComments((prev) => [tempComment, ...prev]);
     await fetch("/api/comments", {
       method: "POST",
       headers: {
@@ -207,6 +236,7 @@ queryClient.setQueryData(["post", post.postId], (old: any) => {
 
     setText("");
     await loadComments();
+await loadPost(); // ✅ FIX COMMENT COUNT
     setLoadingComment(false);
   }
 const renderContent = (text: string) => {

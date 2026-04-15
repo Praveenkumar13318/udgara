@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import PostClient from "../post/[id]/PostClient";
+import { useQueryClient } from "@tanstack/react-query";
 type Post = {
   postId: string;
   npId: string;
@@ -31,12 +32,27 @@ function Home() {
 
   
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
-  
+  const checkNewPosts = async () => {
+  try {
+    const res = await fetch("/api/posts?limit=1");
+const latestData = await res.json();
+
+const latest = latestData?.posts?.[0];
+const current = data?.pages?.[0]?.posts?.[0];
+
+    if (latest && current && latest.postId !== current.postId) {
+      setShowNewBtn(true);
+    }
+  } catch (e) {
+    console.log("check error", e);
+  }
+};
 
   const [search, setSearch] = useState("");
   const isSearching = search.trim().length > 0;
   const [showNewBtn, setShowNewBtn] = useState(false);
 const router = useRouter();
+const queryClient = useQueryClient();
   const searchParams = useSearchParams();
 const activePostId = searchParams.get("post");
 useEffect(() => {
@@ -107,7 +123,7 @@ setFilteredPosts(safeData);
  
   const handleScroll = useCallback(() => {
 
-    setShowNewBtn(window.scrollY > 300);
+    
 
     if (
   hasNextPage &&
@@ -124,7 +140,13 @@ setFilteredPosts(safeData);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
- 
+ useEffect(() => {
+  const interval = setInterval(() => {
+    checkNewPosts();
+  }, 8000);
+
+  return () => clearInterval(interval);
+}, [data]);
 
   return (
 
@@ -183,8 +205,9 @@ setFilteredPosts(safeData);
 {showNewBtn && (
   <button
     onMouseDown={(e) => e.preventDefault()} // 🔥 BLOCK FOCUS
-    onClick={async () => {
-  await fetchNextPage(); // 🔥 LOAD NEW POSTS
+    onClick={() => {
+  queryClient.invalidateQueries({ queryKey: ["feed"] });
+  setShowNewBtn(false);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }}
     style={{
