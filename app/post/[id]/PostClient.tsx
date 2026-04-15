@@ -174,7 +174,7 @@ queryClient.setQueryData(["post", post.postId], (old: any) => {
     }
   };
 });
-  queryClient.invalidateQueries({ queryKey: ["feed"] });
+  
 }
     } catch (err) {
       console.log("Like error", err);
@@ -195,11 +195,14 @@ queryClient.setQueryData(["post", post.postId], (old: any) => {
       return;
     }
 
-    await fetch("/api/report", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+    const token = localStorage.getItem("token");
+
+await fetch("/api/report", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: token ? `Bearer ${token}` : ""
+  },
       body: JSON.stringify({
         postId: post.postId,
         npId: publicId
@@ -211,18 +214,25 @@ queryClient.setQueryData(["post", post.postId], (old: any) => {
 
   /* ================= COMMENT ================= */
   async function addComment() {
-    if (!publicId) return alert("Login first");
-    if (!text.trim()) return;
+  if (!publicId) return alert("Login first");
+  if (!text.trim()) return;
 
-    setLoadingComment(true);
-const tempComment = {
-  _id: Date.now(),
-  npId: publicId,
-  text
-};
+  setLoadingComment(true);
 
-setComments((prev) => [tempComment, ...prev]);
-    await fetch("/api/comments", {
+  const tempId = Date.now();
+
+  const tempComment = {
+    _id: tempId,
+    npId: publicId,
+    text,
+    createdAt: new Date()
+  };
+
+  // ✅ 1. INSTANT UI
+  setComments((prev) => [tempComment, ...prev]);
+
+  try {
+    const res = await fetch("/api/comments", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -234,11 +244,47 @@ setComments((prev) => [tempComment, ...prev]);
       })
     });
 
-    setText("");
-    await loadComments();
-await loadPost(); // ✅ FIX COMMENT COUNT
-    setLoadingComment(false);
+    const data = await res.json();
+
+    if (data.success) {
+      // ✅ 2. UPDATE COMMENT COUNT (POST STATE)
+      setText(""); // ✅ ADD THIS HERE
+      setPost((prev: any) => ({
+        ...prev,
+        commentsCount: data.commentsCount
+      }));
+
+      // ✅ 3. SYNC FEED (IMPORTANT)
+      queryClient.setQueryData(["feed"], (old: any) => {
+        if (!old) return old;
+
+        return {
+          ...old,
+          pages: old.pages.map((page: any) => ({
+            ...page,
+            posts: page.posts.map((p: any) =>
+              p.postId === postId
+                ? {
+                    ...p,
+                    commentsCount: data.commentsCount
+                  }
+                : p
+            )
+          }))
+        };
+      });
+
+    } else {
+      throw new Error();
+    }
+
+  } catch (err) {
+    // ❌ REMOVE TEMP COMMENT IF FAILED
+    setComments((prev) => prev.filter((c) => c._id !== tempId));
   }
+
+  setLoadingComment(false);
+}
 const renderContent = (text: string) => {
   const parts = text.split(/(#\w+)/g);
 
@@ -424,7 +470,9 @@ letterSpacing: "0.5px",
                 strokeWidth="1.6"
               />
             </svg>
-            <span style={{ fontSize: "13px" }}>{comments.length}</span>
+            <span style={{ fontSize: "13px" }}>
+  {post.commentsCount || comments.length}
+</span>
           </div>
 
           {/* SHARE */}

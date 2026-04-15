@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "../../lib/mongodb";
 
 function generateCommentId() {
-  return "comment_" + Math.random().toString(36).substring(2, 10);
+  return "CM" + Date.now();
 }
 
 /* ================= CREATE COMMENT ================= */
@@ -37,9 +37,14 @@ export async function POST(request: Request) {
       { $inc: { commentsCount: 1 } }
     );
 
-    return NextResponse.json({
-      success: true
-    });
+    // 🔥 GET UPDATED POST (IMPORTANT)
+const updatedPost = await db.collection("posts").findOne({ postId });
+
+return NextResponse.json({
+  success: true,
+  comment,
+  commentsCount: updatedPost?.commentsCount || 0
+});
 
   } catch (error) {
 
