@@ -39,6 +39,19 @@ function Home() {
 const router = useRouter();
   const searchParams = useSearchParams();
 const activePostId = searchParams.get("post");
+useEffect(() => {
+  if (activePostId) {
+    // LOCK BACKGROUND SCROLL
+    document.body.style.overflow = "hidden";
+  } else {
+    // RESTORE NORMAL
+    document.body.style.overflow = "";
+  }
+
+  return () => {
+    document.body.style.overflow = "";
+  };
+}, [activePostId]);
 
   const loadingRef = useRef(false);
 const {
