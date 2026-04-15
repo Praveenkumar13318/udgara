@@ -206,11 +206,28 @@ const renderContent = (text: string) => {
   return parts.map((part, i) => {
     if (part.startsWith("#")) {
       return (
-        <span
-          key={i}
-          onClick={() => router.push(`/search?q=${part.replace("#", "")}`)}
-          style={{ color: "#4da6ff", cursor: "pointer" }}
-        >
+       <span
+  key={i}
+  onClick={() => router.push(`/search?q=${part.replace("#", "")}`)}
+  style={{
+    color: "#4da6ff",
+    cursor: "pointer",
+
+    // ✅ UX IMPROVEMENTS
+    fontWeight: "500",
+    transition: "0.2s",
+    padding: "2px 4px",
+    borderRadius: "6px"
+  }}
+
+  onTouchStart={(e) => {
+    (e.target as HTMLElement).style.background = "rgba(77,166,255,0.15)";
+  }}
+
+  onTouchEnd={(e) => {
+    (e.target as HTMLElement).style.background = "transparent";
+  }}
+>
           {part}
         </span>
       );
@@ -292,12 +309,16 @@ letterSpacing: "0.5px",
 
       {/* CONTENT */}
       <div style={{
-        fontSize: "17px",
-color: "#ffffff",
-fontWeight: "500",
-        lineHeight: "1.6",
-        marginBottom: "12px"
-      }}>
+  fontSize: "17px",
+  color: "#ffffff",
+  fontWeight: "500",
+  lineHeight: "1.6",
+  marginBottom: "12px",
+
+  // ✅ ADD THIS (IMPORTANT)
+  userSelect: "none",
+  WebkitUserSelect: "none"
+}}>
         {renderContent(post.content)}
       </div>
 
