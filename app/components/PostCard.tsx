@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { fetchWithAuth } from "../lib/fetcher";
-
+import { useEffect } from "react";
 /* ================= TIME ================= */
 function timeAgo(dateString: any) {
   if (!dateString) return "";
@@ -47,10 +47,11 @@ const isOwner = publicId && publicId === post.npId;
         <span
           key={i}
           style={{
-            color: "#1e90ff",
-            cursor: "pointer",
-            fontWeight: 500
-          }}
+  color: "#1e90ff",
+  cursor: "pointer",
+  fontWeight: 500,
+  textDecoration: "underline"
+}}
           onClick={(e) => {
             e.stopPropagation(); // 🔥 VERY IMPORTANT (prevents post open)
             e.preventDefault();
@@ -73,7 +74,7 @@ const isOwner = publicId && publicId === post.npId;
   const [likes, setLikes] = useState(post.likes || 0);
   const [liked, setLiked] = useState(post.isLiked || false);
   const [animating, setAnimating] = useState(false);
-  const comments = post.commentsCount || 0;
+  const [localComments, setLocalComments] = useState(post.commentsCount || 0);
 
   const reasons = [
     "Spam",
@@ -83,7 +84,9 @@ const isOwner = publicId && publicId === post.npId;
     "Misinformation",
     "Other"
   ];
-
+useEffect(() => {
+  setLocalComments(post.commentsCount || 0);
+}, [post.commentsCount]);
   /* ================= LIKE ================= */
   async function handleLike(e: any) {
   e.stopPropagation();
@@ -92,7 +95,7 @@ const isOwner = publicId && publicId === post.npId;
   if (isLiking) return; // ✅ BLOCK DOUBLE CLICK
   setIsLiking(true);
 setAnimating(true);
-setTimeout(() => setAnimating(false), 180);
+setTimeout(() => setAnimating(false), 140);
     const token = localStorage.getItem("token");
 if (!token) {
   setIsLiking(false); // ✅ ADD THIS
@@ -100,7 +103,7 @@ if (!token) {
   return;
 }
 const optimisticLiked = !liked;
-const optimisticCount = optimisticLiked ? likes + 1 : likes - 1;
+const optimisticCount = liked ? likes - 1 : likes + 1;
 
 setLiked(optimisticLiked);
 setLikes(optimisticCount);
@@ -155,14 +158,21 @@ queryClient.setQueryData(["post", post.postId], (old: any) => {
     }
   };
 });
-  queryClient.invalidateQueries({ queryKey: ["feed"] });
+  
   setIsLiking(false);
 }
 
-    } catch (err) {
-      console.log("LIKE ERROR:", err);
-      setIsLiking(false);
     }
+     catch (err) {
+  console.log("LIKE ERROR:", err);
+
+  // ✅ REVERT UI (VERY IMPORTANT)
+  setLiked((prev: boolean) => !prev);
+setLikes((prev: number) =>
+  optimisticLiked ? prev - 1 : prev + 1
+);
+  setIsLiking(false);
+}
   }
 
   /* ================= SHARE ================= */
@@ -178,7 +188,7 @@ queryClient.setQueryData(["post", post.postId], (old: any) => {
       } catch {}
     } else {
       await navigator.clipboard.writeText(url);
-      alert("Link copied!");
+      console.log("Link copied");
     }
   }
 
@@ -191,7 +201,7 @@ queryClient.setQueryData(["post", post.postId], (old: any) => {
 
     try {
 
-      const res = await fetch("/api/report", {
+      const res = await fetchWithAuth("/api/report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -321,12 +331,13 @@ router.push(`/?post=${post.postId}`, { scroll: false });
             }}
           >
             <img
-              src={post.image}
-              style={{
-                width: "100%",
-                objectFit: "cover"
-              }}
-            />
+  src={post.image}
+  style={{
+    width: "100%",
+    maxHeight: "420px",
+    objectFit: "cover"
+  }}
+/>
           </div>
         )}
 
@@ -400,7 +411,7 @@ router.push(`/?post=${post.postId}`, { scroll: false });
               </svg>
 
               <span style={{ fontSize: "13px" }}>
-                {comments}
+                {localComments}
               </span>
             </div>
 
@@ -424,7 +435,7 @@ router.push(`/?post=${post.postId}`, { scroll: false });
          <div style={{ display: "flex", gap: "14px", alignItems: "center" }}>
 
   {/* DELETE BUTTON */}
-  {post.npId === localStorage.getItem("publicId")?.toUpperCase() && (
+  {isOwner && (
     <div
       onClick={(e) => {
         e.stopPropagation();
