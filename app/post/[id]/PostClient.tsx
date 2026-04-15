@@ -27,10 +27,19 @@ const queryClient = useQueryClient();
       : null;
 
   useEffect(() => {
-    if (!postId) return;
+  if (!postId) return;
+
+  loadPost();
+  loadComments();
+
+  // ✅ AUTO REFRESH (PRODUCTION SAFE)
+  const interval = setInterval(() => {
     loadPost();
     loadComments();
-  }, [postId]);
+  }, 5000); // every 5 sec
+
+  return () => clearInterval(interval);
+}, [postId]);
 
   async function loadPost() {
     try {
