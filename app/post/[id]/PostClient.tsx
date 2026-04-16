@@ -245,36 +245,56 @@ await fetch("/api/report", {
     });
 
     const data = await res.json();
+if (data.success) {
+  setText("");
 
-    if (data.success) {
-      // ✅ 2. UPDATE COMMENT COUNT (POST STATE)
-      setText(""); // ✅ ADD THIS HERE
-      setPost((prev: any) => ({
-        ...prev,
+  // ✅ Replace temp comment with real one
+  setComments((prev) =>
+    prev.map((c) =>
+      c._id === tempId ? data.comment : c
+    )
+  );
+
+  // ✅ Update post count
+  setPost((prev: any) => ({
+    ...prev,
+    commentsCount: data.commentsCount
+  }));
+
+  // ✅ Sync FEED
+  queryClient.setQueryData(["feed"], (old: any) => {
+    if (!old) return old;
+
+    return {
+      ...old,
+      pages: old.pages.map((page: any) => ({
+        ...page,
+        posts: page.posts.map((p: any) =>
+          p.postId === postId
+            ? {
+                ...p,
+                commentsCount: data.commentsCount
+              }
+            : p
+        )
+      }))
+    };
+  });
+
+  // ✅ Sync POST PAGE
+  queryClient.setQueryData(["post", postId], (old: any) => {
+    if (!old) return old;
+
+    return {
+      ...old,
+      post: {
+        ...old.post,
         commentsCount: data.commentsCount
-      }));
-
-      // ✅ 3. SYNC FEED (IMPORTANT)
-      queryClient.setQueryData(["feed"], (old: any) => {
-        if (!old) return old;
-
-        return {
-          ...old,
-          pages: old.pages.map((page: any) => ({
-            ...page,
-            posts: page.posts.map((p: any) =>
-              p.postId === postId
-                ? {
-                    ...p,
-                    commentsCount: data.commentsCount
-                  }
-                : p
-            )
-          }))
-        };
-      });
-
-    } else {
+      }
+    };
+  });
+}
+     else {
       throw new Error();
     }
 
