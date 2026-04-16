@@ -92,7 +92,12 @@ const res = await fetch(`/api/posts?postId=${postId}`, {
       setComments([]);
     }
   }
+useEffect(() => {
+  if (!postId) return;
 
+  loadPost();
+  loadComments();
+}, [postId]);
   /* ================= LIKE ================= */
   async function handleLike() {
     const token = localStorage.getItem("token");
