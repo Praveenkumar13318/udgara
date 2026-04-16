@@ -74,11 +74,10 @@ const channel = pusherClient.subscribe("posts");
 
   // 🔥 LIKE REALTIME
   channel.bind("like-update", (data: any) => {
+  console.log("PUSHER EVENT RECEIVED:", data); // 👈 ADD THIS
+
   if (data.postId === post.postId) {
-
-    // ✅ update local UI
     setLikes(data.likeCount);
-
   }
 });
   // 🔥 COMMENT REALTIME
