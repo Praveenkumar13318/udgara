@@ -138,6 +138,7 @@ const optimisticLiked = !prevLiked;
 const optimisticCount = prevLiked ? prevLikes - 1 : prevLikes + 1;
 
 setLiked(optimisticLiked);
+setLikes(optimisticCount); // ✅ ADD THIS BACK
 
     
 
