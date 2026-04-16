@@ -74,7 +74,7 @@ const isOwner = publicId && publicId === post.npId;
   const [likes, setLikes] = useState(post.likes || 0);
   const [liked, setLiked] = useState(post.isLiked || false);
   const [animating, setAnimating] = useState(false);
-  const [localComments, setLocalComments] = useState(post.commentsCount || 0);
+  
 
   const reasons = [
     "Spam",
@@ -84,26 +84,28 @@ const isOwner = publicId && publicId === post.npId;
     "Misinformation",
     "Other"
   ];
-useEffect(() => {
-  setLocalComments(post.commentsCount || 0);
-}, [post.commentsCount]);
+
   /* ================= LIKE ================= */
   async function handleLike(e: any) {
   e.stopPropagation();
   e.preventDefault();
 
-  if (isLiking) return; // ✅ BLOCK DOUBLE CLICK
+  if (isLiking) return; 
+  
   setIsLiking(true);
 setAnimating(true);
-setTimeout(() => setAnimating(false), 140);
+setTimeout(() => setAnimating(false), 120);
     const token = localStorage.getItem("token");
 if (!token) {
   setIsLiking(false); // ✅ ADD THIS
   router.push("/login");
   return;
 }
-const optimisticLiked = !liked;
-const optimisticCount = liked ? likes - 1 : likes + 1;
+const prevLiked = liked;
+const prevLikes = likes;
+
+const optimisticLiked = !prevLiked;
+const optimisticCount = prevLiked ? prevLikes - 1 : prevLikes + 1;
 
 setLiked(optimisticLiked);
 setLikes(optimisticCount);
@@ -161,16 +163,17 @@ queryClient.setQueryData(["post", post.postId], (old: any) => {
   
   setIsLiking(false);
 }
-
+else {
+  setLiked(prevLiked);
+  setLikes(prevLikes);
+}
     }
      catch (err) {
   console.log("LIKE ERROR:", err);
 
   // ✅ REVERT UI (VERY IMPORTANT)
-  setLiked((prev: boolean) => !prev);
-setLikes((prev: number) =>
-  optimisticLiked ? prev - 1 : prev + 1
-);
+  setLiked(prevLiked);
+setLikes(prevLikes);
   setIsLiking(false);
 }
   }
@@ -245,7 +248,18 @@ async function handleDelete() {
       return;
     }
 
-    queryClient.invalidateQueries({ queryKey: ["feed"] });
+    queryClient.setQueryData(["feed"], (old: any) => {
+  if (!old) return old;
+
+  return {
+    ...old,
+    pages: old.pages.map((page: any) => ({
+      ...page,
+      posts: page.posts.filter((p: any) => p.postId !== post.postId)
+    }))
+  };
+});
+router.push("/");
 
   } catch (err) {
     console.log("Delete error", err);
@@ -411,7 +425,7 @@ router.push(`/?post=${post.postId}`, { scroll: false });
               </svg>
 
               <span style={{ fontSize: "13px" }}>
-                {localComments}
+                {post.commentsCount ?? 0}
               </span>
             </div>
 
