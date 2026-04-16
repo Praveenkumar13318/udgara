@@ -89,10 +89,10 @@ const {
   getNextPageParam: (lastPage: any) =>
     lastPage.nextCursor || undefined,
 
-  staleTime: 1000 * 60 * 2, // ✅ prevents refetch spam
+  staleTime: 0, // ✅ prevents refetch spam
   gcTime: 1000 * 60 * 10,   // ✅ keeps cache alive
   refetchOnMount: false,
-refetchOnWindowFocus: false,
+refetchOnWindowFocus: true,
 });  
  const isInitialLoading = !data && isLoading;
   useEffect(() => {
