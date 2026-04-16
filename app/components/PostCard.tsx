@@ -183,6 +183,8 @@ else {
   setLiked(prevLiked);
 setLikes(prevLikes);
   
+}finally {
+  setIsLiking(false);
 }
   }
 
