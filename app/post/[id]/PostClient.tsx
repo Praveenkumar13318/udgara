@@ -132,10 +132,11 @@ useEffect(() => {
   // ✅ optimistic (UI feel only)
   const optimistic = !post.isLiked;
 
-  setPost((prev: any) => ({
-    ...prev,
-    isLiked: optimistic
-  }));
+ setPost((prev: any) => ({
+  ...prev,
+  isLiked: optimistic,
+  likes: optimistic ? prev.likes + 1 : prev.likes - 1
+}));
 
   try {
     await fetch("/api/like", {
