@@ -170,7 +170,7 @@ setLikes(optimisticCount);
       if (data.success) {
   const isLikedNow = data.action === "liked";
 
-  setLiked(isLikedNow);  // ✅ keep this
+    // ✅ keep this
   // ❌ REMOVE setLikes here
   // 🔥 SYNC HOME FEED
   
