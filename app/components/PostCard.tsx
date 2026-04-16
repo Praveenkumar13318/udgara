@@ -143,7 +143,7 @@ setAnimating(true);
 setTimeout(() => setAnimating(false), 120);
     const token = localStorage.getItem("token");
 if (!token) {
-  setIsLiking(false); // ✅ ADD THIS
+  setIsLiking(false);   // ✅ ADD BACK
   router.push("/login");
   return;
 }
@@ -173,40 +173,10 @@ setLikes(optimisticCount);
   setLiked(isLikedNow);  // ✅ keep this
   // ❌ REMOVE setLikes here
   // 🔥 SYNC HOME FEED
-  queryClient.setQueryData(["feed"], (old: any) => {
-    if (!old) return old;
-
-    return {
-      ...old,
-      pages: old.pages.map((page: any) => ({
-        ...page,
-        posts: page.posts.map((p: any) =>
-          p.postId === post.postId
-            ? {
-                ...p,
-                likes: data.likeCount,
-                isLiked: isLikedNow
-              }
-            : p
-        )
-      }))
-    };
-  });
-  // ✅ SYNC SINGLE POST PAGE ALSO
-queryClient.setQueryData(["post", post.postId], (old: any) => {
-  if (!old) return old;
-
-  return {
-    ...old,
-    post: {
-      ...old.post,
-      likes: data.likeCount,
-      isLiked: isLikedNow
-    }
-  };
-});
   
-  setIsLiking(false);
+  // ✅ SYNC SINGLE POST PAGE ALSO
+  
+  
 }
 else {
   setLiked(prevLiked);
@@ -219,7 +189,7 @@ else {
   // ✅ REVERT UI (VERY IMPORTANT)
   setLiked(prevLiked);
 setLikes(prevLikes);
-  setIsLiking(false);
+  
 }
   }
 
@@ -309,6 +279,9 @@ router.push("/");
   } catch (err) {
     console.log("Delete error", err);
   }
+  finally {
+  setIsLiking(false);
+}
 }
   return (
     <>
