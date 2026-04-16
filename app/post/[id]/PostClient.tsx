@@ -26,42 +26,35 @@ const queryClient = useQueryClient();
       ? localStorage.getItem("publicId")
       : null;
 
-  useEffect(() => {
-  if (!postId) return;
-
-  loadPost();
-  loadComments();
-
+ useEffect(() => {
   let interval: any;
 
   const startPolling = () => {
-  if (interval) clearInterval(interval); // ✅ ADD THIS LINE
-
-  interval = setInterval(() => {
-    loadPost();
-    loadComments();
-  }, 5000);
-};
+    interval = setInterval(loadComments, 5000);
+  };
 
   const stopPolling = () => {
     if (interval) clearInterval(interval);
   };
-const handleVisibility = () => {
-  if (document.hidden) {
-    stopPolling();
-  } else {
-    startPolling();
-  }
-};
-  // ✅ start when active
+
+  // Start when tab active
   startPolling();
-document.addEventListener("visibilitychange", handleVisibility);
-  // ✅ stop when tab inactive
-  
+
+  // Pause when user leaves tab (PRO LEVEL)
+  const handleVisibility = () => {
+    if (document.hidden) {
+      stopPolling();
+    } else {
+      startPolling();
+    }
+  };
+
+  document.addEventListener("visibilitychange", handleVisibility);
+
   return () => {
-  stopPolling();
-  document.removeEventListener("visibilitychange", handleVisibility);
-};
+    stopPolling();
+    document.removeEventListener("visibilitychange", handleVisibility);
+  };
 }, [postId]);
 
   async function loadPost() {
@@ -547,18 +540,14 @@ border: "1px solid rgba(255,255,255,0.08)",
         }}
       />
 
-      <button
-        onClick={addComment}
-        disabled={loadingComment}
-        style={{
-          padding: "10px 16px",
-          borderRadius: "12px",
-          border: "none",
-          background: loadingComment ? "#444" : "#ff4d4d",
-          color: "#fff",
-          cursor: "pointer"
-        }}
-      >
+      <button 
+  onClick={addComment}
+  disabled={!text.trim()}
+  style={{
+    opacity: text.trim() ? 1 : 0.5,
+    cursor: text.trim() ? "pointer" : "not-allowed"
+  }}
+>
         {loadingComment ? "..." : "Post"}
       </button>
 
