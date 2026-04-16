@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { fetchWithAuth } from "../lib/fetcher";
-import { useEffect } from "react";
 import { pusherClient } from "../lib/pusherClient";
 /* ================= TIME ================= */
 function timeAgo(dateString: any) {
@@ -140,7 +139,7 @@ const optimisticLiked = !prevLiked;
 const optimisticCount = prevLiked ? prevLikes - 1 : prevLikes + 1;
 
 setLiked(optimisticLiked);
-setLikes(optimisticCount);
+
     
 
     try {
