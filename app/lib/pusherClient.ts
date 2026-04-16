@@ -1,5 +1,11 @@
 import Pusher from "pusher-js";
 
-export const pusherClient = new Pusher("YOUR_KEY", {
-  cluster: "ap2"
-});
+let pusherClient: any = null;
+
+if (typeof window !== "undefined") {
+  pusherClient = new Pusher("YOUR_KEY", {
+    cluster: "ap2"
+  });
+}
+
+export { pusherClient };

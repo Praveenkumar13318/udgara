@@ -69,7 +69,9 @@ const isOwner = publicId && publicId === post.npId;
 }
   const queryClient = useQueryClient();
   useEffect(() => {
-  const channel = pusherClient.subscribe("posts");
+  if (!pusherClient) return;
+
+const channel = pusherClient.subscribe("posts");
 
   // 🔥 LIKE REALTIME
   channel.bind("like-update", (data: any) => {
