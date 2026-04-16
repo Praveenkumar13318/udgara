@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "../../lib/mongodb";
+import { pusher } from "@/app/lib/pusher";
 
 function generateCommentId() {
   return "CM" + Date.now();
@@ -39,6 +40,11 @@ export async function POST(request: Request) {
 
     // 🔥 GET UPDATED POST (IMPORTANT)
 const updatedPost = await db.collection("posts").findOne({ postId });
+
+await pusher.trigger("posts", "comment-update", {
+  postId,
+  commentsCount: updatedPost?.commentsCount || 0
+});
 
 return NextResponse.json({
   success: true,

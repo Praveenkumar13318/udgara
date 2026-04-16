@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { fetchWithAuth } from "../lib/fetcher";
 import { useEffect } from "react";
+import { pusherClient } from "../lib/pusherClient";
 /* ================= TIME ================= */
 function timeAgo(dateString: any) {
   if (!dateString) return "";
@@ -67,11 +68,54 @@ const isOwner = publicId && publicId === post.npId;
   });
 }
   const queryClient = useQueryClient();
+  useEffect(() => {
+  const channel = pusherClient.subscribe("posts");
+
+  // 🔥 LIKE REALTIME
+  channel.bind("like-update", (data: any) => {
+    if (data.postId === post.postId) {
+      setLikes(data.likeCount);
+      setLiked(data.action === "liked");
+    }
+  });
+
+  // 🔥 COMMENT REALTIME
+  channel.bind("comment-update", (data: any) => {
+  if (data.postId === post.postId) {
+
+    // ✅ update UI instantly
+    setCommentsCount(data.commentsCount);
+
+    // ✅ update feed cache
+    queryClient.setQueryData(["feed"], (old: any) => {
+      if (!old) return old;
+
+      return {
+        ...old,
+        pages: old.pages.map((page: any) => ({
+          ...page,
+          posts: page.posts.map((p: any) =>
+            p.postId === data.postId
+              ? { ...p, commentsCount: data.commentsCount }
+              : p
+          )
+        }))
+      };
+    });
+
+  }
+});
+  return () => {
+    channel.unbind_all();
+pusherClient.unsubscribe("posts");
+  };
+}, [post.postId]);
 
   const [showReport, setShowReport] = useState(false);
   const [selectedReason, setSelectedReason] = useState("");
 
   const [likes, setLikes] = useState(post.likes || 0);
+  const [commentsCount, setCommentsCount] = useState(post.commentsCount || 0);
   const [liked, setLiked] = useState(post.isLiked || false);
   const [animating, setAnimating] = useState(false);
   
@@ -425,7 +469,7 @@ router.push(`/?post=${post.postId}`, { scroll: false });
               </svg>
 
               <span style={{ fontSize: "13px" }}>
-                {post.commentsCount ?? 0}
+                {commentsCount}
               </span>
             </div>
 

@@ -2,6 +2,7 @@ import { connectDB } from "../../lib/mongodb";
 import { NextResponse } from "next/server";
 import { getUserFromRequest } from "../../lib/auth";
 import { toggleLike } from "../../services/likeService";
+import { pusher } from "@/app/lib/pusher";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -34,11 +35,17 @@ const publicId =
        RESPONSE
     ========================= */
 
-    return NextResponse.json({
-      success: true,
-      action: liked ? "liked" : "unliked",
-      likeCount
-    });
+    await pusher.trigger("posts", "like-update", {
+  postId,
+  likeCount,
+  action: liked ? "liked" : "unliked"
+});
+
+return NextResponse.json({
+  success: true,
+  action: liked ? "liked" : "unliked",
+  likeCount
+});
 
   } catch (error) {
     console.error("LIKE API ERROR:", error);
