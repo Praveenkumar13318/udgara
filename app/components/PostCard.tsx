@@ -80,23 +80,6 @@ const channel = pusherClient.subscribe("posts");
     // ✅ update local UI
     setLikes(data.likeCount);
 
-    // 🔥 UPDATE FEED CACHE (THIS IS YOUR MISSING PIECE)
-    queryClient.setQueryData(["feed"], (old: any) => {
-      if (!old) return old;
-
-      return {
-        ...old,
-        pages: old.pages.map((page: any) => ({
-          ...page,
-          posts: page.posts.map((p: any) =>
-            p.postId === data.postId
-              ? { ...p, likes: data.likeCount }
-              : p
-          )
-        }))
-      };
-    });
-
   }
 });
   // 🔥 COMMENT REALTIME
@@ -107,22 +90,7 @@ const channel = pusherClient.subscribe("posts");
     setCommentsCount(data.commentsCount);
 
     // ✅ update feed cache
-    queryClient.setQueryData(["feed"], (old: any) => {
-      if (!old) return old;
-
-      return {
-        ...old,
-        pages: old.pages.map((page: any) => ({
-          ...page,
-          posts: page.posts.map((p: any) =>
-            p.postId === data.postId
-              ? { ...p, commentsCount: data.commentsCount }
-              : p
-          )
-        }))
-      };
-    });
-
+    
   }
 });
   return () => {
