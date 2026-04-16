@@ -75,12 +75,12 @@ const channel = pusherClient.subscribe("posts");
 
   // 🔥 LIKE REALTIME
   channel.bind("like-update", (data: any) => {
-    if (data.postId === post.postId) {
-      setLikes(data.likeCount);
-      setLiked(data.action === "liked");
-    }
-  });
-
+  if (data.postId === post.postId) {
+    setLikes(data.likeCount);
+    // ❌ REMOVE THIS LINE
+    // setLiked(data.action === "liked");
+  }
+});
   // 🔥 COMMENT REALTIME
   channel.bind("comment-update", (data: any) => {
   if (data.postId === post.postId) {
