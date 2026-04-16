@@ -120,6 +120,27 @@ useEffect(() => {
   loadPost();
   loadComments();
 }, [postId]);
+
+useEffect(() => {
+  if (!pusherClient) return;
+
+  const channel = pusherClient.subscribe("posts");
+
+  channel.bind("like-update", (data: any) => {
+    if (data.postId === postId) {
+      setPost((prev: any) => ({
+        ...prev,
+        likes: data.likeCount,
+        isLiked: data.action === "liked"
+      }));
+    }
+  });
+
+  return () => {
+    channel.unbind_all();
+    pusherClient.unsubscribe("posts");
+  };
+}, [postId]);
   /* ================= LIKE ================= */
   async function handleLike() {
   const token = localStorage.getItem("token");
@@ -135,7 +156,7 @@ useEffect(() => {
  setPost((prev: any) => ({
   ...prev,
   isLiked: optimistic,
-  likes: optimistic ? prev.likes + 1 : prev.likes - 1
+  
 }));
 
   try {
