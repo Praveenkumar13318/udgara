@@ -168,9 +168,8 @@ setLikes(optimisticCount);
       if (data.success) {
   const isLikedNow = data.action === "liked";
 
-  setLiked(isLikedNow);
-  setLikes(data.likeCount);
-
+  setLiked(isLikedNow);  // ✅ keep this
+  // ❌ REMOVE setLikes here
   // 🔥 SYNC HOME FEED
   queryClient.setQueryData(["feed"], (old: any) => {
     if (!old) return old;
