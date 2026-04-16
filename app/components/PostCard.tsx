@@ -76,9 +76,27 @@ const channel = pusherClient.subscribe("posts");
   // 🔥 LIKE REALTIME
   channel.bind("like-update", (data: any) => {
   if (data.postId === post.postId) {
+
+    // ✅ update local UI
     setLikes(data.likeCount);
-    // ❌ REMOVE THIS LINE
-    // setLiked(data.action === "liked");
+
+    // 🔥 UPDATE FEED CACHE (THIS IS YOUR MISSING PIECE)
+    queryClient.setQueryData(["feed"], (old: any) => {
+      if (!old) return old;
+
+      return {
+        ...old,
+        pages: old.pages.map((page: any) => ({
+          ...page,
+          posts: page.posts.map((p: any) =>
+            p.postId === data.postId
+              ? { ...p, likes: data.likeCount }
+              : p
+          )
+        }))
+      };
+    });
+
   }
 });
   // 🔥 COMMENT REALTIME
