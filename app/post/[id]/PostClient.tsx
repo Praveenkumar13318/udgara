@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { pusherClient } from "../../lib/pusherClient";
 export default function PostPage({
   postId: propPostId,
   mode
@@ -121,85 +122,37 @@ useEffect(() => {
 }, [postId]);
   /* ================= LIKE ================= */
   async function handleLike() {
-    const token = localStorage.getItem("token");
-if (!token) {
-      alert("Login first");
-      return;
-    }
+  const token = localStorage.getItem("token");
 
-    const optimistic = !post.isLiked;
+  if (!token) {
+    alert("Login first");
+    return;
+  }
 
-    setPost((prev: any) => ({
-      ...prev,
-      isLiked: optimistic,
-      likes: optimistic ? prev.likes + 1 : prev.likes - 1
-    }));
-
-    try {
-      const token = localStorage.getItem("token");
-
-const res = await fetch("/api/like", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: token ? `Bearer ${token}` : ""
-  },
-  body: JSON.stringify({
-    postId: post.postId
-  })
-});
-
-      const data = await res.json();
-
-      if (data.success) {
-  const isLikedNow = data.action === "liked";
+  // ✅ optimistic (UI feel only)
+  const optimistic = !post.isLiked;
 
   setPost((prev: any) => ({
     ...prev,
-    isLiked: isLikedNow,
-    likes: data.likeCount
+    isLiked: optimistic
   }));
 
-  // 🔥 SYNC HOME FEED (ONLY ADDITION)
-  queryClient.setQueryData(["feed"], (old: any) => {
-    if (!old) return old;
+  try {
+    await fetch("/api/like", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        postId: post.postId
+      })
+    });
 
-    return {
-      ...old,
-      pages: old.pages.map((page: any) => ({
-        ...page,
-        posts: page.posts.map((p: any) =>
-          p.postId === post.postId
-            ? {
-                ...p,
-                likes: data.likeCount,
-                isLiked: isLikedNow
-              }
-            : p
-        )
-      }))
-    };
-  });
-// 🔥 ADD THIS BLOCK (SYNC POST PAGE)
-queryClient.setQueryData(["post", post.postId], (old: any) => {
-  if (!old) return old;
-
-  return {
-    ...old,
-    post: {
-      ...old.post,
-      likes: data.likeCount,
-      isLiked: isLikedNow
-    }
-  };
-});
-  
-}
-    } catch (err) {
-      console.log("Like error", err);
-    }
+  } catch (err) {
+    console.log("Like error", err);
   }
-
+}
   /* ================= SHARE ================= */
   async function handleShare() {
   const url = window.location.href;

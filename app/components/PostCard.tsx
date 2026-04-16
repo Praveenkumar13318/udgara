@@ -168,13 +168,6 @@ setLikes(optimisticCount);
       const data = await res.json();
 
       if (data.success) {
-  const isLikedNow = data.action === "liked";
-
-    // ✅ keep this
-  // ❌ REMOVE setLikes here
-  // 🔥 SYNC HOME FEED
-  
-  // ✅ SYNC SINGLE POST PAGE ALSO
   
   
 }
