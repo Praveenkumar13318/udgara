@@ -27,20 +27,22 @@ const queryClient = useQueryClient();
       : null;
 
  useEffect(() => {
-  let interval: any;
+  let interval: any = null;
 
   const startPolling = () => {
+    if (interval) return;
     interval = setInterval(loadComments, 5000);
   };
 
   const stopPolling = () => {
-    if (interval) clearInterval(interval);
+    if (interval) {
+      clearInterval(interval);
+      interval = null;
+    }
   };
 
-  // Start when tab active
   startPolling();
 
-  // Pause when user leaves tab (PRO LEVEL)
   const handleVisibility = () => {
     if (document.hidden) {
       stopPolling();
@@ -82,16 +84,35 @@ const res = await fetch(`/api/posts?postId=${postId}`, {
     setLoadingPost(false);
   }
 
-  async function loadComments() {
-    try {
-      const res = await fetch(`/api/comments?postId=${postId}`);
-      const data = await res.json();
-      setComments(Array.isArray(data.data) ? data.data : []);
-    } catch (error) {
-      console.log("Comments load error", error);
-      setComments([]);
-    }
+ async function loadComments() {
+  try {
+    const res = await fetch(`/api/comments?postId=${postId}`);
+    const data = await res.json();
+
+    const incoming = Array.isArray(data.data) ? data.data : [];
+
+    setComments((prev) => {
+      if (JSON.stringify(prev) === JSON.stringify(incoming)) {
+        return prev;
+      }
+      return incoming;
+    });
+
+    // 🔥 ADD THIS (VERY IMPORTANT)
+    setPost((prev: any) => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        commentsCount: incoming.length
+      };
+    });
+
+  } catch (error) {
+    console.log("Comments load error", error);
+    setComments([]);
   }
+}
 useEffect(() => {
   if (!postId) return;
 
@@ -489,7 +510,7 @@ letterSpacing: "0.5px",
               />
             </svg>
             <span style={{ fontSize: "13px" }}>
-  {post.commentsCount || comments.length}
+  {post.commentsCount ?? 0}
 </span>
           </div>
 
@@ -535,22 +556,30 @@ letterSpacing: "0.5px",
         onChange={(e) => setText(e.target.value)}
         placeholder="Write a comment..."
         style={{
-          flex: 1,
-          padding: "12px",
-          borderRadius: "12px",
-         background: "#0f0f10",
-border: "1px solid rgba(255,255,255,0.08)",
-          color: "#fff",
-          outline: "none"
-        }}
+  flex: 1,
+  padding: "12px 14px",
+  borderRadius: "14px",
+  background: "#111",
+  border: "1px solid rgba(255,255,255,0.08)",
+  color: "#fff",
+  outline: "none",
+  fontSize: "14px",
+  height: "44px"
+}}
       />
 
-      <button 
+      <button
   onClick={addComment}
   disabled={!text.trim()}
   style={{
-    opacity: text.trim() ? 1 : 0.5,
-    cursor: text.trim() ? "pointer" : "not-allowed"
+    padding: "10px 16px",
+    borderRadius: "10px",
+    border: "none",
+    background: text.trim() ? "#ff4d4d" : "#333",
+    color: "#fff",
+    fontWeight: "500",
+    cursor: text.trim() ? "pointer" : "not-allowed",
+    transition: "0.2s"
   }}
 >
         {loadingComment ? "..." : "Post"}
@@ -572,9 +601,13 @@ border: "1px solid rgba(255,255,255,0.08)",
         </div>
       ) : (
         comments.map((c) => (
-          <div key={c._id} style={{
-  padding: "10px 0"
-}}>
+          <div
+  key={c._id}
+  style={{
+    padding: "12px 0",
+    borderBottom: "1px solid rgba(255,255,255,0.05)"
+  }}
+>
             <div style={{
   fontSize: "11px",
   color: "#6f6f6f",
@@ -584,9 +617,9 @@ border: "1px solid rgba(255,255,255,0.08)",
             </div>
 
             <div style={{
-  color: "#f1f1f1",
-  fontSize: "14px",
-  lineHeight: "1.5"
+  color: "#e5e5e5",
+  fontSize: "15px",
+  lineHeight: "1.6"
 }}>
               {c.text}
             </div>
