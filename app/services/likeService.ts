@@ -14,42 +14,49 @@ export async function toggleLike({
   postId,
   publicId
 }: ToggleLikeInput): Promise<ToggleLikeResponse> {
+
   if (!postId || !publicId) {
     throw new Error("Invalid like data");
   }
 
   const db: any = await connectDB();
-
   const npId = publicId.toUpperCase();
+
+  // 🔒 CHECK EXISTING LIKE
+  const existing = await db.collection("likes").findOne({
+    postId,
+    npId
+  });
 
   let liked = false;
 
-  try {
-    // ✅ TRY TO INSERT (LIKE)
-    await db.collection("likes").insertOne({
+  if (existing) {
+    // 🔻 UNLIKE
+    await db.collection("likes").deleteOne({
       postId,
-      npId,
-      createdAt: new Date()
+      npId
     });
-
-    liked = true;
-
-  } catch (err: any) {
-    // ✅ IF DUPLICATE → UNLIKE
-    if (err.code === 11000) {
-      await db.collection("likes").deleteOne({
+    liked = false;
+  } else {
+    // 🔺 LIKE
+    try {
+      await db.collection("likes").insertOne({
         postId,
-        npId
+        npId,
+        createdAt: new Date()
       });
-
-      liked = false;
-
-    } else {
-      throw err;
+      liked = true;
+    } catch (err: any) {
+      // 🔒 HANDLE RACE CONDITION (DOUBLE CLICK)
+      if (err.code === 11000) {
+        liked = true;
+      } else {
+        throw err;
+      }
     }
   }
 
-  // ✅ ALWAYS RETURN REAL COUNT (source of truth)
+  // 📊 FINAL COUNT (SOURCE OF TRUTH)
   const likeCount = await db.collection("likes").countDocuments({
     postId
   });

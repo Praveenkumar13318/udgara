@@ -9,6 +9,8 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import PostClient from "../post/[id]/PostClient";
 import { useQueryClient } from "@tanstack/react-query";
+import { pusherClient } from "../lib/pusherClient";
+
 type Post = {
   postId: string;
   npId: string;
@@ -152,6 +154,40 @@ setFilteredPosts(safeData.slice(0, 20));
   return () => clearInterval(interval);
 }, []);
 
+useEffect(() => {
+  if (!pusherClient) return;
+
+  const channel = pusherClient.subscribe("posts");
+
+  const handler = (data: any) => {
+    queryClient.setQueryData(["feed"], (old: any) => {
+      if (!old) return old;
+
+      return {
+        ...old,
+        pages: old.pages.map((page: any) => ({
+          ...page,
+          posts: page.posts.map((p: any) => {
+            if (p.postId === data.postId) {
+              return {
+                ...p,
+                likes: data.likeCount,
+              };
+            }
+            return p;
+          }),
+        })),
+      };
+    });
+  };
+
+  channel.bind("like-update", handler);
+
+  return () => {
+    channel.unbind("like-update", handler);
+    pusherClient.unsubscribe("posts");
+  };
+}, []);
   return (
 
     <div

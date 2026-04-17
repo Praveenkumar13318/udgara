@@ -25,7 +25,8 @@ const publicId =
         { status: 400 }
       );
     }
-
+// prevent double fire (optional)
+await new Promise((r) => setTimeout(r, 20));
     const { liked, likeCount } = await toggleLike({
   postId,
   publicId
@@ -35,11 +36,13 @@ const publicId =
        RESPONSE
     ========================= */
 
-    await pusher.trigger("posts", "like-update", {
-  postId,
-  likeCount,
-  action: liked ? "liked" : "unliked"
-});
+    if (typeof likeCount === "number") {
+  await pusher.trigger("posts", "like-update", {
+    postId,
+    likeCount,
+    action: liked ? "liked" : "unliked"
+  });
+}
 
 return NextResponse.json({
   success: true,

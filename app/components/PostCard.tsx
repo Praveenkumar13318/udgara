@@ -70,30 +70,30 @@ const isOwner = publicId && publicId === post.npId;
   useEffect(() => {
   if (!pusherClient) return;
 
-const channel = pusherClient.subscribe("posts");
+  const channel = pusherClient.subscribe("posts");
 
-  // 🔥 LIKE REALTIME
-  channel.bind("like-update", (data: any) => {
-  console.log("PUSHER EVENT RECEIVED:", data); // 👈 ADD THIS
+  const likeHandler = (data: any) => {
+    console.log("PUSHER EVENT RECEIVED:", data);
 
-  if (data.postId === post.postId) {
-    setLikes(data.likeCount);
-  }
-});
-  // 🔥 COMMENT REALTIME
-  channel.bind("comment-update", (data: any) => {
-  if (data.postId === post.postId) {
+    if (data.postId === post.postId) {
+      setLikes(data.likeCount);
+      setLiked(data.action === "liked"); // ✅ FIXED
+    }
+  };
 
-    // ✅ update UI instantly
-    setCommentsCount(data.commentsCount);
+  const commentHandler = (data: any) => {
+    if (data.postId === post.postId) {
+      setCommentsCount(data.commentsCount);
+    }
+  };
 
-    // ✅ update feed cache
-    
-  }
-});
+  channel.bind("like-update", likeHandler);
+  channel.bind("comment-update", commentHandler);
+
   return () => {
-    channel.unbind_all();
-pusherClient.unsubscribe("posts");
+    channel.unbind("like-update", likeHandler);
+    channel.unbind("comment-update", commentHandler);
+    pusherClient.unsubscribe("posts");
   };
 }, [post.postId]);
 

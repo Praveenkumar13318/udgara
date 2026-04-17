@@ -126,7 +126,7 @@ useEffect(() => {
 
   const channel = pusherClient.subscribe("posts");
 
-  channel.bind("like-update", (data: any) => {
+  const handler = (data: any) => {
     if (data.postId === postId) {
       setPost((prev: any) => ({
         ...prev,
@@ -134,10 +134,12 @@ useEffect(() => {
         isLiked: data.action === "liked"
       }));
     }
-  });
+  };
+
+  channel.bind("like-update", handler);
 
   return () => {
-    channel.unbind_all();
+    channel.unbind("like-update", handler);
     pusherClient.unsubscribe("posts");
   };
 }, [postId]);
@@ -156,7 +158,7 @@ useEffect(() => {
  setPost((prev: any) => ({
   ...prev,
   isLiked: optimistic,
-  
+  likes: optimistic ? prev.likes + 1 : prev.likes - 1
 }));
 
   try {
