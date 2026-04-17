@@ -1,4 +1,4 @@
-
+"use client";
 import { useEffect, useState, useRef, useCallback } from "react";
 import PostCard from "../components/PostCard";
 import { fetchPosts } from "../lib/api";
