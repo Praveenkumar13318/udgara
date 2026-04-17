@@ -29,7 +29,7 @@ function timeAgo(dateString: any) {
   return "now";
 }
 
-export default function PostCard({ post }: any) {
+export default function PostCard({ post, setReportOpen }: any) {
   const [isLiking, setIsLiking] = useState(false);
   const publicId =
   typeof window !== "undefined"
@@ -203,9 +203,10 @@ setLikes(prevLikes);
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          postId: post.postId,
-          reason: selectedReason
-        })
+  postId: post.postId,
+  reason: selectedReason,
+  npId: publicId // 🔥 REQUIRED
+})
       });
 
       const data = await res.json();
@@ -217,6 +218,7 @@ setLikes(prevLikes);
       }
 
       setShowReport(false);
+setReportOpen(false); // 🔥 ADD THIS
       setSelectedReason("");
 
     } catch (error) {
@@ -471,6 +473,7 @@ router.push(`/?post=${post.postId}`, { scroll: false });
       e.stopPropagation();
       e.preventDefault();
       setShowReport(true);
+setReportOpen(true); // 🔥 ADD THIS
     }}
     className="tap no-select"
   >
@@ -492,8 +495,12 @@ router.push(`/?post=${post.postId}`, { scroll: false });
       {/* REPORT MODAL (UNCHANGED LOGIC) */}
       {showReport && (
         <div
-          style={{
-            position: "fixed",
+  onClick={() => {
+    setShowReport(false);
+    setReportOpen(false);
+  }}
+  style={{
+    position: "fixed",
             inset: 0,
             background: "rgba(0,0,0,0.75)",
             display: "flex",
@@ -502,8 +509,9 @@ router.push(`/?post=${post.postId}`, { scroll: false });
           }}
         >
           <div
-            style={{
-              width: "320px",
+  onClick={(e) => e.stopPropagation()} // 🔥 IMPORTANT
+  style={{
+    width: "320px",
               background: "#1a1a1a",
               borderRadius: "14px",
               padding: "18px"
@@ -523,7 +531,10 @@ router.push(`/?post=${post.postId}`, { scroll: false });
 
             <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
               <button className="tap" onClick={submitReport}>Submit</button>
-              <button className="tap" onClick={() => setShowReport(false)}>Cancel</button>
+              <button className="tap" onClick={() => {
+  setShowReport(false);
+  setReportOpen(false); // 🔥 ADD THIS
+}}>Cancel</button>
             </div>
           </div>
         </div>

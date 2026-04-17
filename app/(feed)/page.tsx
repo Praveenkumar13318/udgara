@@ -32,7 +32,7 @@ export default function HomeWrapper() {
 
 function Home() {
 
-  
+  const [reportOpen, setReportOpen] = useState(false);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const checkNewPosts = async () => {
   try {
@@ -153,6 +153,18 @@ setFilteredPosts(safeData.slice(0, 20));
 
   return () => clearInterval(interval);
 }, []);
+
+useEffect(() => {
+  if (reportOpen) {
+    document.body.style.overflow = "hidden"; // 🚫 stop scroll
+  } else {
+    document.body.style.overflow = ""; // ✅ allow scroll
+  }
+
+  return () => {
+    document.body.style.overflow = "";
+  };
+}, [reportOpen]);
 
 useEffect(() => {
   if (!pusherClient) return;

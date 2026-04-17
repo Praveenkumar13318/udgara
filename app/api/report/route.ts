@@ -6,10 +6,10 @@ export async function POST(request:Request){
   try{
 
     const data = await request.json();
-    const { postId, reason } = data;
+    const { postId, reason, npId } = data;
 
     // 🔐 BASIC VALIDATION
-    if (!postId || !reason) {
+    if (!postId || !reason || !npId) {
       return NextResponse.json(
         { error: "Missing data" },
         { status: 400 }
@@ -20,9 +20,9 @@ export async function POST(request:Request){
 
     // 🔥 PREVENT DUPLICATE REPORT (OPTIONAL BUT IMPORTANT)
     const existing = await db.collection("reports").findOne({
-      postId,
-      reason
-    });
+  postId,
+  npId
+});
 
     if (existing) {
       return NextResponse.json({
@@ -32,11 +32,11 @@ export async function POST(request:Request){
     }
 
     await db.collection("reports").insertOne({
-      postId,
-      reason,
-      createdAt:new Date()
-    });
-
+  postId,
+  npId,
+  reason,
+  createdAt: new Date()
+});
     await db.collection("posts").updateOne(
       { postId },
       { $inc:{ reports:1 } }
