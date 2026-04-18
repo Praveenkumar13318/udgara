@@ -207,9 +207,12 @@ useEffect(() => {
   channel.bind("like-update", handler);
 
   return () => {
-    channel.unbind("like-update", handler);
+  channel.unbind("like-update", handler);
+
+  if (pusherClient) {
     pusherClient.unsubscribe("posts");
-  };
+  }
+};
 }, []);
   return (
 

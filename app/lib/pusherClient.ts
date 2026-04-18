@@ -1,11 +1,10 @@
-import Pusher from "pusher-js";
+import PusherClient from "pusher-js";
 
-let pusherClient: any = null;
-
+let pusherClient: PusherClient | null = null;
 if (typeof window !== "undefined") {
-  pusherClient = new Pusher("aab1327f4bbb5674510e", {
-    cluster: "ap2"
-  });
+  pusherClient = new PusherClient(
+    process.env.NEXT_PUBLIC_PUSHER_KEY!,
+    { cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER ?? "ap2" }
+  );
 }
-
 export { pusherClient };

@@ -1,99 +1,74 @@
-import { NextResponse } from "next/server";
 import { connectDB } from "../../lib/mongodb";
+import { getUserFromRequest } from "../../lib/auth";
 import { pusher } from "@/app/lib/pusher";
+import { err, ok, stripIds, validateContent, sanitizeText } from "@/app/lib/apiHelpers";
+import { randomUUID } from "crypto";
 
-function generateCommentId() {
-  return "CM" + Date.now();
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const postId = searchParams.get("postId");
+
+    if (!postId) return err("postId is required", 400);
+
+    const db = await connectDB();
+    const comments = await db
+      .collection("comments")
+      .find({ postId })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .toArray();
+
+    return ok({ success: true, comments: stripIds(comments) });
+  } catch (e) {
+    console.error("[GET /api/comments]", e);
+    return err("Failed to load comments", 500);
+  }
 }
 
-/* ================= CREATE COMMENT ================= */
-
-export async function POST(request: Request) {
-
+export async function POST(req: Request) {
   try {
+    const user = getUserFromRequest(req);
+    if (!user?.publicId) return err("Unauthorized", 401);
 
-    const { postId, npId, text } = await request.json();
+    const body = await req.json();
+    const postId = typeof body.postId === "string" ? body.postId.trim() : "";
+    const textError = validateContent(body.text);
 
-    if (!postId || !npId || !text) {
-      return NextResponse.json(
-        { success: false, message: "Missing fields" },
-        { status: 400 }
-      );
-    }
+    if (!postId) return err("Missing postId", 400);
+    if (textError) return err(textError, 400);
 
-    const db: any = await connectDB();
+    const db = await connectDB();
+
+    const postExists = await db.collection("posts").findOne({ postId });
+    if (!postExists) return err("Post not found", 404);
 
     const comment = {
-      commentId: generateCommentId(),
+      commentId: `CM_${randomUUID()}`,
       postId,
-      npId,
-      text,
-      createdAt: new Date()
+      npId: user.publicId,
+      text: sanitizeText(body.text),
+      createdAt: new Date(),
     };
 
     await db.collection("comments").insertOne(comment);
 
-    await db.collection("posts").updateOne(
+    const updated = await db.collection("posts").findOneAndUpdate(
       { postId },
-      { $inc: { commentsCount: 1 } }
+      { $inc: { commentsCount: 1 } },
+      { returnDocument: "after" }
     );
 
-    // 🔥 GET UPDATED POST (IMPORTANT)
-const updatedPost = await db.collection("posts").findOne({ postId });
-
-await pusher.trigger("posts", "comment-update", {
-  postId,
-  commentsCount: updatedPost?.commentsCount || 0
-});
-
-return NextResponse.json({
-  success: true,
-  comment,
-  commentsCount: updatedPost?.commentsCount || 0
-});
-
-  } catch (error) {
-
-    console.error(error);
-
-    return NextResponse.json(
-      { success: false, message: "Server error" },
-      { status: 500 }
-    );
-
-  }
-
-}
-
-/* ================= GET COMMENTS ================= */
-
-export async function GET(request: Request) {
-
-  try {
-
-    const { searchParams } = new URL(request.url);
-    const postId = searchParams.get("postId");
-
-    const db: any = await connectDB();
-
-    const comments = await db
-      .collection("comments")
-      .find(postId ? { postId } : {})
-      .sort({ createdAt: -1 })
-      .toArray();
-
-    return NextResponse.json({
-      success: true,
-      data: comments
+    await pusher.trigger("posts", "comment-update", {
+      postId,
+      commentsCount: updated?.commentsCount ?? 0,
     });
 
-  } catch (error) {
+    const { _id, ...safeComment } = comment as any;
+    return ok({ success: true, comment: safeComment, commentsCount: updated?.commentsCount ?? 0 }, 201);
 
-    return NextResponse.json(
-      { success: false, message: "Server error" },
-      { status: 500 }
-    );
-
+  } catch (e) {
+    console.error("[POST /api/comments]", e);
+    return err("Failed to post comment", 500);
   }
-
 }

@@ -1,31 +1,36 @@
-import { MongoClient } from "mongodb";
+import { MongoClient, MongoClientOptions } from "mongodb";
 
-const uri = process.env.MONGODB_URI as string;
-
-let client: MongoClient;
-let clientPromise: Promise<MongoClient>;
+const uri = process.env.MONGODB_URI!;
+const dbName = process.env.MONGODB_DB ?? "publicissue";
 
 if (!uri) {
-  throw new Error("Please add your MONGODB_URI to .env.local");
+  throw new Error("Missing MONGODB_URI environment variable");
 }
 
-if (process.env.NODE_ENV === "development") {
-  let globalWithMongo = global as typeof globalThis & {
-    _mongoClientPromise?: Promise<MongoClient>;
-  };
+const options: MongoClientOptions = {
+  maxPoolSize: 10,
+  minPoolSize: 2,
+  maxIdleTimeMS: 30000,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+};
 
-  if (!globalWithMongo._mongoClientPromise) {
-    client = new MongoClient(uri);
-    globalWithMongo._mongoClientPromise = client.connect();
-  }
-
-  clientPromise = globalWithMongo._mongoClientPromise;
-} else {
-  client = new MongoClient(uri);
-  clientPromise = client.connect();
+declare global {
+  var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
+
+let clientPromise: Promise<MongoClient>;
+
+if (!global._mongoClientPromise) {
+  const client = new MongoClient(uri, options);
+  global._mongoClientPromise = client.connect();
+}
+
+clientPromise = global._mongoClientPromise;
 
 export async function connectDB() {
   const client = await clientPromise;
-  return client.db("publicissue");
+  return client.db(dbName);
 }
+
+export default clientPromise;

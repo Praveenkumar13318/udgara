@@ -1,65 +1,44 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "../../../lib/mongodb";
+import { connectDB } from "@/app/lib/mongodb";
 import bcrypt from "bcryptjs";
 import * as jwt from "jsonwebtoken";
+import { err, ok } from "@/app/lib/apiHelpers";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export async function POST(req: Request) {
   try {
-    const { email, password } = await req.json();
+    const body = await req.json();
+    const email = typeof body.email === "string" ? body.email.toLowerCase().trim() : "";
+    const password = typeof body.password === "string" ? body.password : "";
 
-    if (!email || !password) {
-      return NextResponse.json(
-        { error: "Email and password required" },
-        { status: 400 }
-      );
+    if (!EMAIL_REGEX.test(email) || !password) {
+      return err("Invalid credentials", 401);
     }
 
     const db = await connectDB();
-
     const user = await db.collection("users").findOne({ email });
 
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+    const WRONG = "Invalid email or password";
+
+    if (!user || !user.passwordHash) {
+      await bcrypt.hash("dummy", 12);
+      return err(WRONG, 401);
     }
 
-    if (!user.password) {
-      return NextResponse.json(
-        { error: "User password not set properly" },
-        { status: 500 }
-      );
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return NextResponse.json(
-        { error: "Invalid password" },
-        { status: 401 }
-      );
-    }
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    if (!isMatch) return err(WRONG, 401);
 
     const token = jwt.sign(
-      {
-        userId: user._id,
-        publicId: user.publicId,
-      },
-      process.env.JWT_SECRET as string,
+      { userId: user._id.toString(), publicId: user.publicId },
+      process.env.JWT_SECRET!,
       { expiresIn: "7d" }
     );
 
-    return NextResponse.json({
-      success: true,
-      token,
-      publicId: user.publicId,
-    });
+    return ok({ success: true, token, publicId: user.publicId });
 
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { error: "Login failed" },
-      { status: 500 }
-    );
+  } catch (e) {
+    console.error("[POST /api/auth/login]", e);
+    return err("Login failed", 500);
   }
 }
