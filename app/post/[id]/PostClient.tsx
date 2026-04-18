@@ -90,7 +90,7 @@ const res = await fetch(`/api/posts?postId=${postId}`, {
     const res = await fetch(`/api/comments?postId=${postId}`);
     const data = await res.json();
 
-    const incoming = Array.isArray(data.data) ? data.data : [];
+    const incoming = Array.isArray(data.comments) ? data.comments : [];
 
     setComments((prev) => {
       if (JSON.stringify(prev) === JSON.stringify(incoming)) {
@@ -141,9 +141,7 @@ useEffect(() => {
  return () => {
   channel.unbind("like-update", handler);
 
-  if (pusherClient) {
-    pusherClient.unsubscribe("posts");
-  }
+  
 };
 }, [postId]);
   /* ================= LIKE ================= */
@@ -233,9 +231,10 @@ await fetch("/api/report", {
   try {
     const res = await fetch("/api/comments", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+     headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
+ },
       body: JSON.stringify({
         postId,
         npId: publicId,

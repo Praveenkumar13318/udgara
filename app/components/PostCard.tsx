@@ -94,9 +94,7 @@ const isOwner = publicId && publicId === post.npId;
   channel.unbind("like-update", likeHandler);
   channel.unbind("comment-update", commentHandler);
 
-  if (pusherClient) {
-    pusherClient.unsubscribe("posts");
-  }
+ 
 };
 }, [post.postId]);
 
