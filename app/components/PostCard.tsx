@@ -91,10 +91,13 @@ const isOwner = publicId && publicId === post.npId;
   channel.bind("comment-update", commentHandler);
 
   return () => {
-    channel.unbind("like-update", likeHandler);
-    channel.unbind("comment-update", commentHandler);
+  channel.unbind("like-update", likeHandler);
+  channel.unbind("comment-update", commentHandler);
+
+  if (pusherClient) {
     pusherClient.unsubscribe("posts");
-  };
+  }
+};
 }, [post.postId]);
 
   const [showReport, setShowReport] = useState(false);
