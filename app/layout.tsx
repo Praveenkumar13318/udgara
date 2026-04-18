@@ -262,7 +262,7 @@ function handleLogout() {
 
             {user?.publicId ? (
               <div
-                onClick={logout}
+                onClick={handleLogout}
                 onMouseDown={pressIn}
                 onMouseUp={pressOut}
                 className="no-select"
@@ -289,15 +289,9 @@ function handleLogout() {
         {/* ================= MAIN ================= */}
 
         <Providers>
-  <main
-    style={{
-      maxWidth: 760,
-      margin: "0 auto",
-      padding: "16px 14px"
-    }}
-  >
+  
     {children}
-  </main>
+ 
 </Providers>
       </body>
     </html>

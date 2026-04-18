@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "../../../lib/mongodb";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
 export async function POST(request: Request) {
   try {
@@ -14,7 +15,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "OTP not found" }, { status: 400 });
     }
 
-    if (record.otp !== otp) {
+    const otpValid = await bcrypt.compare(otp, record.otp);
+if (!otpValid) {
       return NextResponse.json({ error: "Invalid OTP" }, { status: 400 });
     }
 
@@ -29,9 +31,13 @@ export async function POST(request: Request) {
 
     // create new user if not exists
     if (!user) {
-      const count = await db.collection("users").countDocuments();
-
-      const npId = "NP" + String(count + 1).padStart(6, "0");
+       const { randomUUID } = await import("crypto");
+       const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+let npId = "NP";
+for (let i = 0; i < 8; i++) npId += chars[Math.floor(Math.random() * chars.length)];
+ // Collision check (astronomically rare but safe)
+while (await db.collection("users").findOne({ npId })) {
+npId = "NP" + Array.from({length:8}, () => chars[Math.floor(Math.random()*chars.length)]).join("");}
 
       const newUser = {
         email,
@@ -49,13 +55,10 @@ export async function POST(request: Request) {
 
     // 🔥 GENERATE TOKEN (CRITICAL FIX)
     const token = jwt.sign(
-      {
-        userId: user._id,
-        publicId: user.npId
-      },
-      process.env.JWT_SECRET as string,
-      { expiresIn: "7d" }
-    );
+{ userId: user._id.toString(), publicId: user.npId },
+process.env.JWT_SECRET as string,
+{ expiresIn: "7d" }
+);
 
     return NextResponse.json({
       success: true,

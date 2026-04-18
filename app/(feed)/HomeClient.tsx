@@ -204,7 +204,9 @@ useEffect(() => {
   };
 
   channel.bind("like-update", handler);
-
+ return () => {
+  channel.unbind("like-update", handler);
+ };
   
 }, []);
   return (
@@ -269,7 +271,7 @@ useEffect(() => {
   const fresh = await res.json();
 
   queryClient.setQueryData(["feed"], {
-    pages: [{ posts: fresh.data }],
+    pages: [{ posts: Array.isArray(fresh.posts) ? fresh.posts : [] }],
     pageParams: []
   });
 
@@ -349,7 +351,7 @@ useEffect(() => {
 {!isInitialLoading && isSearching && (
   <>
     {filteredPosts.map((post: any) => (
-      <PostCard key={post.postId} post={post} />
+      <PostCard key={post.postId} post={post} setReportOpen={setReportOpen} />
     ))}
 
     {search.trim() && filteredPosts.length === 0 && (
@@ -364,7 +366,7 @@ useEffect(() => {
 {!isInitialLoading && !isSearching && (
   <>
     {(data?.pages?.flatMap((page: any) => page.posts || []) ?? []).map((post: any) => (
-      <PostCard key={post.postId} post={post} />
+     <PostCard key={post.postId} post={post} setReportOpen={setReportOpen} />
     ))}
   </>
 )}
