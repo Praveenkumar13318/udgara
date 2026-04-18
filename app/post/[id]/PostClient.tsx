@@ -32,7 +32,7 @@ const queryClient = useQueryClient();
 
   const startPolling = () => {
     if (interval) return;
-    interval = setInterval(loadComments, 5000);
+    interval = setInterval(loadComments, 30000);
   };
 
   const stopPolling = () => {

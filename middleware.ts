@@ -23,9 +23,9 @@ export function middleware(req: NextRequest) {
 
   if (!pathname.startsWith("/api/")) return NextResponse.next();
 
-  if (req.method === "GET" && pathname === "/api/posts") {
-    return NextResponse.next();
-  }
+  if (req.method === "GET" && (pathname === "/api/posts" || pathname === "/api/comments")) {
+  return NextResponse.next();
+}
 
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??

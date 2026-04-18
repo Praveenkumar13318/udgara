@@ -49,9 +49,8 @@ function Home() {
   try {
     const res = await fetch("/api/posts?limit=1");
 const latestData = await res.json();
-if (!latestData?.data) return;
-
-const latest = latestData?.data?.[0];
+if (!latestData?.posts) return;
+const latest = latestData?.posts?.[0];
 const feedData: any = queryClient.getQueryData(["feed"]);
 const current = feedData?.pages?.[0]?.posts?.[0];
 
@@ -206,13 +205,7 @@ useEffect(() => {
 
   channel.bind("like-update", handler);
 
-  return () => {
-  channel.unbind("like-update", handler);
-
-  if (pusherClient) {
-    pusherClient.unsubscribe("posts");
-  }
-};
+  
 }, []);
   return (
 
@@ -474,27 +467,9 @@ useEffect(() => {
       </button>
     </div>
 
-    {/* POST */}
-    <div
-  style={{
-    padding: "16px",
-    borderBottom: "1px solid #1f1f1f",
-    maxHeight: "55vh",
-    overflowY: "auto"
-  }}
->
-  <PostClient postId={activePostId} mode="post-only" />
+    <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
+  <PostClient postId={activePostId} />
 </div>
-    {/* COMMENTS */}
-    <div
-      style={{
-        flex: 1,
-        overflowY: "auto",
-        padding: "16px"
-      }}
-    >
-      <PostClient postId={activePostId} mode="comments-only" />
-    </div>
   </div>
 )}
 
