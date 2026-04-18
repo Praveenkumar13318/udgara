@@ -28,19 +28,7 @@ export default function HomeWrapper() {
     </Suspense>
   );
 }
-export async function generateMetadata({ searchParams }: any) {
-  const postId = searchParams?.post;
 
-  return {
-    title: "Udgara",
-    description: "Check this post",
-    openGraph: {
-      title: "Udgara",
-      description: "View this post",
-      images: [`/og?postId=${postId}`]
-    }
-  };
-}
 function Home() {
 
   const [reportOpen, setReportOpen] = useState(false);
@@ -143,7 +131,7 @@ setFilteredPosts(safeData.slice(0, 20));
     hasNextPage &&
     !isFetchingNextPage &&
     window.innerHeight + window.scrollY >=
-      document.documentElement.scrollHeight - 200
+      document.documentElement.scrollHeight - 600
   ) {
     loadingRef.current = true;
 

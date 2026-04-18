@@ -51,10 +51,14 @@ const queryClient = useQueryClient();
         const formData = new FormData();
         formData.append("file", image);
 
-        const uploadRes = await fetch("/api/upload", {
-          method: "POST",
-          body: formData
-        });
+        const token = localStorage.getItem("token");
+const uploadRes = await fetch("/api/upload", {
+  method: "POST",
+  headers: {
+    Authorization: token ? `Bearer ${token}` : "",
+  },
+  body: formData
+});
 
         const uploadData = await uploadRes.json();
 
@@ -98,7 +102,12 @@ if (!res.ok) {
 }
 if (data.success) {
 
-  const newPost = data.post; // 👈 make sure backend returns post
+  const newPost = {
+  ...data.post,
+  likes: 0,
+  commentsCount: 0,
+  isLiked: false,
+}; // 👈 make sure backend returns post
 
   queryClient.setQueryData(["feed"], (oldData: any) => {
     if (!oldData) return oldData;
