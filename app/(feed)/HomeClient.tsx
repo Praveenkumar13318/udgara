@@ -92,7 +92,7 @@ const {
 
   staleTime: 0, // ✅ prevents refetch spam
   gcTime: 1000 * 60 * 10,   // ✅ keeps cache alive
-  refetchOnMount: false,
+  refetchOnMount: true,
 refetchOnWindowFocus: true,
 });  
  const isInitialLoading = !data && isLoading;
@@ -450,7 +450,7 @@ useEffect(() => {
     </div>
 
     {/* COMMENTS - scrolls independently */}
-    <div style={{ flex: 1, overflowY: "auto", padding: "0" }}>
+    <div style={{ flex: 1, overflowY: "auto", padding: "0 16px" }}>
       <PostClient postId={activePostId} mode="comments-only" />
     </div>
 

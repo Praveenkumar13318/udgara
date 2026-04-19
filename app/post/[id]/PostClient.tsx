@@ -524,12 +524,7 @@ letterSpacing: "0.5px",
     )}
     {/* ================= COMMENT INPUT ================= */}
     {showComments && (
-<div style={{
-      marginTop: "12px",
-      display: "flex",
-      gap: "10px"
-    }}>
-
+<div style={{ marginTop: "0", paddingTop: "16px", display: "flex", gap: "10px" }}>
       <input
         value={text}
         onChange={(e) => setText(e.target.value)}
