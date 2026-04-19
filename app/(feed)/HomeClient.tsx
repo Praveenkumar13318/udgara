@@ -58,19 +58,10 @@ const queryClient = useQueryClient();
   const searchParams = useSearchParams();
 const activePostId = searchParams.get("post");
 useEffect(() => {
-  if (activePostId) {
-    // LOCK BACKGROUND SCROLL
-    document.body.style.overflow = "hidden";
-  } else {
-    // RESTORE NORMAL
-    document.body.style.overflow = "";
-  }
-
-  return () => {
-    document.body.style.overflow = "";
-  };
-}, [activePostId]);
-
+  const shouldLock = !!activePostId || reportOpen;
+  document.body.style.overflow = shouldLock ? "hidden" : "";
+  return () => { document.body.style.overflow = ""; };
+}, [activePostId, reportOpen]);
   const loadingRef = useRef(false);
 const {
   data,
@@ -152,17 +143,6 @@ setFilteredPosts(safeData.slice(0, 20));
   return () => clearInterval(interval);
 }, []);
 
-useEffect(() => {
-  if (reportOpen) {
-    document.body.style.overflow = "hidden"; // 🚫 stop scroll
-  } else {
-    document.body.style.overflow = ""; // ✅ allow scroll
-  }
-
-  return () => {
-    document.body.style.overflow = "";
-  };
-}, [reportOpen]);
 
 useEffect(() => {
   if (!pusherClient) return;

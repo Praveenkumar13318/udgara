@@ -70,8 +70,7 @@ const isOwner = publicId && publicId === post.npId;
   useEffect(() => {
   if (!pusherClient) return;
 
-  const channel = pusherClient.subscribe("posts");
-
+  const channel = pusherClient.channel("posts") || pusherClient.subscribe("posts");
   const likeHandler = (data: any) => {
     console.log("PUSHER EVENT RECEIVED:", data);
 
