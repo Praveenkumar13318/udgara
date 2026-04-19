@@ -113,20 +113,15 @@ const [error, setError] = useState(false);
 
   return (
 
-    <main
-      style={{
-        maxWidth: "720px",
-        margin: "40px auto",
-        padding: "20px",
-        color: "white"
-      }}
-    >
+    <main style={{ maxWidth: "680px", margin: "0 auto", padding: "16px", color: "white" }}>
 
       {/* HEADER */}
 
       <div
         style={{
-          background: "linear-gradient(135deg,#111,#1c1c1c)",
+          background: "#141414",
+borderTop: "2px solid #1e90ff",
+
           padding: "28px",
           borderRadius: "18px",
           marginBottom: "30px",
@@ -143,7 +138,7 @@ const [error, setError] = useState(false);
           style={{
             marginTop: "14px",
             display: "flex",
-            justifyContent: "space-between",
+            justifyContent: "center", gap: "48px",            
             textAlign: "center"
           }}
         >
