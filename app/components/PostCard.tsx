@@ -174,21 +174,25 @@ setLikes(prevLikes);
   }
 
   /* ================= SHARE ================= */
-  async function handleShare(e: any) {
-    e.stopPropagation();
-    e.preventDefault();
+ async function handleShare(e: any) {
+  e.stopPropagation();
+  e.preventDefault();
 
-    const url = window.location.origin + "/post/" + post.postId;
+  const url = `${window.location.origin}/post/${post.postId}`;
+  const text = `${post.npId?.toUpperCase()} on Udgara:\n"${post.content?.slice(0, 80)}${post.content?.length > 80 ? "..." : ""}"`;
 
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: "Udgara Post", url });
-      } catch {}
-    } else {
-      await navigator.clipboard.writeText(url);
-      console.log("Link copied");
-    }
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: `${post.npId?.toUpperCase()} on Udgara`,
+        text,
+        url,
+      });
+    } catch {}
+  } else {
+    await navigator.clipboard.writeText(url);
   }
+}
 
   /* ================= REPORT ================= */
   async function submitReport() {

@@ -1,24 +1,16 @@
-import PostClient from "./PostClient";
-import { connectDB } from "@/app/lib/mongodb";
+import { Metadata } from "next";
 
-export const revalidate = 0;
+interface Props {
+  params: { id: string };
+}
 
-export async function generateMetadata({ params }: any) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
-    // ✅ FIX: use full correct URL
-    const res = await fetch(
-      `https://udgara.vercel.app/api/posts?postId=${params.id}`,
-      {
-        cache: "no-store",
-      }
-    );
+    const base = process.env.NEXT_PUBLIC_BASE_URL ?? "https://udgara.vercel.app";
 
-    if (!res.ok) {
-      return {
-        title: "Udgara",
-        description: "View post on Udgara",
-      };
-    }
+    const res = await fetch(`${base}/api/posts?postId=${params.id}`, {
+      cache: "no-store",
+    });
 
     const data = await res.json();
     const post = data?.post;
@@ -26,42 +18,43 @@ export async function generateMetadata({ params }: any) {
     if (!post) {
       return {
         title: "Udgara",
-        description: "View post on Udgara",
+        description: "Share your thoughts. Stay anonymous.",
       };
     }
 
-    const title = `${post.publicId} on Udgara`;
-    const description =
-      post.content?.slice(0, 120) || "View post on Udgara";
+    const npId = (post.npId ?? "Anonymous").toUpperCase();
+    const content = post.content ?? "";
+    const description = content.length > 120
+      ? content.slice(0, 120) + "..."
+      : content;
 
-    const image =
-      post.image || "https://udgara.vercel.app/icon-152.png";
+    const ogImageUrl = `${base}api/og/post?postId=${params.id}`;
 
     return {
-      title,
+      title: `${npId} on Udgara`,
       description,
       openGraph: {
-  title,
-  description,
-  url: `https://udgara.vercel.app/post/${post.postId}`,
-  type: "article",
-  images: [
-    {
-      url: image,
-      width: 1200,
-      height: 630,
-    },
-  ],
-},
+        title: `${npId} on Udgara`,
+        description,
+        images: [{
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${npId}'s post on Udgara`,
+        }],
+        type: "article",
+        siteName: "Udgara",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${npId} on Udgara`,
+        description,
+        images: [ogImageUrl],
+      },
     };
-  } catch (e) {
-    return {
-      title: "Udgara",
-      description: "View post on Udgara",
-    };
+  } catch {
+    return { title: "Udgara" };
   }
 }
 
-export default function Page(props: any) {
-  return <PostClient {...props} />;
-}
+export { default } from "./PostClient";
