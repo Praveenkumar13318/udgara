@@ -41,28 +41,28 @@ const isOwner = publicId && publicId === post.npId;
   function renderText(text: string) {
   return text.split(/(#[\w-]+)/g).map((part, i) => {
     if (part.startsWith("#")) {
-      const tag = part.substring(1);
-
       return (
         <span
           key={i}
-          style={{
-  color: "#1e90ff",
-  cursor: "pointer",
-  fontWeight: 500,
-  textDecoration: "underline"
-}}
           onClick={(e) => {
-            e.stopPropagation(); // 🔥 VERY IMPORTANT (prevents post open)
+            e.stopPropagation();
             e.preventDefault();
-            router.push(`/search?q=${tag}`);
+            router.push(`/search?q=${part.substring(1)}`);
+          }}
+          style={{
+            color: "#1e90ff",
+            fontWeight: 500,
+            cursor: "pointer",
+            display: "inline-block",
+            padding: "1px 6px",
+            borderRadius: "6px",
+            background: "rgba(30,144,255,0.1)",
           }}
         >
           {part}
         </span>
       );
     }
-
     return part;
   });
 }
@@ -494,51 +494,113 @@ setReportOpen(true); // 🔥 ADD THIS
 
       {/* REPORT MODAL (UNCHANGED LOGIC) */}
       {showReport && (
+  <div
+    onClick={() => { setShowReport(false); setReportOpen(false); }}
+    style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(0,0,0,0.8)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "flex-end",
+      zIndex: 9999,
+      padding: "0 0 24px",
+    }}
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        width: "100%",
+        maxWidth: "480px",
+        background: "#141414",
+        borderRadius: "20px 20px 0 0",
+        padding: "8px 0 0",
+      }}
+    >
+      {/* drag handle */}
+      <div style={{
+        width: "36px",
+        height: "4px",
+        background: "#2a2a2a",
+        borderRadius: "2px",
+        margin: "0 auto 20px",
+      }} />
+
+      <div style={{
+        fontSize: "13px",
+        fontWeight: 600,
+        color: "#555",
+        letterSpacing: "0.5px",
+        padding: "0 20px 12px",
+        textTransform: "uppercase",
+      }}>
+        Report post
+      </div>
+
+      {["Spam", "Harassment", "Hate speech", "Violence", "Misinformation", "Other"].map((r) => (
         <div
-  onClick={() => {
-    setShowReport(false);
-    setReportOpen(false);
-  }}
-  style={{
-    position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.75)",
+          key={r}
+          onClick={() => setSelectedReason(r)}
+          style={{
             display: "flex",
-            justifyContent: "center",
-            alignItems: "center"
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "14px 20px",
+            cursor: "pointer",
+            background: selectedReason === r ? "rgba(255,255,255,0.04)" : "transparent",
+            borderTop: "1px solid #1a1a1a",
           }}
         >
-          <div
-  onClick={(e) => e.stopPropagation()} // 🔥 IMPORTANT
-  style={{
-    width: "320px",
-              background: "#1a1a1a",
-              borderRadius: "14px",
-              padding: "18px"
-            }}
-          >
-            <h3 style={{ marginBottom: "10px" }}>Report Post</h3>
-
-            {reasons.map((r) => (
-              <label key={r} style={{ display: "block", marginBottom: "6px" }}>
-                <input
-                  type="radio"
-                  onChange={() => setSelectedReason(r)}
-                />{" "}
-                {r}
-              </label>
-            ))}
-
-            <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
-              <button className="tap" onClick={submitReport}>Submit</button>
-              <button className="tap" onClick={() => {
-  setShowReport(false);
-  setReportOpen(false); // 🔥 ADD THIS
-}}>Cancel</button>
-            </div>
-          </div>
+          <span style={{ fontSize: "15px", color: "#e5e5e5" }}>{r}</span>
+          <div style={{
+            width: "20px",
+            height: "20px",
+            borderRadius: "50%",
+            border: selectedReason === r ? "2px solid #1e90ff" : "2px solid #333",
+            background: selectedReason === r ? "#1e90ff" : "transparent",
+            flexShrink: 0,
+          }} />
         </div>
-      )}
+      ))}
+
+      <div style={{ padding: "16px 20px 8px", display: "flex", gap: "10px" }}>
+        <button
+          onClick={() => { setShowReport(false); setReportOpen(false); setSelectedReason(""); }}
+          style={{
+            flex: 1,
+            padding: "13px",
+            borderRadius: "999px",
+            border: "1px solid #2a2a2a",
+            background: "transparent",
+            color: "#888",
+            fontSize: "14px",
+            fontWeight: 500,
+            cursor: "pointer",
+          }}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={submitReport}
+          disabled={!selectedReason}
+          style={{
+            flex: 1,
+            padding: "13px",
+            borderRadius: "999px",
+            border: "none",
+            background: selectedReason ? "#ff4d4d" : "#1c1c1c",
+            color: selectedReason ? "#fff" : "#444",
+            fontSize: "14px",
+            fontWeight: 600,
+            cursor: selectedReason ? "pointer" : "not-allowed",
+          }}
+        >
+          Report
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </>
   );
 }

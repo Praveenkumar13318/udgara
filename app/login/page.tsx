@@ -78,12 +78,12 @@ export default function LoginPage() {
           fontSize: "36px",
           fontWeight: 800,
           letterSpacing: "-1px",
-          color: "#fff",
+          color: "#ffffff",
           marginBottom: "8px",
         }}>
           Udgara
         </div>
-        <p style={{ fontSize: "14px", color: "#555", margin: 0 }}>
+        <p style={{ fontSize: "14px", color: "#888", margin: 0 }}>
           Share your thoughts. Stay anonymous.
         </p>
       </div>
@@ -94,15 +94,14 @@ export default function LoginPage() {
         maxWidth: "380px",
         background: "#111",
         borderRadius: "20px",
-        border: "1px solid #1f1f1f",
+        border: "1px solid #222",
         padding: "28px 24px",
       }}>
 
-        {/* EMAIL STEP */}
         {step === "email" && (
           <>
-            <p style={{ fontSize: "13px", color: "#555", marginBottom: "6px" }}>
-              Your email
+            <p style={{ fontSize: "13px", color: "#aaa", marginBottom: "8px", marginTop: 0 }}>
+              Enter your email to continue
             </p>
             <input
               type="email"
@@ -115,12 +114,12 @@ export default function LoginPage() {
                 width: "100%",
                 padding: "13px 14px",
                 borderRadius: "10px",
-                border: "1px solid #222",
+                border: "1px solid #2a2a2a",
                 background: "#0b0b0c",
-                color: "#fff",
+                color: "#ffffff",
                 fontSize: "15px",
                 outline: "none",
-                marginBottom: "14px",
+                marginBottom: "12px",
                 boxSizing: "border-box",
               }}
             />
@@ -132,8 +131,8 @@ export default function LoginPage() {
                 padding: "13px",
                 borderRadius: "999px",
                 border: "none",
-                background: loading || !email.trim() ? "#1a1a1a" : "#1e90ff",
-                color: loading || !email.trim() ? "#444" : "#fff",
+                background: loading || !email.trim() ? "#1c1c1c" : "#1e90ff",
+                color: loading || !email.trim() ? "#555" : "#ffffff",
                 fontSize: "15px",
                 fontWeight: 600,
                 cursor: loading || !email.trim() ? "not-allowed" : "pointer",
@@ -142,49 +141,44 @@ export default function LoginPage() {
             >
               {loading ? "Sending..." : "Send OTP"}
             </button>
-            <p style={{ fontSize: "12px", color: "#333", marginTop: "16px", textAlign: "center" }}>
+
+            <p style={{ fontSize: "12px", color: "#555", marginTop: "16px", textAlign: "center" }}>
               By continuing you agree to our{" "}
-              <Link href="/terms" style={{ color: "#444", textDecoration: "underline" }}>
-                Terms
+              <Link href="/terms" style={{ color: "#888", textDecoration: "underline" }}>
+                Terms & Conditions
               </Link>
             </p>
           </>
         )}
 
-        {/* OTP STEP */}
         {step === "otp" && (
           <>
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              marginBottom: "20px",
-            }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
               <button
                 onClick={() => { setStep("email"); setMessage(""); }}
                 style={{
                   background: "none",
                   border: "none",
-                  color: "#555",
+                  color: "#888",
                   cursor: "pointer",
-                  fontSize: "18px",
-                  padding: "0",
+                  fontSize: "20px",
+                  padding: 0,
                   lineHeight: 1,
                 }}
               >
                 ←
               </button>
               <div>
-                <div style={{ fontSize: "15px", fontWeight: 500, color: "#fff" }}>
+                <div style={{ fontSize: "15px", fontWeight: 600, color: "#ffffff" }}>
                   Check your email
                 </div>
-                <div style={{ fontSize: "12px", color: "#555", marginTop: "2px" }}>
+                <div style={{ fontSize: "12px", color: "#666", marginTop: "2px" }}>
                   Code sent to {email}
                 </div>
               </div>
             </div>
 
-            <p style={{ fontSize: "13px", color: "#555", marginBottom: "6px" }}>
+            <p style={{ fontSize: "13px", color: "#aaa", marginBottom: "8px", marginTop: 0 }}>
               6-digit code
             </p>
             <input
@@ -199,14 +193,14 @@ export default function LoginPage() {
                 width: "100%",
                 padding: "13px 14px",
                 borderRadius: "10px",
-                border: "1px solid #222",
+                border: "1px solid #2a2a2a",
                 background: "#0b0b0c",
-                color: "#fff",
-                fontSize: "22px",
-                fontWeight: 600,
-                letterSpacing: "8px",
+                color: "#ffffff",
+                fontSize: "24px",
+                fontWeight: 700,
+                letterSpacing: "10px",
                 outline: "none",
-                marginBottom: "14px",
+                marginBottom: "12px",
                 boxSizing: "border-box",
                 textAlign: "center",
               }}
@@ -219,8 +213,8 @@ export default function LoginPage() {
                 padding: "13px",
                 borderRadius: "999px",
                 border: "none",
-                background: loading || otp.length < 6 ? "#1a1a1a" : "#22c55e",
-                color: loading || otp.length < 6 ? "#444" : "#fff",
+                background: loading || otp.length < 6 ? "#1c1c1c" : "#22c55e",
+                color: loading || otp.length < 6 ? "#555" : "#ffffff",
                 fontSize: "15px",
                 fontWeight: 600,
                 cursor: loading || otp.length < 6 ? "not-allowed" : "pointer",
@@ -234,31 +228,33 @@ export default function LoginPage() {
               onClick={() => !loading && sendOtp()}
               style={{
                 textAlign: "center",
-                marginTop: "16px",
+                marginTop: "14px",
                 fontSize: "13px",
-                color: loading ? "#333" : "#555",
-                cursor: loading ? "not-allowed" : "pointer",
+                color: "#555",
+                cursor: "pointer",
               }}
             >
-              Didn't receive it? <span style={{ color: "#1e90ff" }}>Resend</span>
+              Didn't get it?{" "}
+              <span style={{ color: "#1e90ff" }}>Resend code</span>
             </div>
           </>
         )}
 
-        {/* MESSAGE */}
         {message && (
           <p style={{
-            marginTop: "14px",
+            marginTop: "12px",
             fontSize: "13px",
-            color: message.includes("error") || message.includes("failed") || message.includes("Invalid")
-              ? "#ff4d4d"
-              : "#555",
+            color: message.toLowerCase().includes("error") ||
+                   message.toLowerCase().includes("failed") ||
+                   message.toLowerCase().includes("invalid") ||
+                   message.toLowerCase().includes("expired")
+              ? "#ff4d4d" : "#888",
             textAlign: "center",
+            margin: "12px 0 0",
           }}>
             {message}
           </p>
         )}
-
       </div>
     </div>
   );
