@@ -72,7 +72,7 @@ const isOwner = publicId && publicId === post.npId;
 
   const channel = pusherClient.channel("posts") || pusherClient.subscribe("posts");
   const likeHandler = (data: any) => {
-    console.log("PUSHER EVENT RECEIVED:", data);
+    
 
     if (data.postId === post.postId) {
       setLikes(data.likeCount);

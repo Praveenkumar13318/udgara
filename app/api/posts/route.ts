@@ -30,7 +30,7 @@ export async function GET(req: Request) {
       });
     }
 
-    const limit = 10;
+    const limit = Math.min(Number(searchParams.get("limit") ?? 10), 20);
     const query: any = cursor ? { createdAtMs: { $lt: Number(cursor) } } : {};
 
     const posts = await db

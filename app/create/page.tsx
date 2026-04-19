@@ -54,9 +54,7 @@ const queryClient = useQueryClient();
         const token = localStorage.getItem("token");
 const uploadRes = await fetch("/api/upload", {
   method: "POST",
-  headers: {
-    Authorization: token ? `Bearer ${token}` : "",
-  },
+  headers: { Authorization: `Bearer ${token ?? ""}` },
   body: formData
 });
 

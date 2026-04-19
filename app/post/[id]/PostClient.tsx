@@ -581,7 +581,7 @@ letterSpacing: "0.5px",
       ) : (
         comments.map((c) => (
           <div
-  key={c._id}
+  key={c.commentId || String(c._id)}
   style={{
     padding: "12px 0",
     borderBottom: "1px solid rgba(255,255,255,0.05)"

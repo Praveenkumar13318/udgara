@@ -14,15 +14,16 @@ export async function POST(request: Request) {
     if (!record) {
       return NextResponse.json({ error: "OTP not found" }, { status: 400 });
     }
-
+if (new Date() > new Date(record.expiresAt)) {
+await db.collection("otpCodes").deleteMany({ email });
+return NextResponse.json({ error: "OTP expired. Request a new one." }, { status: 400 });
+}
     const otpValid = await bcrypt.compare(otp, record.otp);
 if (!otpValid) {
       return NextResponse.json({ error: "Invalid OTP" }, { status: 400 });
     }
 
-    if (new Date() > new Date(record.expiresAt)) {
-      return NextResponse.json({ error: "OTP expired" }, { status: 400 });
-    }
+    
 
     // delete used OTP
     await db.collection("otpCodes").deleteMany({ email });
