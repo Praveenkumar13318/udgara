@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import PostCard from "../../components/PostCard";
 
 export default function ProfilePage() {
-
   const params = useParams();
+  const router = useRouter();
+  const [reportOpen, setReportOpen] = useState(false);
 
   const npId =
     typeof params?.npid === "string"
@@ -18,215 +19,189 @@ export default function ProfilePage() {
   const [posts, setPosts] = useState<any[]>([]);
   const [comments, setComments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-const [error, setError] = useState(false);
+  const [error, setError] = useState(false);
+
   useEffect(() => {
-  if (!npId) return;
-
-  setLoading(true); // 🔥 important
-
-  loadData();
-}, [npId]);
+    if (!npId) return;
+    setLoading(true);
+    loadData();
+  }, [npId]);
 
   async function loadData() {
-
     try {
-
-  const res = await fetch(`/api/profile?npId=${npId}`);
-
-  if (!res.ok) throw new Error("API failed");
-
-  const data = await res.json();
-
-  const profile = data?.data || {};
-
-  setPosts(Array.isArray(profile.posts) ? profile.posts : []);
-  setComments(Array.isArray(profile.comments) ? profile.comments : []);
-
-} catch (err) {
-  console.log("Profile load error", err);
-  setError(true); // 🔥 IMPORTANT
-}
-
+      const res = await fetch(`/api/profile?npId=${npId}`);
+      if (!res.ok) throw new Error("API failed");
+      const data = await res.json();
+      const profile = data?.data || {};
+      setPosts(Array.isArray(profile.posts) ? profile.posts : []);
+      setComments(Array.isArray(profile.comments) ? profile.comments : []);
+    } catch {
+      setError(true);
+    }
     setLoading(false);
-
   }
+
   if (error) {
-  return (
-    <div style={{ textAlign: "center", padding: "40px", color: "#888" }}>
-      Failed to load profile
-    </div>
-  );
-}
+    return (
+      <div style={{ textAlign: "center", padding: "60px 20px", color: "#555" }}>
+        Failed to load profile
+      </div>
+    );
+  }
 
   if (loading) {
-  return (
-    <main
-      style={{
-        maxWidth: "720px",
-        margin: "40px auto",
-        padding: "20px"
-      }}
-    >
-
-      {/* HEADER SKELETON */}
-      <div
-        style={{
-          background: "#111",
-          padding: "28px",
-          borderRadius: "18px",
-          marginBottom: "30px"
-        }}
-      >
-        <div style={{ width: "120px", height: "18px", background: "#222", borderRadius: "6px" }} />
-
-        <div style={{ display: "flex", gap: "20px", marginTop: "20px" }}>
-          <div style={{ width: "40px", height: "20px", background: "#222", borderRadius: "6px" }} />
-          <div style={{ width: "40px", height: "20px", background: "#222", borderRadius: "6px" }} />
-          <div style={{ width: "40px", height: "20px", background: "#222", borderRadius: "6px" }} />
+    return (
+      <div style={{ maxWidth: "680px", margin: "0 auto", padding: "16px" }}>
+        <div style={{ background: "#111", borderRadius: "16px", padding: "24px", marginBottom: "16px" }}>
+          <div style={{ width: "120px", height: "16px", background: "#1a1a1a", borderRadius: "6px", marginBottom: "16px" }} />
+          <div style={{ display: "flex", gap: "32px" }}>
+            {[1,2,3].map(i => (
+              <div key={i}>
+                <div style={{ width: "32px", height: "20px", background: "#1a1a1a", borderRadius: "4px", marginBottom: "4px" }} />
+                <div style={{ width: "48px", height: "10px", background: "#1a1a1a", borderRadius: "4px" }} />
+              </div>
+            ))}
+          </div>
         </div>
+        {[1,2,3].map(i => (
+          <div key={i} style={{ padding: "16px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+            <div style={{ width: "25%", height: "10px", background: "#1a1a1a", borderRadius: "4px", marginBottom: "10px" }} />
+            <div style={{ width: "80%", height: "12px", background: "#1a1a1a", borderRadius: "4px" }} />
+          </div>
+        ))}
       </div>
+    );
+  }
 
-      {/* POSTS SKELETON */}
-      {Array.from({ length: 3 }).map((_, i) => (
-        <div
-          key={i}
-          style={{
-            padding: "16px",
+  const totalLikes = posts.reduce((acc, p) => acc + (p.likes || 0), 0);
+
+  return (
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      height: "calc(100dvh - 56px)",
+      overflow: "hidden",
+    }}>
+
+      {/* STICKY PROFILE HEADER */}
+      <div style={{ flexShrink: 0 }}>
+        <div style={{
+          maxWidth: "680px",
+          margin: "0 auto",
+          padding: "16px 16px 0",
+        }}>
+          <div style={{
             background: "#111",
-            borderRadius: "12px",
-            marginBottom: "12px"
-          }}
-        >
-          <div style={{ width: "30%", height: "10px", background: "#222", marginBottom: "10px" }} />
-          <div style={{ width: "80%", height: "12px", background: "#222" }} />
-        </div>
-      ))}
-
-    </main>
-  );
-}
-
-  const totalLikes = posts.reduce(
-    (acc, p) => acc + (p.likes || 0),
-    0
-  );
-
-  return (
-
-    <main style={{ maxWidth: "680px", margin: "0 auto", padding: "16px", color: "white" }}>
-
-      {/* HEADER */}
-
-      <div
-        style={{
-          background: "#141414",
-borderTop: "2px solid #1e90ff",
-
-          padding: "28px",
-          borderRadius: "18px",
-          marginBottom: "30px",
-          border: "1px solid #2a2a2a",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.6)"
-        }}
-      >
-
-        <div style={{ fontSize: "22px", fontWeight: 700 }}>
-          {npId}
-        </div>
-
-        <div
-          style={{
-            marginTop: "14px",
-            display: "flex",
-            justifyContent: "center", gap: "48px",            
-            textAlign: "center"
-          }}
-        >
-
-          <div>
-            <div style={{ fontSize: "18px", fontWeight: 600 }}>
-              {posts.length}
+            borderRadius: "16px",
+            padding: "20px",
+            marginBottom: "16px",
+            borderLeft: "3px solid #1e90ff",
+          }}>
+            <div style={{
+              fontSize: "11px",
+              color: "#555",
+              letterSpacing: "1px",
+              textTransform: "uppercase",
+              marginBottom: "6px",
+            }}>
+              Anonymous ID
             </div>
-            <div style={{ fontSize: "12px", color: "#888" }}>
-              Posts
+            <div style={{
+              fontSize: "22px",
+              fontWeight: 700,
+              color: "#fff",
+              letterSpacing: "1px",
+              marginBottom: "16px",
+              fontFamily: "monospace",
+            }}>
+              {npId.toUpperCase()}
+            </div>
+
+            <div style={{ display: "flex", gap: "0", borderTop: "1px solid #1a1a1a", paddingTop: "16px" }}>
+              {[
+                { label: "Posts", value: posts.length },
+                { label: "Comments", value: comments.length },
+                { label: "Reactions", value: totalLikes },
+              ].map((stat, i) => (
+                <div key={stat.label} style={{
+                  flex: 1,
+                  textAlign: "center",
+                  borderRight: i < 2 ? "1px solid #1a1a1a" : "none",
+                  padding: "0 8px",
+                }}>
+                  <div style={{ fontSize: "20px", fontWeight: 700, color: "#fff" }}>
+                    {stat.value}
+                  </div>
+                  <div style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          <div>
-            <div style={{ fontSize: "18px", fontWeight: 600 }}>
-              {comments.length}
-            </div>
-            <div style={{ fontSize: "12px", color: "#888" }}>
-              Comments
-            </div>
+          {/* TAB LABEL */}
+          <div style={{
+            fontSize: "13px",
+            fontWeight: 600,
+            color: "#fff",
+            padding: "0 4px 10px",
+            borderBottom: "1px solid #1a1a1a",
+          }}>
+            Posts
           </div>
-
-          <div>
-            <div style={{ fontSize: "18px", fontWeight: 600 }}>
-              {totalLikes}
-            </div>
-            <div style={{ fontSize: "12px", color: "#888" }}>
-              Reactions
-            </div>
-          </div>
-
         </div>
-
       </div>
 
-      {/* POSTS */}
+      {/* SCROLLABLE CONTENT */}
+      <div style={{ flex: 1, overflowY: "auto" }}>
+        <div style={{ maxWidth: "680px", margin: "0 auto" }}>
 
-      <h3 style={{ marginBottom: "12px" }}>Posts</h3>
+          {posts.length === 0 && (
+            <div style={{ color: "#444", padding: "32px 16px", textAlign: "center", fontSize: "14px" }}>
+              No posts yet
+            </div>
+          )}
 
-      {posts.length === 0 && (
-        <div style={{ color: "#777", marginBottom: "20px" }}>
-          Nothing here yet — start posting 🚀
+          {posts.map((post) => (
+            <PostCard key={post.postId} post={post} setReportOpen={setReportOpen} />
+          ))}
+
+          {comments.length > 0 && (
+            <>
+              <div style={{
+                fontSize: "13px",
+                fontWeight: 600,
+                color: "#fff",
+                padding: "20px 16px 10px",
+                borderBottom: "1px solid #1a1a1a",
+              }}>
+                Comments
+              </div>
+
+              {comments.map((c: any) => (
+                <div
+                  key={c.commentId || c._id}
+                  style={{
+                    padding: "14px 16px",
+                    borderBottom: "1px solid rgba(255,255,255,0.04)",
+                  }}
+                >
+                  <div style={{ fontSize: "14px", color: "#e5e5e5", lineHeight: 1.5 }}>
+                    {c.text}
+                  </div>
+                  <div style={{ fontSize: "11px", color: "#444", marginTop: "4px" }}>
+                    {c.postId}
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+
+          <div style={{ height: "32px" }} />
         </div>
-      )}
+      </div>
 
-      {posts.map((post) => (
-        <PostCard key={post.postId} post={post} />
-      ))}
-
-      {/* COMMENTS */}
-
-      <h3 style={{ marginTop: "30px", marginBottom: "12px" }}>
-        Comments
-      </h3>
-
-      {comments.length === 0 && (
-        <div style={{ color: "#777" }}>
-          No comments yet
-        </div>
-      )}
-
-      {comments.map((c: any) => (
-
-        <div
-          key={c._id}
-          style={{
-            background: "#1a1a1a",
-            padding: "12px",
-            borderRadius: "10px",
-            marginBottom: "10px",
-            border: "1px solid #2a2a2a"
-          }}
-        >
-
-          <div style={{ fontSize: "13px", color: "#aaa" }}>
-            {c.npId}
-          </div>
-
-          <div style={{ fontSize: "14px" }}>
-            {c.text}
-          </div>
-
-        </div>
-
-      ))}
-
-    </main>
-
+    </div>
   );
-
 }

@@ -7,7 +7,6 @@ type User = {
 type AuthState = {
   user: User | null;
   isHydrated: boolean;
-
   setUser: (user: User) => void;
   logout: () => void;
   hydrate: () => void;
@@ -24,17 +23,14 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: () => {
     localStorage.removeItem("publicId");
-    set({ user: null });
+    localStorage.removeItem("token");
+    set({ user: null, isHydrated: true });
   },
 
   hydrate: () => {
     const stored = localStorage.getItem("publicId");
-
     if (stored) {
-      set({
-        user: { publicId: stored },
-        isHydrated: true,
-      });
+      set({ user: { publicId: stored }, isHydrated: true });
     } else {
       set({ user: null, isHydrated: true });
     }

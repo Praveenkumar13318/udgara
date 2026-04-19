@@ -276,7 +276,7 @@ useEffect(() => {
   </button>
 )}
       {/* POSTS */}
-<div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+<div style={{ display: "flex", flexDirection: "column" }}>
 
   {/* 🔥 SKELETON BUFFER LOADING */}
   {isInitialLoading && (
@@ -404,52 +404,56 @@ useEffect(() => {
   }
 `}</style>
     {activePostId && (
-  <div
-    style={{
-      position: "fixed",
-      inset: 0,
-      background: "#0b0b0c",
-      zIndex: 9999,
-      display: "flex",
-      flexDirection: "column",
-      height: "100vh",
-      animation: "slideUp 0.25s ease"
-    }}
-  >
-    {/* HEADER */}
-    <div
-      style={{
-        position: "sticky",
-        top: 0,
-        background: "#0b0b0c",
-        padding: "12px 16px",
-        borderBottom: "1px solid #1f1f1f",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center"
-      }}
-    >
-      <span style={{ fontSize: "16px", fontWeight: 600 }}>
-        Post
-      </span>
+  <div style={{
+    position: "fixed",
+    inset: 0,
+    background: "#0b0b0c",
+    zIndex: 9999,
+    display: "flex",
+    flexDirection: "column",
+    height: "100dvh",
+    animation: "slideUp 0.25s ease",
+  }}>
 
+    {/* HEADER - fixed */}
+    <div style={{
+      flexShrink: 0,
+      background: "#0b0b0c",
+      padding: "12px 16px",
+      borderBottom: "1px solid #1a1a1a",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    }}>
+      <span style={{ fontSize: "16px", fontWeight: 600 }}>Post</span>
       <button
         onClick={() => router.back()}
         style={{
-          background: "none",
+          background: "rgba(255,255,255,0.06)",
           border: "none",
           color: "#fff",
-          fontSize: "18px",
-          cursor: "pointer"
+          width: "32px",
+          height: "32px",
+          borderRadius: "50%",
+          fontSize: "16px",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
-      >
-        ✕
-      </button>
+      >✕</button>
     </div>
 
-    <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
-  <PostClient postId={activePostId} />
-</div>
+    {/* POST - fixed, does not scroll */}
+    <div style={{ flexShrink: 0, borderBottom: "1px solid #1a1a1a" }}>
+      <PostClient postId={activePostId} mode="post-only" />
+    </div>
+
+    {/* COMMENTS - scrolls independently */}
+    <div style={{ flex: 1, overflowY: "auto", padding: "0" }}>
+      <PostClient postId={activePostId} mode="comments-only" />
+    </div>
+
   </div>
 )}
 
