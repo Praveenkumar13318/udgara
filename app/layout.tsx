@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import Providers from "./providers";
 import { useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
 export default function RootLayout({
   children,
 }: {
@@ -21,11 +20,10 @@ useEffect(() => {
 
 const router = useRouter();
 
-const queryClient = useQueryClient();
+
 
 function handleLogout() {
   logout();
-  queryClient.clear(); // clears ALL cached feed data
   router.push("/login");
 }
   const linkStyle = {
