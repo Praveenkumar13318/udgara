@@ -23,7 +23,17 @@ type Post = {
 
 export default function HomeWrapper() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={
+  <div style={{ width: "100%", maxWidth: "680px", margin: "0 auto", padding: "6px 12px" }}>
+    {Array.from({ length: 5 }).map((_, i) => (
+      <div key={i} style={{ padding: "16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ width: "30%", height: "10px", background: "#1a1a1a", borderRadius: "6px", marginBottom: "10px" }} />
+        <div style={{ width: "90%", height: "12px", background: "#1a1a1a", borderRadius: "6px", marginBottom: "6px" }} />
+        <div style={{ width: "60%", height: "12px", background: "#1a1a1a", borderRadius: "6px" }} />
+      </div>
+    ))}
+  </div>
+}>
       <Home />
     </Suspense>
   );
