@@ -50,14 +50,25 @@ const isOwner = publicId && publicId === post.npId;
             router.push(`/search?q=${part.substring(1)}`);
           }}
           style={{
-            color: "#1e90ff",
-            fontWeight: 500,
-            cursor: "pointer",
-            display: "inline-block",
-            padding: "1px 6px",
-            borderRadius: "6px",
-            background: "rgba(30,144,255,0.1)",
-          }}
+    color: "#1e90ff",
+    fontWeight: 500,
+    cursor: "pointer",
+    display: "inline-block",
+    padding: "2px 8px",
+    borderRadius: "6px",
+    background: "rgba(30,144,255,0.1)",
+    transition: "background 0.15s ease, transform 0.12s ease",
+    WebkitTapHighlightColor: "transparent",
+    touchAction: "manipulation",
+  }}
+onTouchStart={(e) => {
+    (e.currentTarget as HTMLElement).style.background = "rgba(30,144,255,0.28)";
+    (e.currentTarget as HTMLElement).style.transform = "scale(0.94)";
+  }}
+onTouchEnd={(e) => {
+    (e.currentTarget as HTMLElement).style.background = "rgba(30,144,255,0.1)";
+    (e.currentTarget as HTMLElement).style.transform = "scale(1)";
+  }}
         >
           {part}
         </span>
@@ -103,7 +114,7 @@ const isOwner = publicId && publicId === post.npId;
   const [likes, setLikes] = useState(post.likes || 0);
   const [commentsCount, setCommentsCount] = useState(post.commentsCount || 0);
   const [liked, setLiked] = useState(post.isLiked || false);
-  const [animating, setAnimating] = useState(false);
+  const [animating, setAnimating] = useState<"idle"|"pop"|"settle">("idle");
   
 
   const reasons = [
@@ -123,8 +134,9 @@ const isOwner = publicId && publicId === post.npId;
   if (isLiking) return; 
   
   setIsLiking(true);
-setAnimating(true);
-setTimeout(() => setAnimating(false), 120);
+setAnimating("pop");
+setTimeout(() => setAnimating("settle"), 120);
+setTimeout(() => setAnimating("idle"), 220);
     const token = localStorage.getItem("token");
 if (!token) {
   setIsLiking(false);   // ✅ ADD BACK
@@ -385,8 +397,9 @@ router.push(`/?post=${post.postId}`, { scroll: false });
   height="20"
   viewBox="0 0 24 24"
   style={{
-    transform: animating ? "scale(1.25)" : "scale(1)",
-    transition: "transform 0.18s ease"
+    transform: animating === "pop" ? "scale(1.45)" : animating === "settle" ? "scale(1.08)" : "scale(1)",
+    transition: animating === "pop" ? "transform 0.1s cubic-bezier(0.34,1.56,0.64,1)" : "transform 0.15s ease-out",
+    filter: liked ? "drop-shadow(0 0 4px rgba(255,45,85,0.5))" : "none",
   }}
 >
                 <path
@@ -397,9 +410,15 @@ router.push(`/?post=${post.postId}`, { scroll: false });
                 />
               </svg>
 
-              <span style={{ fontSize: "13px" }}>
-                {likes}
-              </span>
+              <span style={{
+  fontSize: "13px",
+  transition: "transform 0.15s ease, color 0.2s ease",
+  display: "inline-block",
+  transform: animating === "pop" ? "translateY(-3px)" : "translateY(0)",
+  color: liked ? "#ff2d55" : "#888",
+}}>
+  {likes}
+</span>
             </div>
 
             {/* COMMENT */}

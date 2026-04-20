@@ -26,16 +26,21 @@ function handleLogout() {
   logout();
   router.push("/login");
 }
-  const linkStyle = {
-    display: "block",
-    marginBottom: 18,
-    color: "#ddd",
-    textDecoration: "none",
-    padding: "10px 10px",
-    borderRadius: "10px",
-    transition: "all 0.2s ease",
-    transform: "scale(1)"
-  };
+  const linkStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: "12px",
+  marginBottom: 4,
+  color: "#ccc",
+  textDecoration: "none",
+  padding: "13px 20px",
+  borderRadius: "12px",
+  fontSize: "15px",
+  fontWeight: 500,
+  transition: "background 0.15s ease, color 0.15s ease",
+  WebkitTapHighlightColor: "transparent",
+  touchAction: "manipulation",
+};
 
   const hoverIn = (e: any) => (e.currentTarget.style.background = "#1a1a1a");
   const hoverOut = (e: any) => (e.currentTarget.style.background = "transparent");
@@ -151,53 +156,84 @@ function handleLogout() {
 
         {/* ================= OVERLAY ================= */}
 
-        {menuOpen && (
-          <div
-            onClick={() => setMenuOpen(false)}
-            className="no-select"
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: "rgba(0,0,0,0.5)",
-              backdropFilter: "blur(8px)",
-              zIndex: 1500
-            }}
-          />
-        )}
+        <div
+  onClick={() => setMenuOpen(false)}
+  className="no-select"
+  style={{
+    position: "fixed",
+    inset: 0,
+    background: "rgba(0,0,0,0.5)",
+    backdropFilter: "blur(8px)",
+    zIndex: 1500,
+    opacity: menuOpen ? 1 : 0,
+    pointerEvents: menuOpen ? "auto" : "none",
+    transition: "opacity 0.32s ease",
+  }}
+/>
+        
 
         {/* ================= MENU ================= */}
 
         {menuOpen && (
           <div
-            style={{
-              position: "fixed",
-              top: 0,
-              right: 0,
-              width: 260,
-              height: "100vh",
-              background: "rgba(18,18,18,0.95)",
-              backdropFilter: "blur(12px)",
-              borderLeft: "1px solid rgba(255,255,255,0.05)",
-              padding: 24,
-              zIndex: 2000,
-              transform: "translateX(0)",
-              transition: "transform 0.35s ease",
-              boxShadow: "-6px 0 25px rgba(0,0,0,0.6)"
-            }}
-          >
+  style={{
+    position: "fixed",
+    top: 0,
+    right: 0,
+    width: 260,
+    height: "100vh",
+    background: "rgba(14,14,16,0.97)",
+    backdropFilter: "blur(20px)",
+    borderLeft: "1px solid rgba(255,255,255,0.07)",
+    padding: "0",
+    zIndex: 2000,
+    transform: menuOpen ? "translateX(0)" : "translateX(100%)",
+    transition: "transform 0.32s cubic-bezier(0.32,0.72,0,1)",
+    boxShadow: "-12px 0 40px rgba(0,0,0,0.7)",
+    display: "flex",
+    flexDirection: "column",
+    overflowY: "auto",
+  }}
+>
 
-            <div
-              style={{
-                marginBottom: 20,
-                cursor: "pointer",
-                textAlign: "right",
-                fontSize: 18,
-                color: "#aaa"
-              }}
-              onClick={() => setMenuOpen(false)}
-            >
-              ✕
-            </div>
+            {/* MENU HEADER */}
+<div style={{
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: "20px 20px 0",
+  marginBottom: "8px",
+}}>
+  <div>
+    <div style={{ fontSize: "11px", color: "#444", letterSpacing: "1px", textTransform: "uppercase" }}>
+      Logged in as
+    </div>
+    <div style={{ fontSize: "15px", fontWeight: 700, color: "#fff", fontFamily: "monospace", letterSpacing: "1px" }}>
+      {user?.publicId?.toUpperCase() || "GUEST"}
+    </div>
+  </div>
+  <div
+    onClick={() => setMenuOpen(false)}
+    style={{
+      width: "32px",
+      height: "32px",
+      borderRadius: "50%",
+      background: "rgba(255,255,255,0.06)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
+      fontSize: "16px",
+      color: "#888",
+      border: "1px solid rgba(255,255,255,0.08)",
+    }}
+  >✕</div>
+</div>
+
+{/* DIVIDER */}
+<div style={{ height: "1px", background: "rgba(255,255,255,0.06)", margin: "16px 0" }} />
+
+{/* NAV LINKS - replace the padding on all links */}
 
             <Link href="/" style={linkStyle}
               onClick={() => setMenuOpen(false)}
@@ -263,18 +299,26 @@ function handleLogout() {
 
             {user?.publicId ? (
               <div
-                onClick={handleLogout}
-                onMouseDown={pressIn}
-                onMouseUp={pressOut}
-                className="no-select"
-                style={{
-                  marginTop: 20,
-                  color: "#ff4d4d",
-                  cursor: "pointer"
-                }}
-              >
-                Logout
-              </div>
+  onClick={handleLogout}
+  className="no-select"
+  style={{
+    margin: "8px 12px",
+    color: "#ff4d4d",
+    cursor: "pointer",
+    padding: "13px 20px",
+    borderRadius: "12px",
+    fontSize: "15px",
+    fontWeight: 500,
+    background: "rgba(255,77,77,0.06)",
+    border: "1px solid rgba(255,77,77,0.12)",
+    WebkitTapHighlightColor: "transparent",
+    touchAction: "manipulation",
+  }}
+  onTouchStart={(e) => (e.currentTarget.style.background = "rgba(255,77,77,0.14)")}
+  onTouchEnd={(e) => (e.currentTarget.style.background = "rgba(255,77,77,0.06)")}
+>
+  Logout
+</div>
             ) : (
               <Link href="/login" style={linkStyle}
                 onMouseEnter={hoverIn} onMouseLeave={hoverOut}

@@ -127,3 +127,7 @@ button:active {
 ::selection {
   background: transparent;
 }
+a:active {
+  background: rgba(255,255,255,0.06) !important;
+  transform: scale(0.97);
+}
