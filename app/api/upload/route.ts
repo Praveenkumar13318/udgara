@@ -1,3 +1,5 @@
+export const runtime = "nodejs";
+
 import { getUserFromRequest } from "../../lib/auth";
 import { err, ok } from "../../lib/apiHelpers";
 
