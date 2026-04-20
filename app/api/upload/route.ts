@@ -62,12 +62,7 @@ export async function POST(req: Request) {
     const cloudForm = new FormData();
     cloudForm.append("file", new Blob([buffer], { type: file.type }));
     cloudForm.append("upload_preset", process.env.CLOUDINARY_UPLOAD_PRESET!);
-    cloudForm.append("transformation", JSON.stringify([
-      { width: 1200, crop: "limit" },
-      { quality: "auto:good" },
-      { fetch_format: "auto" },
-      { flags: "progressive:none" },
-    ]));
+    cloudForm.append("transformation", "w_1200,c_limit/q_auto:good/f_auto/fl_progressive:none");
 
     const cloudRes = await fetch(
       `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`,
