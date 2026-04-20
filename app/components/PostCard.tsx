@@ -284,10 +284,12 @@ router.push("/");
   return (
     <>
       <div
-  id={`post-${post.postId}`} // 🔥 ADD THIS LINE
+  id={`post-${post.postId}`}
   style={{
     padding: "16px 16px 14px",
-    borderBottom: "1px solid rgba(255,255,255,0.06)"
+    borderBottom: "1px solid rgba(255,255,255,0.06)",
+    transition: "background 0.15s ease",
+    WebkitTapHighlightColor: "transparent",
   }}
 >
 
@@ -384,14 +386,22 @@ router.push(`/?post=${post.postId}`, { scroll: false });
 
             {/* LIKE */}
             <div
-              onClick={handleLike}
-              className="tap no-select"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px"
-              }}
-            >
+  onClick={handleLike}
+  className="tap no-select"
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    padding: "6px 8px",
+    borderRadius: "8px",
+    margin: "-6px -8px",
+    WebkitTapHighlightColor: "transparent",
+    touchAction: "manipulation",
+    transition: "background 0.15s ease",
+  }}
+  onTouchStart={(e) => (e.currentTarget.style.background = "rgba(255,45,85,0.08)")}
+  onTouchEnd={(e) => (e.currentTarget.style.background = "transparent")}
+>
               <svg
   width="20"
   height="20"
@@ -399,23 +409,28 @@ router.push(`/?post=${post.postId}`, { scroll: false });
   style={{
     transform: animating === "pop" ? "scale(1.45)" : animating === "settle" ? "scale(1.08)" : "scale(1)",
     transition: animating === "pop" ? "transform 0.1s cubic-bezier(0.34,1.56,0.64,1)" : "transform 0.15s ease-out",
-    filter: liked ? "drop-shadow(0 0 4px rgba(255,45,85,0.5))" : "none",
+    filter: "none",
   }}
 >
                 <path
-                  d="M16.697 5.5c-1.222 0-2.404.724-2.997 1.86-.593-1.136-1.775-1.86-2.997-1.86-1.93 0-3.5 1.57-3.5 3.5 0 4.25 6.497 8.5 6.497 8.5s6.497-4.25 6.497-8.5c0-1.93-1.57-3.5-3.5-3.5z"
-                  fill={liked ? "#ff2d55" : "none"}
-                  stroke={liked ? "#ff2d55" : "#888"}
-                  strokeWidth="1.6"
-                />
+  d="M16.697 5.5c-1.222 0-2.404.724-2.997 1.86-.593-1.136-1.775-1.86-2.997-1.86-1.93 0-3.5 1.57-3.5 3.5 0 4.25 6.497 8.5 6.497 8.5s6.497-4.25 6.497-8.5c0-1.93-1.57-3.5-3.5-3.5z"
+  style={{
+    fill: liked ? "#ff2d55" : "transparent",
+    stroke: liked ? "#ff2d55" : "#555",
+    strokeWidth: "1.6",
+    transition: "fill 0.2s ease, stroke 0.2s ease",
+  }}
+/>
               </svg>
 
               <span style={{
   fontSize: "13px",
-  transition: "transform 0.15s ease, color 0.2s ease",
+  fontWeight: liked ? 600 : 400,
+  transition: "transform 0.2s ease, color 0.25s ease, font-weight 0.2s ease",
   display: "inline-block",
-  transform: animating === "pop" ? "translateY(-3px)" : "translateY(0)",
-  color: liked ? "#ff2d55" : "#888",
+  transform: animating === "pop" ? "translateY(-2px) scale(1.1)" : "translateY(0) scale(1)",
+  color: liked ? "#ff2d55" : "#555",
+  minWidth: "16px",
 }}>
   {likes}
 </span>
@@ -423,21 +438,26 @@ router.push(`/?post=${post.postId}`, { scroll: false });
 
             {/* COMMENT */}
             <div
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                
-
-
-router.push(`/?post=${post.postId}`, { scroll: false });
-              }}
-              className="tap no-select"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px"
-              }}
-            >
+  onClick={(e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    router.push(`/?post=${post.postId}`, { scroll: false });
+  }}
+  className="tap no-select"
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    padding: "6px 8px",
+    borderRadius: "8px",
+    margin: "-6px -8px",
+    WebkitTapHighlightColor: "transparent",
+    touchAction: "manipulation",
+    transition: "background 0.15s ease",
+  }}
+  onTouchStart={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}
+  onTouchEnd={(e) => (e.currentTarget.style.background = "transparent")}
+>
               <svg width="20" height="20" viewBox="0 0 24 24">
                 <path
                   d="M4 4h16v12H8l-4 4V4z"
@@ -453,10 +473,20 @@ router.push(`/?post=${post.postId}`, { scroll: false });
             </div>
 
             {/* SHARE */}
-            <div
-              onClick={handleShare}
-              className="tap no-select"
-            >
+           <div
+  onClick={handleShare}
+  className="tap no-select"
+  style={{
+    padding: "6px 8px",
+    borderRadius: "8px",
+    margin: "-6px -8px",
+    WebkitTapHighlightColor: "transparent",
+    touchAction: "manipulation",
+    transition: "background 0.15s ease",
+  }}
+  onTouchStart={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}
+  onTouchEnd={(e) => (e.currentTarget.style.background = "transparent")}
+>
               <svg width="20" height="20" viewBox="0 0 24 24">
                 <path
                   d="M12 3v12M12 3l4 4M12 3l-4 4M5 15v4h14v-4"
