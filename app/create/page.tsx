@@ -1,21 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { fetchWithAuth } from "../lib/fetcher";
+
 export default function CreatePost() {
-
   const router = useRouter();
-
   const [content, setContent] = useState("");
   const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [posting, setPosting] = useState(false);
-const queryClient = useQueryClient();
   const [publicId, setPublicId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  /* ✅ FIX: safely load publicId */
   useEffect(() => {
     const id = localStorage.getItem("publicId");
     if (!id) {
@@ -25,232 +24,247 @@ const queryClient = useQueryClient();
     }
   }, []);
 
+  function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImage(file);
+    setImagePreview(URL.createObjectURL(file));
+  }
+
+  function removeImage() {
+    setImage(null);
+    setImagePreview(null);
+  }
+
   async function handleSubmit() {
-
     if (posting) return;
-
     if (!content.trim()) {
-      setMessage("Post cannot be empty");
+      setMessage("Write something first");
       return;
     }
-
     if (!publicId) {
-      setMessage("Login required");
+      router.replace("/login");
       return;
     }
 
     setPosting(true);
-    setMessage("Posting...");
+    setMessage("");
 
     let imageUrl: string | null = null;
 
     try {
-
       if (image) {
-
+        setMessage("Uploading image...");
+        const token = localStorage.getItem("token");
         const formData = new FormData();
         formData.append("file", image);
 
-        const token = localStorage.getItem("token");
-const uploadRes = await fetch("/api/upload", {
-  method: "POST",
-  headers: { Authorization: `Bearer ${token ?? ""}` },
-  body: formData
-});
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token ?? ""}` },
+          body: formData,
+        });
 
         const uploadData = await uploadRes.json();
 
-        if (!uploadRes.ok) {
+        if (!uploadRes.ok || !uploadData.imageUrl) {
           setMessage(uploadData.error || "Image upload failed");
           setPosting(false);
           return;
         }
 
-        if (!uploadData.imageUrl) {
-  setMessage("Image upload failed");
-  setPosting(false);
-  return;
-}
-
-imageUrl = uploadData.imageUrl;
+        imageUrl = uploadData.imageUrl;
       }
 
-      const res = await fetchWithAuth("/api/posts", {
-  method: "POST",
-  body: JSON.stringify({
-    content,
-    image: imageUrl,
-  })
-});
-console.log("POST RESPONSE STATUS:", res.status);
-      let data;
+      setMessage("Posting...");
 
-try {
-  data = await res.json();
-} catch {
-  setMessage("Invalid server response");
-  setPosting(false);
-  return;
-}
-
-if (!res.ok) {
-  setMessage(data?.error || "Failed to create post");
-  setPosting(false);
-  return;
-}
-if (data.success) {
-
-  const newPost = {
-  ...data.post,
-  likes: 0,
-  commentsCount: 0,
-  isLiked: false,
-}; // 👈 make sure backend returns post
-
-  queryClient.setQueryData(["feed"], (oldData: any) => {
-    if (!oldData) return oldData;
-
-    return {
-      ...oldData,
-      pages: [
-        {
-          ...oldData.pages[0],
-          posts: [newPost, ...oldData.pages[0].posts]
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/posts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token ?? ""}`,
         },
-        ...oldData.pages.slice(1)
-      ]
-    };
-  });
+        body: JSON.stringify({ content, image: imageUrl }),
+      });
 
-  router.replace("/");
-}
-       else {
-        setMessage(data.error || "Failed to create post");
+      const data = await res.json();
+
+      if (!res.ok) {
+        setMessage(data?.error || "Failed to create post");
+        setPosting(false);
+        return;
       }
 
-    } catch (error) {
-      console.log("CREATE POST ERROR:", error);
-      setMessage("Server error");
-    }
+      if (data.success) {
+        const newPost = {
+          ...data.post,
+          likes: 0,
+          commentsCount: 0,
+          isLiked: false,
+        };
 
-    setPosting(false);
+        queryClient.setQueryData(["feed"], (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: [
+              {
+                ...old.pages[0],
+                posts: [newPost, ...(old.pages[0]?.posts ?? [])],
+              },
+              ...old.pages.slice(1),
+            ],
+          };
+        });
+
+        router.replace("/");
+      }
+    } catch {
+      setMessage("Something went wrong. Try again.");
+      setPosting(false);
+    }
   }
 
+  const charColor = content.length > 450 ? "#ff4d4d" : content.length > 400 ? "#EF9F27" : "#444";
+
   return (
+    <div style={{ background: "#0b0b0c", color: "white", padding: "20px 16px", minHeight: "100vh" }}>
+      <div style={{ maxWidth: "620px", margin: "0 auto" }}>
 
-    <div
-      style={{ background: "#0f0f0f", color: "white", padding: "20px 14px" }}
-    >
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
+          <Link href="/" style={{
+            background: "none",
+            border: "none",
+            color: "#555",
+            fontSize: "20px",
+            cursor: "pointer",
+            textDecoration: "none",
+            lineHeight: 1,
+          }}>←</Link>
+          <h2 style={{ margin: 0, fontSize: "18px", fontWeight: 600 }}>Create post</h2>
+        </div>
 
-      <div
-        style={{
-          maxWidth: "620px",
-          margin: "0 auto",
-        }}
-      >
-
-        <h2 style={{ marginBottom: "14px", fontSize: "20px" }}>
-          Create Post
-        </h2>
-
-        <div
-          style={{
-            background: "#141414",
-            borderRadius: "14px",
-            border: "1px solid #2a2a2a",
-            padding: "16px"
-          }}
-        >
-
+        <div style={{
+          background: "#111",
+          borderRadius: "16px",
+          border: "1px solid #1a1a1a",
+          overflow: "hidden",
+          marginBottom: "12px",
+        }}>
           <textarea
-            placeholder="What's happening?"
+            placeholder="What's on your mind?"
             value={content}
             maxLength={500}
             onChange={(e) => setContent(e.target.value)}
             style={{
               width: "100%",
-              minHeight: "110px",
+              minHeight: "120px",
               border: "none",
               background: "transparent",
               color: "white",
               fontSize: "16px",
               resize: "none",
-              outline: "none"
+              outline: "none",
+              padding: "16px",
+              boxSizing: "border-box",
+              lineHeight: 1.6,
             }}
           />
 
-          {image && (
-            <div style={{ marginTop: "10px" }}>
+          {imagePreview && (
+            <div style={{ position: "relative", margin: "0 16px 12px" }}>
               <img
-                src={URL.createObjectURL(image)}
+                src={imagePreview}
                 style={{
                   width: "100%",
                   borderRadius: "12px",
-                  maxHeight: "280px",
-                  objectFit: "cover"
+                  maxHeight: "300px",
+                  objectFit: "cover",
+                  display: "block",
                 }}
               />
+              <button
+                onClick={removeImage}
+                style={{
+                  position: "absolute",
+                  top: "8px",
+                  right: "8px",
+                  background: "rgba(0,0,0,0.7)",
+                  border: "none",
+                  color: "#fff",
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "50%",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >✕</button>
             </div>
           )}
 
-          <div
-            style={{
-              marginTop: "12px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center"
-            }}
-          >
-
-            <label style={{ cursor: "pointer", color: "#1e90ff" }}>
-              📷 Add Image
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "10px 16px 14px",
+            borderTop: "1px solid #1a1a1a",
+          }}>
+            <label style={{ cursor: "pointer", color: "#1e90ff", fontSize: "14px", display: "flex", alignItems: "center", gap: "6px" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e90ff" strokeWidth="1.8">
+                <rect x="3" y="3" width="18" height="18" rx="3"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+              {imagePreview ? "Change image" : "Add image"}
               <input
                 type="file"
                 hidden
                 accept="image/*"
-                onChange={(e) => {
-                  if (e.target.files) {
-                    setImage(e.target.files[0]);
-                  }
-                }}
+                onChange={handleImageSelect}
               />
             </label>
-
-            <div style={{ fontSize: "12px", color: "#777" }}>
+            <span style={{ fontSize: "12px", color: charColor }}>
               {content.length}/500
-            </div>
-
+            </span>
           </div>
-
         </div>
 
         <button
           onClick={handleSubmit}
-          disabled={posting}
+          disabled={posting || !content.trim()}
           style={{
-            marginTop: "14px",
             width: "100%",
-            padding: "12px",
+            padding: "14px",
             borderRadius: "999px",
             border: "none",
-            background: posting ? "#333" : "#1e90ff",
-            color: "white",
+            background: posting || !content.trim() ? "#1a1a1a" : "#1e90ff",
+            color: posting || !content.trim() ? "#444" : "#fff",
+            fontSize: "15px",
             fontWeight: 600,
-            cursor: posting ? "not-allowed" : "pointer"
+            cursor: posting || !content.trim() ? "not-allowed" : "pointer",
+            transition: "all 0.2s",
           }}
         >
-          {posting ? "Posting..." : "Post"}
+          {posting ? message || "Posting..." : "Post"}
         </button>
 
-        {message && (
-          <p style={{ marginTop: "12px", color: "#aaa", fontSize: "13px" }}>
+        {message && !posting && (
+          <p style={{
+            marginTop: "12px",
+            fontSize: "13px",
+            color: message.includes("failed") || message.includes("wrong") || message.includes("empty") || message.includes("first")
+              ? "#ff4d4d" : "#888",
+            textAlign: "center",
+          }}>
             {message}
           </p>
         )}
 
       </div>
-
     </div>
-
   );
 }

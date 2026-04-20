@@ -9,6 +9,7 @@ import { Suspense } from "react";
 import PostClient from "../post/[id]/PostClient";
 import { useQueryClient } from "@tanstack/react-query";
 import { pusherClient } from "../lib/pusherClient";
+import Link from "next/link";
 
 type Post = {
   postId: string;
@@ -369,27 +370,29 @@ useEffect(() => {
 
       {/* CREATE BUTTON */}
 
-      <button
-      onClick={() => router.push("/create")}
-        style={{
-          position: "fixed",
-          bottom: "18px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          padding: "13px 24px",
-          borderRadius: "999px",
-          border: "none",
-          background: "linear-gradient(135deg,#1e90ff,#0066ff)",
-          color: "white",
-          fontSize: "14px",
-          fontWeight: 600,
-          cursor: "pointer",
-          boxShadow: "0 10px 26px rgba(0,0,0,0.5)",
-          zIndex: 1000
-        }}
-      >
-        Create Post
-      </button>
+      <Link
+  href="/create"
+  style={{
+    position: "fixed",
+    bottom: "18px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    padding: "13px 24px",
+    borderRadius: "999px",
+    background: "linear-gradient(135deg,#1e90ff,#0066ff)",
+    color: "white",
+    fontSize: "14px",
+    fontWeight: 600,
+    cursor: "pointer",
+    boxShadow: "0 10px 26px rgba(0,0,0,0.5)",
+    zIndex: 1000,
+    textDecoration: "none",
+    display: "inline-block",
+    whiteSpace: "nowrap",
+  }}
+>
+  Create Post
+</Link>
 
      <style>{`
   @keyframes spin {

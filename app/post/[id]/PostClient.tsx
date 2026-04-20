@@ -304,33 +304,25 @@ if (data.success) {
   setLoadingComment(false);
 }
 const renderContent = (text: string) => {
-  const parts = text.split(/(#\w+)/g);
-
-  return parts.map((part, i) => {
+  return text.split(/(#[\w-]+)/g).map((part, i) => {
     if (part.startsWith("#")) {
       return (
-       <span
-  key={i}
-  onClick={() => router.push(`/search?q=${part.replace("#", "")}`)}
-  style={{
-    color: "#4da6ff",
-    cursor: "pointer",
-
-    // ✅ UX IMPROVEMENTS
-    fontWeight: "500",
-    transition: "0.2s",
-    padding: "2px 4px",
-    borderRadius: "6px"
-  }}
-
-  onTouchStart={(e) => {
-    (e.target as HTMLElement).style.background = "rgba(77,166,255,0.15)";
-  }}
-
-  onTouchEnd={(e) => {
-    (e.target as HTMLElement).style.background = "transparent";
-  }}
->
+        <span
+          key={i}
+          onClick={(e) => {
+            e.stopPropagation();
+            router.push(`/search?q=${part.replace("#", "")}`);
+          }}
+          style={{
+            color: "#1e90ff",
+            fontWeight: 500,
+            cursor: "pointer",
+            display: "inline-block",
+            padding: "1px 6px",
+            borderRadius: "6px",
+            background: "rgba(30,144,255,0.1)",
+          }}
+        >
           {part}
         </span>
       );
@@ -524,8 +516,8 @@ letterSpacing: "0.5px",
     )}
     {/* ================= COMMENT INPUT ================= */}
     {showComments && (
-<div style={{ marginTop: "0", paddingTop: "16px", display: "flex", gap: "10px" }}>
-      <input
+<div style={{ marginTop: "0", padding: "16px 16px 0", display: "flex", gap: "10px" }}>
+        <input
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="Write a comment..."
@@ -578,7 +570,7 @@ letterSpacing: "0.5px",
           <div
   key={c.commentId || String(c._id)}
   style={{
-    padding: "12px 0",
+    padding: "12px 16px",
     borderBottom: "1px solid rgba(255,255,255,0.05)"
   }}
 >
