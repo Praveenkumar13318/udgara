@@ -29,7 +29,12 @@ export default function ProfilePage() {
 
   async function loadData() {
     try {
-      const res = await fetch(`/api/profile?npId=${npId}`);
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+const res = await fetch(`/api/profile?npId=${npId}`, {
+  headers: {
+    Authorization: token ? `Bearer ${token}` : "",
+  },
+});
       if (!res.ok) throw new Error("API failed");
       const data = await res.json();
       const profile = data?.data || {};
