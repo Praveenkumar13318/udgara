@@ -11,12 +11,8 @@ export async function POST(req: Request) {
   if (dbUser?.role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { postId } = await req.json();
-  if (!postId) return NextResponse.json({ error: "Missing postId" }, { status: 400 });
-
-  await db.collection("posts").deleteOne({ postId });
-  await db.collection("likes").deleteMany({ postId });
-  await db.collection("comments").deleteMany({ postId });
-  await db.collection("reports").deleteMany({ postId });
+  await db.collection("reports").updateMany({ postId }, { $set: { resolved: true } });
+  await db.collection("posts").updateOne({ postId }, { $set: { reports: 0 } });
 
   return NextResponse.json({ success: true });
 }

@@ -1,71 +1,36 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "../../../lib/mongodb";
-import jwt from "jsonwebtoken";
+import { getUserFromRequest } from "../../../lib/auth";
 
 export async function GET(req: Request) {
+  const user = getUserFromRequest(req);
+  if (!user?.publicId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  try {
+  const db = await connectDB();
+  const dbUser = await db.collection("users").findOne({ npId: user.publicId });
+  if (dbUser?.role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-    // 🔐 GET TOKEN FROM HEADER
-    const authHeader = req.headers.get("authorization");
+  const grouped = await db.collection("reports").aggregate([
+    { $match: { resolved: { $ne: true } } },
+    { $group: {
+      _id: "$postId",
+      reportCount: { $sum: 1 },
+      reasons: { $push: "$reason" },
+    }},
+    { $sort: { reportCount: -1 } },
+    { $limit: 50 },
+  ]).toArray();
 
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+  const postIds = grouped.map((r: any) => r._id);
+  const posts = await db.collection("posts").find({ postId: { $in: postIds } }).toArray();
+  const postMap = new Map(posts.map((p: any) => [p.postId, p]));
 
-    const token = authHeader.split(" ")[1];
+  const result = grouped.map((r: any) => ({
+    postId: r._id,
+    reportCount: r.reportCount,
+    reasons: r.reasons,
+    post: postMap.get(r._id) ?? null,
+  }));
 
-    let decoded: any;
-
-    try {
-      decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET as string
-      );
-    } catch {
-      return NextResponse.json(
-        { error: "Invalid token" },
-        { status: 401 }
-      );
-    }
-
-    // 🔐 ADMIN CHECK
-    if (decoded.publicId !== "NP000001") {
-      return NextResponse.json(
-        { error: "Forbidden" },
-        { status: 403 }
-      );
-    }
-
-    const db: any = await connectDB();
-
-    const reports = await db.collection("reports").aggregate([
-      {
-        $group: {
-          _id: "$postId",
-          count: { $sum: 1 },
-          reasons: { $push: "$reason" }
-        }
-      },
-      {
-        $sort: { count: -1 }
-      }
-    ]).toArray();
-
-    return NextResponse.json(reports);
-
-  } catch (error) {
-
-    console.error(error);
-
-    return NextResponse.json(
-      { error: "Server error" },
-      { status: 500 }
-    );
-
-  }
-
+  return NextResponse.json(result);
 }
