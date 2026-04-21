@@ -118,7 +118,8 @@ export default function CreatePost() {
           };
         });
 
-        router.replace("/");
+        queryClient.invalidateQueries({ queryKey: ["feed"] });
+router.push("/");
       }
     } catch {
       setMessage("Something went wrong. Try again.");

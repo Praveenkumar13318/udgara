@@ -16,10 +16,12 @@ export default function RootLayout({
   document.body.style.overflow = menuOpen ? "hidden" : "";
   return () => { document.body.style.overflow = ""; };
 }, [menuOpen]);
-  const { user, hydrate, logout } = useAuthStore();
+  const { user, hydrate, logout, isHydrated } = useAuthStore();
 
 useEffect(() => {
-  hydrate();
+  if (!isHydrated) {
+    hydrate();
+  }
 }, []);
 
 const router = useRouter();

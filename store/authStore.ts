@@ -12,9 +12,15 @@ type AuthState = {
   hydrate: () => void;
 };
 
+const getInitialUser = (): User | null => {
+  if (typeof window === "undefined") return null;
+  const stored = localStorage.getItem("publicId");
+  return stored ? { publicId: stored } : null;
+};
+
 export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  isHydrated: false,
+  user: getInitialUser(),
+  isHydrated: typeof window !== "undefined",
 
   setUser: (user) => {
     localStorage.setItem("publicId", user.publicId);
@@ -28,6 +34,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   hydrate: () => {
+    if (typeof window === "undefined") return;
     const stored = localStorage.getItem("publicId");
     if (stored) {
       set({ user: { publicId: stored }, isHydrated: true });

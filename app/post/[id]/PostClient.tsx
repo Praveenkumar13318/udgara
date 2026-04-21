@@ -149,7 +149,7 @@ useEffect(() => {
   const token = localStorage.getItem("token");
 
   if (!token) {
-    alert("Login first");
+    router.push("/login");
     return;
   }
 
@@ -188,7 +188,7 @@ useEffect(() => {
   /* ================= REPORT ================= */
   async function handleReport() {
     if (!publicId) {
-      alert("Login first");
+      router.push("/login");
       return;
     }
 
@@ -211,7 +211,10 @@ await fetch("/api/report", {
 
   /* ================= COMMENT ================= */
   async function addComment() {
-  if (!publicId) return alert("Login first");
+  if (!publicId) {
+    router.push("/login");
+    return;
+  }
   if (!text.trim()) return;
 
   setLoadingComment(true);
