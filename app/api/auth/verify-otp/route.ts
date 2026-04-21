@@ -33,13 +33,12 @@ if (!otpValid) {
     // create new user if not exists
     if (!user) {
        const { randomUUID } = await import("crypto");
-       const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+       const digits = "0123456789";
 let npId = "NP";
-for (let i = 0; i < 8; i++) npId += chars[Math.floor(Math.random() * chars.length)];
- // Collision check (astronomically rare but safe)
+for (let i = 0; i < 6; i++) npId += digits[Math.floor(Math.random() * digits.length)];
 while (await db.collection("users").findOne({ npId })) {
-npId = "NP" + Array.from({length:8}, () => chars[Math.floor(Math.random()*chars.length)]).join("");}
-
+  npId = "NP" + Array.from({length:6}, () => digits[Math.floor(Math.random()*digits.length)]).join("");
+}
       const newUser = {
         email,
         npId,

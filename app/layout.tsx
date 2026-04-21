@@ -99,22 +99,26 @@ function handleLogout() {
           </Link>
 
           {user?.publicId && (
-            <div
-              className="no-select"
-              style={{
-                position: "absolute",
-                left: "50%",
-                transform: "translateX(-50%)",
-                fontSize: "13px",
-                color: "#888",
-                letterSpacing: "1.2px",
-                fontWeight: 500
-              }}
-            >
-              {user?.publicId.toUpperCase()}
-            </div>
-          )}
-
+  <div
+    className="no-select"
+    style={{
+      position: "absolute",
+      left: "50%",
+      transform: "translateX(-50%)",
+      fontSize: "12px",
+      color: "#1e90ff",
+      letterSpacing: "2px",
+      fontWeight: 700,
+      fontFamily: "monospace",
+      background: "rgba(30,144,255,0.08)",
+      padding: "4px 10px",
+      borderRadius: "6px",
+      border: "1px solid rgba(30,144,255,0.15)",
+    }}
+  >
+    {user?.publicId.toUpperCase()}
+  </div>
+)}
           {/* Hamburger */}
 
           <div
