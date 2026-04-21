@@ -12,6 +12,10 @@ export default function RootLayout({
 }) {
 
   const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => {
+  document.body.style.overflow = menuOpen ? "hidden" : "";
+  return () => { document.body.style.overflow = ""; };
+}, [menuOpen]);
   const { user, hydrate, logout } = useAuthStore();
 
 useEffect(() => {
@@ -201,7 +205,7 @@ function handleLogout() {
     boxShadow: "-12px 0 40px rgba(0,0,0,0.7)",
     display: "flex",
     flexDirection: "column",
-    overflowY: "auto",
+    overflowY: "hidden",
   }}
 >
 
@@ -324,7 +328,12 @@ function handleLogout() {
             )}
 
             {user?.publicId ? (
-              <div style={{ padding: "0 8px", marginTop: "auto", paddingBottom: "32px" }}>
+              <div style={{
+  padding: "0 8px",
+  paddingBottom: "40px",
+  borderTop: "1px solid rgba(255,255,255,0.06)",
+  marginTop: "16px",
+}}>
   <div
     onClick={handleLogout}
     className="no-select"
