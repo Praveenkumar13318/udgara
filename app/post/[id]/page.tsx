@@ -174,16 +174,52 @@ export default function ProfilePage() {
             </div>
           )}
           {comments.map((c: any) => (
-            <div
-              key={c.commentId || String(c._id)}
-              style={{ padding: "14px 16px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
-            >
-              <div style={{ fontSize: "14px", color: "#e5e5e5", lineHeight: 1.5 }}>{c.text}</div>
-              <div style={{ fontSize: "11px", color: "#333", marginTop: "4px" }}>
-                on post · {c.postId?.slice(-6)}
-              </div>
-            </div>
-          ))}
+  <div
+    key={c.commentId || String(c._id)}
+    onClick={() => router.push(`/?post=${c.postId}`)}
+    style={{
+      padding: "14px 16px",
+      borderBottom: "1px solid rgba(255,255,255,0.04)",
+      cursor: "pointer",
+      transition: "background 0.15s ease",
+      WebkitTapHighlightColor: "transparent",
+      touchAction: "manipulation",
+    }}
+    onTouchStart={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.04)")}
+    onTouchEnd={(e) => (e.currentTarget.style.background = "transparent")}
+  >
+    {/* replying to label */}
+    <div style={{
+      fontSize: "12px",
+      color: "#444",
+      marginBottom: "6px",
+      display: "flex",
+      alignItems: "center",
+      gap: "4px",
+    }}>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+        <path d="M3 10h13a5 5 0 010 10H8M3 10l4-4M3 10l4 4"
+          stroke="#444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+      Replying to a post
+    </div>
+
+    {/* comment text */}
+    <div style={{ fontSize: "14px", color: "#e5e5e5", lineHeight: 1.5 }}>
+      {c.text}
+    </div>
+
+    {/* view post hint */}
+    <div style={{
+      fontSize: "12px",
+      color: "#1e90ff",
+      marginTop: "6px",
+      opacity: 0.7,
+    }}>
+      View post →
+    </div>
+  </div>
+))}
         </div>
       )}
 
