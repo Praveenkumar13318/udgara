@@ -13,7 +13,7 @@ export default function PostPage({
 })  {
   const params = useParams();
 const router = useRouter();
-
+const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set());
 const postId = propPostId || params?.id;
 const queryClient = useQueryClient();
   const [post, setPost] = useState<any>(null);
@@ -575,27 +575,54 @@ letterSpacing: "0.5px",
               </div>
 
               {/* REPLIES — indented */}
-              {c.replies?.length > 0 && (
-                <div style={{
-                  borderLeft: "2px solid #1e1e1e",
-                  marginLeft: "20px",
-                  borderBottom: "1px solid rgba(255,255,255,0.05)",
-                }}>
-                  {c.replies.map((r: any) => (
-                    <div key={r.commentId || String(r._id)} style={{
-                      padding: "10px 14px",
-                      borderBottom: "1px solid rgba(255,255,255,0.03)",
-                    }}>
-                      <div style={{ fontSize: "11px", color: "#444", marginBottom: "3px", fontFamily: "monospace" }}>
-                        {r.npId}
-                      </div>
-                      <div style={{ color: "#ccc", fontSize: "14px", lineHeight: "1.6" }}>
-                        {r.text}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* REPLIES — collapsed by default */}
+{c.replies?.length > 0 && (
+  <div style={{ paddingLeft: "16px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+
+    {/* TOGGLE BUTTON */}
+    <div
+      onClick={() => setExpandedReplies(prev => {
+        const next = new Set(prev);
+        next.has(c.commentId) ? next.delete(c.commentId) : next.add(c.commentId);
+        return next;
+      })}
+      style={{
+        display: "inline-flex", alignItems: "center", gap: "6px",
+        padding: "8px 0 8px 4px",
+        fontSize: "13px", color: "#1e90ff",
+        cursor: "pointer", userSelect: "none" as const,
+        borderLeft: "2px solid #1e90ff",
+        paddingLeft: "10px",
+      }}
+    >
+      {expandedReplies.has(c.commentId) ? (
+        <>▲ Hide replies</>
+      ) : (
+        <>▼ View {c.replies.length} {c.replies.length === 1 ? "reply" : "replies"}</>
+      )}
+    </div>
+
+    {/* REPLIES — only shown when expanded */}
+    {expandedReplies.has(c.commentId) && (
+      <div style={{ borderLeft: "2px solid #1e1e1e", marginLeft: "4px" }}>
+        {c.replies.map((r: any) => (
+          <div key={r.commentId || String(r._id)} style={{
+            padding: "10px 14px",
+            borderBottom: "1px solid rgba(255,255,255,0.03)",
+          }}>
+            <div style={{ fontSize: "11px", color: "#444", marginBottom: "3px", fontFamily: "monospace" }}>
+              {r.npId}
+            </div>
+            <div style={{ color: "#ccc", fontSize: "14px", lineHeight: "1.6" }}>
+              {r.text}
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+
+  </div>
+)}
 
             </div>
           ))
