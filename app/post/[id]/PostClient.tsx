@@ -528,77 +528,12 @@ letterSpacing: "0.5px",
     )}
     
    {/* ================= COMMENT INPUT ================= */}
+    {/* ================= COMMENTS LIST ================= */}
     {showComments && (
-      <div style={{ marginTop: "0", padding: "16px 16px 0" }}>
-
-        {/* REPLY BANNER */}
-        {replyingTo && (
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "8px 12px",
-            background: "rgba(30,144,255,0.08)",
-            border: "1px solid rgba(30,144,255,0.15)",
-            borderRadius: "10px",
-            marginBottom: "8px",
-          }}>
-            <span style={{ fontSize: "13px", color: "#1e90ff" }}>
-              ↩ Replying to {replyingTo.npId}
-            </span>
-            <span
-              onClick={() => setReplyingTo(null)}
-              style={{ fontSize: "13px", color: "#555", cursor: "pointer", padding: "0 4px" }}
-            >
-              ✕
-            </span>
-          </div>
-        )}
-
-        <div style={{ display: "flex", gap: "10px" }}>
-          <input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder={replyingTo ? `Reply to ${replyingTo.npId}...` : "Write a comment..."}
-            style={{
-              flex: 1,
-              padding: "12px 14px",
-              borderRadius: "14px",
-              background: "#111",
-              border: "1px solid rgba(255,255,255,0.08)",
-              color: "#fff",
-              outline: "none",
-              fontSize: "14px",
-              height: "44px",
-            }}
-          />
-          <button
-            onClick={addComment}
-            disabled={!text.trim()}
-            style={{
-              padding: "10px 16px",
-              borderRadius: "10px",
-              border: "none",
-              background: text.trim() ? "#1e90ff" : "#333",
-              color: "#fff",
-              fontWeight: "500",
-              cursor: text.trim() ? "pointer" : "not-allowed",
-              transition: "0.2s",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {loadingComment ? "..." : replyingTo ? "Reply" : "Post"}
-          </button>
-        </div>
-      </div>
-    )}
-
-    {/* ================= COMMENTS ================= */}
-    {showComments && (
-      <div style={{ marginTop: "12px" }}>
+      <div>
         {comments.length === 0 ? (
-          <div style={{ color: "#555", padding: "16px", fontSize: "14px" }}>
-            No comments yet
+          <div style={{ color: "#555", padding: "32px 16px", fontSize: "14px", textAlign: "center" }}>
+            No comments yet. Be the first.
           </div>
         ) : (
           comments.map((c: any) => (
@@ -606,21 +541,16 @@ letterSpacing: "0.5px",
 
               {/* TOP-LEVEL COMMENT */}
               <div style={{
-                padding: "12px 16px",
-                borderBottom: c.replies?.length === 0
-                  ? "1px solid rgba(255,255,255,0.05)"
-                  : "none",
+                padding: "14px 16px",
+                borderBottom: !c.replies?.length ? "1px solid rgba(255,255,255,0.05)" : "none",
               }}>
                 <div style={{
-                  fontSize: "12px", color: "#555",
-                  marginBottom: "4px", fontFamily: "monospace",
+                  fontSize: "11px", color: "#444",
+                  marginBottom: "4px", fontFamily: "monospace", letterSpacing: "0.5px",
                 }}>
                   {c.npId}
                 </div>
-                <div style={{
-                  color: "#e5e5e5", fontSize: "15px", lineHeight: "1.6",
-                  marginBottom: "6px",
-                }}>
+                <div style={{ color: "#e5e5e5", fontSize: "15px", lineHeight: "1.65", marginBottom: "8px" }}>
                   {c.text}
                 </div>
                 <div
@@ -630,38 +560,36 @@ letterSpacing: "0.5px",
                     setText("");
                   }}
                   style={{
-                    fontSize: "12px", color: "#444",
-                    cursor: "pointer", display: "inline-flex",
-                    alignItems: "center", gap: "4px",
-                    userSelect: "none",
+                    fontSize: "12px", color: "#444", cursor: "pointer",
+                    display: "inline-flex", alignItems: "center", gap: "4px",
+                    userSelect: "none" as const,
                   }}
                 >
                   ↩ Reply
+                  {c.replies?.length > 0 && (
+                    <span style={{ color: "#1e90ff", marginLeft: "4px" }}>
+                      · {c.replies.length}
+                    </span>
+                  )}
                 </div>
               </div>
 
-              {/* REPLIES */}
+              {/* REPLIES — indented */}
               {c.replies?.length > 0 && (
                 <div style={{
-                  borderLeft: "2px solid #1a1a1a",
-                  marginLeft: "24px",
-                  marginBottom: "4px",
+                  borderLeft: "2px solid #1e1e1e",
+                  marginLeft: "20px",
                   borderBottom: "1px solid rgba(255,255,255,0.05)",
                 }}>
                   {c.replies.map((r: any) => (
                     <div key={r.commentId || String(r._id)} style={{
-                      padding: "10px 16px",
+                      padding: "10px 14px",
                       borderBottom: "1px solid rgba(255,255,255,0.03)",
                     }}>
-                      <div style={{
-                        fontSize: "12px", color: "#555",
-                        marginBottom: "4px", fontFamily: "monospace",
-                      }}>
+                      <div style={{ fontSize: "11px", color: "#444", marginBottom: "3px", fontFamily: "monospace" }}>
                         {r.npId}
                       </div>
-                      <div style={{
-                        color: "#d0d0d0", fontSize: "14px", lineHeight: "1.6",
-                      }}>
+                      <div style={{ color: "#ccc", fontSize: "14px", lineHeight: "1.6" }}>
                         {r.text}
                       </div>
                     </div>
@@ -672,9 +600,72 @@ letterSpacing: "0.5px",
             </div>
           ))
         )}
+        <div style={{ height: "80px" }} />
+      </div>
+    )}
+
+    {/* ================= COMMENT INPUT — STICKY BOTTOM ================= */}
+    {showComments && (
+      <div style={{
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        background: "#0b0b0c",
+        borderTop: "1px solid #1a1a1a",
+        padding: "8px 16px 16px",
+        zIndex: 10000,
+      }}>
+        {replyingTo && (
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "6px 12px",
+            background: "rgba(30,144,255,0.08)",
+            border: "1px solid rgba(30,144,255,0.15)",
+            borderRadius: "8px", marginBottom: "8px",
+          }}>
+            <span style={{ fontSize: "13px", color: "#1e90ff" }}>
+              ↩ Replying to {replyingTo.npId}
+            </span>
+            <span
+              onClick={() => setReplyingTo(null)}
+              style={{ fontSize: "18px", color: "#555", cursor: "pointer", lineHeight: 1 }}
+            >
+              ✕
+            </span>
+          </div>
+        )}
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && addComment()}
+            placeholder={replyingTo ? `Reply to ${replyingTo.npId}...` : "Write a comment..."}
+            style={{
+              flex: 1, padding: "11px 16px",
+              borderRadius: "999px",
+              background: "#111",
+              border: "1px solid rgba(255,255,255,0.08)",
+              color: "#fff", outline: "none", fontSize: "14px",
+            }}
+          />
+          <button
+            onClick={addComment}
+            disabled={!text.trim()}
+            style={{
+              padding: "11px 20px", borderRadius: "999px", border: "none",
+              background: text.trim() ? "#1e90ff" : "#1a1a1a",
+              color: text.trim() ? "#fff" : "#444",
+              fontWeight: 600, fontSize: "14px",
+              cursor: text.trim() ? "pointer" : "not-allowed",
+              transition: "all 0.2s", whiteSpace: "nowrap",
+            }}
+          >
+            {loadingComment ? "·  ·  ·" : replyingTo ? "Reply" : "Post"}
+          </button>
+        </div>
       </div>
     )}
   </main>
   );
 }
-    
