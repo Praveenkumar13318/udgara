@@ -21,7 +21,7 @@ const queryClient = useQueryClient();
   const [text, setText] = useState("");
   const [loadingComment, setLoadingComment] = useState(false);
   const [loadingPost, setLoadingPost] = useState(true);
-
+const [replyingTo, setReplyingTo] = useState<{ commentId: string; npId: string } | null>(null);
   const publicId =
     typeof window !== "undefined"
       ? localStorage.getItem("publicId")
@@ -211,97 +211,106 @@ await fetch("/api/report", {
 
   /* ================= COMMENT ================= */
   async function addComment() {
-  if (!publicId) {
-    router.push("/login");
-    return;
-  }
+  if (!publicId) { router.push("/login"); return; }
   if (!text.trim()) return;
 
   setLoadingComment(true);
 
-  const tempId = Date.now();
+  const tempId = `temp_${Date.now()}`;
+  const isReply = !!replyingTo;
 
-  const tempComment = {
-    _id: tempId,
+  const tempComment: any = {
+    commentId: tempId,
     npId: publicId,
     text,
-    createdAt: new Date()
+    createdAt: new Date(),
+    replies: [],
   };
 
-  // ✅ 1. INSTANT UI
-  setComments((prev) => [tempComment, ...prev]);
+  if (isReply) {
+    // Add optimistic reply under parent
+    setComments((prev) =>
+      prev.map((c) =>
+        c.commentId === replyingTo!.commentId
+          ? { ...c, replies: [...(c.replies ?? []), tempComment] }
+          : c
+      )
+    );
+  } else {
+    setComments((prev) => [tempComment, ...prev]);
+  }
 
   try {
     const res = await fetch("/api/comments", {
       method: "POST",
-     headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
- },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
+      },
       body: JSON.stringify({
         postId,
-        npId: publicId,
-        text
-      })
+        text,
+        ...(isReply ? { parentId: replyingTo!.commentId } : {}),
+      }),
     });
 
     const data = await res.json();
-if (data.success) {
-  setText("");
 
-  // ✅ Replace temp comment with real one
-  setComments((prev) =>
-    prev.map((c) =>
-      c._id === tempId ? data.comment : c
-    )
-  );
+    if (data.success) {
+      setText("");
+      setReplyingTo(null);
 
-  // ✅ Update post count
-  setPost((prev: any) => ({
-    ...prev,
-    commentsCount: data.commentsCount
-  }));
-
-  // ✅ Sync FEED
-  queryClient.setQueryData(["feed"], (old: any) => {
-    if (!old) return old;
-
-    return {
-      ...old,
-      pages: old.pages.map((page: any) => ({
-        ...page,
-        posts: page.posts.map((p: any) =>
-          p.postId === postId
-            ? {
-                ...p,
-                commentsCount: data.commentsCount
-              }
-            : p
-        )
-      }))
-    };
-  });
-
-  // ✅ Sync POST PAGE
-  queryClient.setQueryData(["post", postId], (old: any) => {
-    if (!old) return old;
-
-    return {
-      ...old,
-      post: {
-        ...old.post,
-        commentsCount: data.commentsCount
+      if (isReply) {
+        setComments((prev) =>
+          prev.map((c) =>
+            c.commentId === replyingTo!.commentId
+              ? {
+                  ...c,
+                  replies: c.replies.map((r: any) =>
+                    r.commentId === tempId ? data.comment : r
+                  ),
+                }
+              : c
+          )
+        );
+      } else {
+        setComments((prev) =>
+          prev.map((c) => (c.commentId === tempId ? data.comment : c))
+        );
+        setPost((prev: any) => ({
+          ...prev,
+          commentsCount: data.commentsCount,
+        }));
+        queryClient.setQueryData(["feed"], (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page: any) => ({
+              ...page,
+              posts: page.posts.map((p: any) =>
+                p.postId === postId
+                  ? { ...p, commentsCount: data.commentsCount }
+                  : p
+              ),
+            })),
+          };
+        });
       }
-    };
-  });
-}
-     else {
+    } else {
       throw new Error();
     }
-
-  } catch (err) {
-    // ❌ REMOVE TEMP COMMENT IF FAILED
-    setComments((prev) => prev.filter((c) => c._id !== tempId));
+  } catch {
+    if (isReply) {
+      setComments((prev) =>
+        prev.map((c) =>
+          c.commentId === replyingTo?.commentId
+            ? { ...c, replies: c.replies.filter((r: any) => r.commentId !== tempId) }
+            : c
+        )
+      );
+    } else {
+      setComments((prev) => prev.filter((c) => c.commentId !== tempId));
+    }
   }
 
   setLoadingComment(false);
@@ -517,88 +526,155 @@ letterSpacing: "0.5px",
       </div>
     </div>
     )}
-    {/* ================= COMMENT INPUT ================= */}
+    
+   {/* ================= COMMENT INPUT ================= */}
     {showComments && (
-<div style={{ marginTop: "0", padding: "16px 16px 0", display: "flex", gap: "10px" }}>
-        <input
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="Write a comment..."
-        style={{
-  flex: 1,
-  padding: "12px 14px",
-  borderRadius: "14px",
-  background: "#111",
-  border: "1px solid rgba(255,255,255,0.08)",
-  color: "#fff",
-  outline: "none",
-  fontSize: "14px",
-  height: "44px"
-}}
-      />
+      <div style={{ marginTop: "0", padding: "16px 16px 0" }}>
 
-      <button
-  onClick={addComment}
-  disabled={!text.trim()}
-  style={{
-    padding: "10px 16px",
-    borderRadius: "10px",
-    border: "none",
-    background: text.trim() ? "#ff4d4d" : "#333",
-    color: "#fff",
-    fontWeight: "500",
-    cursor: text.trim() ? "pointer" : "not-allowed",
-    transition: "0.2s"
-  }}
->
-        {loadingComment ? "..." : "Post"}
-      </button>
+        {/* REPLY BANNER */}
+        {replyingTo && (
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "8px 12px",
+            background: "rgba(30,144,255,0.08)",
+            border: "1px solid rgba(30,144,255,0.15)",
+            borderRadius: "10px",
+            marginBottom: "8px",
+          }}>
+            <span style={{ fontSize: "13px", color: "#1e90ff" }}>
+              ↩ Replying to {replyingTo.npId}
+            </span>
+            <span
+              onClick={() => setReplyingTo(null)}
+              style={{ fontSize: "13px", color: "#555", cursor: "pointer", padding: "0 4px" }}
+            >
+              ✕
+            </span>
+          </div>
+        )}
 
-    </div>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder={replyingTo ? `Reply to ${replyingTo.npId}...` : "Write a comment..."}
+            style={{
+              flex: 1,
+              padding: "12px 14px",
+              borderRadius: "14px",
+              background: "#111",
+              border: "1px solid rgba(255,255,255,0.08)",
+              color: "#fff",
+              outline: "none",
+              fontSize: "14px",
+              height: "44px",
+            }}
+          />
+          <button
+            onClick={addComment}
+            disabled={!text.trim()}
+            style={{
+              padding: "10px 16px",
+              borderRadius: "10px",
+              border: "none",
+              background: text.trim() ? "#1e90ff" : "#333",
+              color: "#fff",
+              fontWeight: "500",
+              cursor: text.trim() ? "pointer" : "not-allowed",
+              transition: "0.2s",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {loadingComment ? "..." : replyingTo ? "Reply" : "Post"}
+          </button>
+        </div>
+      </div>
     )}
+
     {/* ================= COMMENTS ================= */}
     {showComments && (
-<div style={{
-  marginTop: "12px",
-  display: "flex",
-  flexDirection: "column",
-  gap: "6px"
-}}>
-      {comments.length === 0 ? (
-        <div style={{ color: "#666" }}>
-          No comments yet
-        </div>
-      ) : (
-        comments.map((c) => (
-          <div
-  key={c.commentId || String(c._id)}
-  style={{
-    padding: "12px 16px",
-    borderBottom: "1px solid rgba(255,255,255,0.05)"
-  }}
->
-            <div style={{
-  fontSize: "11px",
-  color: "#6f6f6f",
-  marginBottom: "4px"
-}}>
-              {c.npId}
-            </div>
-
-            <div style={{
-  color: "#e5e5e5",
-  fontSize: "15px",
-  lineHeight: "1.6"
-}}>
-              {c.text}
-            </div>
+      <div style={{ marginTop: "12px" }}>
+        {comments.length === 0 ? (
+          <div style={{ color: "#555", padding: "16px", fontSize: "14px" }}>
+            No comments yet
           </div>
-        
-        ))
-      )}
-    </div>
-    )} 
+        ) : (
+          comments.map((c: any) => (
+            <div key={c.commentId || String(c._id)}>
+
+              {/* TOP-LEVEL COMMENT */}
+              <div style={{
+                padding: "12px 16px",
+                borderBottom: c.replies?.length === 0
+                  ? "1px solid rgba(255,255,255,0.05)"
+                  : "none",
+              }}>
+                <div style={{
+                  fontSize: "12px", color: "#555",
+                  marginBottom: "4px", fontFamily: "monospace",
+                }}>
+                  {c.npId}
+                </div>
+                <div style={{
+                  color: "#e5e5e5", fontSize: "15px", lineHeight: "1.6",
+                  marginBottom: "6px",
+                }}>
+                  {c.text}
+                </div>
+                <div
+                  onClick={() => {
+                    if (!publicId) { router.push("/login"); return; }
+                    setReplyingTo({ commentId: c.commentId, npId: c.npId });
+                    setText("");
+                  }}
+                  style={{
+                    fontSize: "12px", color: "#444",
+                    cursor: "pointer", display: "inline-flex",
+                    alignItems: "center", gap: "4px",
+                    userSelect: "none",
+                  }}
+                >
+                  ↩ Reply
+                </div>
+              </div>
+
+              {/* REPLIES */}
+              {c.replies?.length > 0 && (
+                <div style={{
+                  borderLeft: "2px solid #1a1a1a",
+                  marginLeft: "24px",
+                  marginBottom: "4px",
+                  borderBottom: "1px solid rgba(255,255,255,0.05)",
+                }}>
+                  {c.replies.map((r: any) => (
+                    <div key={r.commentId || String(r._id)} style={{
+                      padding: "10px 16px",
+                      borderBottom: "1px solid rgba(255,255,255,0.03)",
+                    }}>
+                      <div style={{
+                        fontSize: "12px", color: "#555",
+                        marginBottom: "4px", fontFamily: "monospace",
+                      }}>
+                        {r.npId}
+                      </div>
+                      <div style={{
+                        color: "#d0d0d0", fontSize: "14px", lineHeight: "1.6",
+                      }}>
+                        {r.text}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+            </div>
+          ))
+        )}
+      </div>
+    )}
   </main>
-    
-);
+  );
 }
+    
