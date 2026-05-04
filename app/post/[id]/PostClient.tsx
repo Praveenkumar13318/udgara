@@ -22,10 +22,10 @@ const queryClient = useQueryClient();
   const [loadingComment, setLoadingComment] = useState(false);
   const [loadingPost, setLoadingPost] = useState(true);
 const [replyingTo, setReplyingTo] = useState<{ commentId: string; npId: string } | null>(null);
-  const publicId =
-    typeof window !== "undefined"
-      ? localStorage.getItem("publicId")
-      : null;
+  const [publicId, setPublicId] = useState<string | null>(null);
+useEffect(() => {
+  setPublicId(localStorage.getItem("publicId"));
+}, []);
 
  useEffect(() => {
   let interval: any = null;
@@ -545,11 +545,11 @@ letterSpacing: "0.5px",
                 borderBottom: !c.replies?.length ? "1px solid rgba(255,255,255,0.05)" : "none",
               }}>
                 <div style={{
-                  fontSize: "11px", color: "#444",
-                  marginBottom: "4px", fontFamily: "monospace", letterSpacing: "0.5px",
-                }}>
-                  {c.npId}
-                </div>
+  fontSize: "12px", color: "#666",
+  marginBottom: "4px", fontFamily: "monospace", letterSpacing: "0.5px",
+}}>
+  {c.npId}
+</div>
                 <div style={{ color: "#e5e5e5", fontSize: "15px", lineHeight: "1.65", marginBottom: "8px" }}>
                   {c.text}
                 </div>
@@ -577,9 +577,9 @@ letterSpacing: "0.5px",
               {/* REPLIES — indented */}
               {/* REPLIES — collapsed by default */}
 {c.replies?.length > 0 && (
-  <div style={{ paddingLeft: "16px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-
-    {/* TOGGLE BUTTON */}
+  <div style={{ paddingLeft: "16px", paddingBottom: "4px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+    
+    {/* COLLAPSE TOGGLE */}
     <div
       onClick={() => setExpandedReplies(prev => {
         const next = new Set(prev);
@@ -588,39 +588,51 @@ letterSpacing: "0.5px",
       })}
       style={{
         display: "inline-flex", alignItems: "center", gap: "6px",
-        padding: "8px 0 8px 4px",
+        padding: "6px 0",
         fontSize: "13px", color: "#1e90ff",
         cursor: "pointer", userSelect: "none" as const,
-        borderLeft: "2px solid #1e90ff",
-        paddingLeft: "10px",
       }}
     >
-      {expandedReplies.has(c.commentId) ? (
-        <>▲ Hide replies</>
-      ) : (
-        <>▼ View {c.replies.length} {c.replies.length === 1 ? "reply" : "replies"}</>
-      )}
+      <div style={{
+        width: "20px", height: "1px",
+        background: "#1e90ff", opacity: 0.5,
+      }} />
+      {expandedReplies.has(c.commentId)
+        ? "Hide replies"
+        : `View ${c.replies.length} ${c.replies.length === 1 ? "reply" : "replies"}`
+      }
     </div>
 
-    {/* REPLIES — only shown when expanded */}
+    {/* REPLIES */}
     {expandedReplies.has(c.commentId) && (
-      <div style={{ borderLeft: "2px solid #1e1e1e", marginLeft: "4px" }}>
+      <div>
         {c.replies.map((r: any) => (
           <div key={r.commentId || String(r._id)} style={{
-            padding: "10px 14px",
-            borderBottom: "1px solid rgba(255,255,255,0.03)",
+            display: "flex", gap: "10px",
+            padding: "10px 0",
+            borderTop: "1px solid rgba(255,255,255,0.04)",
           }}>
-            <div style={{ fontSize: "11px", color: "#444", marginBottom: "3px", fontFamily: "monospace" }}>
-              {r.npId}
-            </div>
-            <div style={{ color: "#ccc", fontSize: "14px", lineHeight: "1.6" }}>
-              {r.text}
+            {/* Thread line */}
+            <div style={{
+              width: "2px", background: "#222",
+              borderRadius: "1px", flexShrink: 0,
+              marginLeft: "4px",
+            }} />
+            <div style={{ flex: 1 }}>
+              <div style={{
+                fontSize: "11px", color: "#555",
+                marginBottom: "3px", fontFamily: "monospace",
+              }}>
+                {r.npId}
+              </div>
+              <div style={{ color: "#ccc", fontSize: "14px", lineHeight: "1.6" }}>
+                {r.text}
+              </div>
             </div>
           </div>
         ))}
       </div>
     )}
-
   </div>
 )}
 
