@@ -114,11 +114,6 @@ onTouchEnd={(e) => {
   const [likes, setLikes] = useState(post.likes || 0);
   const [commentsCount, setCommentsCount] = useState(post.commentsCount || 0);
   const [liked, setLiked] = useState(post.isLiked || false);
-  useEffect(() => {
-  setLikes(post.likes || 0);
-  setLiked(post.isLiked || false);
-  setCommentsCount(post.commentsCount || 0);
-}, [post.postId, post.likes, post.isLiked, post.commentsCount]);
   const [animating, setAnimating] = useState<"idle"|"pop"|"settle">("idle");
   
 

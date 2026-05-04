@@ -160,27 +160,27 @@ useEffect(() => {
 
   const channel = pusherClient.subscribe("posts");
 
-  const handler = (data: any) => {
-    queryClient.setQueryData(["feed"], (old: any) => {
-      if (!old) return old;
-
-      return {
-        ...old,
-        pages: old.pages.map((page: any) => ({
-          ...page,
-          posts: page.posts.map((p: any) => {
-            if (p.postId === data.postId) {
-              return {
-                ...p,
-                likes: data.likeCount,
-              };
-            }
-            return p;
-          }),
-        })),
-      };
-    });
-  };
+ const handler = (data: any) => {
+  queryClient.setQueryData(["feed"], (old: any) => {
+    if (!old) return old;
+    return {
+      ...old,
+      pages: old.pages.map((page: any) => ({
+        ...page,
+        posts: page.posts.map((p: any) => {
+          if (p.postId === data.postId) {
+            return {
+              ...p,
+              likes: data.likeCount,
+              isLiked: data.action === "liked",
+            };
+          }
+          return p;
+        }),
+      })),
+    };
+  });
+};
 
   channel.bind("like-update", handler);
  return () => {
@@ -453,9 +453,9 @@ useEffect(() => {
     </div>
 
     {/* COMMENTS - scrolls independently */}
-    <div style={{ flex: 1, overflowY: "auto", padding: "0 16px" }}>
-      <PostClient postId={activePostId} mode="comments-only" />
-    </div>
+   <div style={{ flex: 1, overflowY: "auto", padding: "0" }}>
+  <PostClient postId={activePostId} mode="comments-only" />
+</div>
 
   </div>
 )}
